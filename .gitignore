@@ -1,0 +1,10 @@
+node_modules/
+.corepack/
+dist/
+dist-electron/
+release/
+coverage/
+.env
+.DS_Store
+*.log
+.vite/

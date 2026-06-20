@@ -1,0 +1,44 @@
+[
+  {
+    "normalizedTitle": "shadow of the colossus",
+    "score": 98,
+    "tier": "S",
+    "genres": ["Adventure", "Action"],
+    "priority": "must-have"
+  },
+  {
+    "normalizedTitle": "resident evil 4",
+    "score": 98,
+    "tier": "S",
+    "genres": ["Survival Horror", "Action"],
+    "priority": "must-have"
+  },
+  {
+    "normalizedTitle": "metal gear solid 3 subsistence",
+    "score": 97,
+    "tier": "S",
+    "genres": ["Stealth", "Action"],
+    "priority": "must-have"
+  },
+  {
+    "normalizedTitle": "okami",
+    "score": 96,
+    "tier": "S",
+    "genres": ["Adventure"],
+    "priority": "must-have"
+  },
+  {
+    "normalizedTitle": "silent hill 2",
+    "score": 96,
+    "tier": "S",
+    "genres": ["Horror"],
+    "priority": "must-have"
+  },
+  {
+    "normalizedTitle": "need for speed underground 2",
+    "score": 92,
+    "tier": "A",
+    "genres": ["Racing"],
+    "priority": "recommended"
+  }
+]
