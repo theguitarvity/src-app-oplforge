@@ -27,6 +27,7 @@ import {
   DownloadCoordinatorService
 } from './services/downloads/download-coordinator.service'
 import { DownloadRecoveryService } from './services/downloads/download-recovery.service'
+import { DownloadCacheCleanupService } from './services/downloads/download-cache-cleanup.service'
 import {
   createFinalizationRuntime,
   type FinalizationRuntime
@@ -113,6 +114,8 @@ app.whenReady().then(async () => {
   const taskStore = new DownloadTaskStore(
     path.join(userDataPath, 'opl-finalization', 'download-tasks.json')
   )
+  const downloadCacheRoot = path.join(userDataPath, 'opl-finalization', 'cache')
+  const cacheCleanup = new DownloadCacheCleanupService(downloadCacheRoot)
   const downloads = configureDownloadCoordinator(
     new DownloadCoordinatorService(undefined, taskStore)
   )
@@ -141,6 +144,21 @@ app.whenReady().then(async () => {
   })
   await finalizationRuntime.initialize()
   await finalizationRuntime.reconcile()
+  const cleanupResults = await cacheCleanup
+    .reconcile((await taskStore.list()).items)
+    .catch((error) => {
+      sendLog(
+        'WARNING',
+        `Não foi possível limpar todo o cache concluído: ${error instanceof Error ? error.message : 'falha desconhecida'}`
+      )
+      return []
+    })
+  const recoveredBytes = cleanupResults.reduce((sum, result) => sum + result.freedBytes, 0)
+  if (recoveredBytes > 0)
+    sendLog(
+      'SUCCESS',
+      `Cache de jogos concluídos removido: ${(recoveredBytes / 1024 / 1024 / 1024).toFixed(2)} GB liberados.`
+    )
   const fragmentationRepairRuntime = createFragmentationRepairRuntime(app.getPath('userData'))
   const http = new HttpTransferService()
   const installationPlanner = new InstallationPlannerService()
@@ -160,12 +178,7 @@ app.whenReady().then(async () => {
             code: 'TORRENT_WORKER_UNAVAILABLE',
             retryable: true
           })
-        const partPath = path.join(
-          userDataPath,
-          'opl-finalization',
-          'cache',
-          task.transfer.partialRelativePath
-        )
+        const partPath = path.join(downloadCacheRoot, task.transfer.partialRelativePath)
         const result = await http.transfer({
           url: source.url,
           partPath,
@@ -205,12 +218,7 @@ app.whenReady().then(async () => {
           })
         await downloads.advance(task.taskId, 'validating')
         await downloads.advance(task.taskId, 'planning')
-        const sourcePath = path.join(
-          userDataPath,
-          'opl-finalization',
-          'cache',
-          current.transfer.partialRelativePath
-        )
+        const sourcePath = path.join(downloadCacheRoot, current.transfer.partialRelativePath)
         const plan = installation.remember(
           await installationPlanner.plan({
             sourcePath,
@@ -230,7 +238,20 @@ app.whenReady().then(async () => {
         await downloads.advance(task.taskId, 'verifying', 100)
         await downloads.advance(task.taskId, 'cataloging', 100)
         await downloads.advance(task.taskId, 'queueing-art', 100)
-        await downloads.advance(task.taskId, 'ready', 100)
+        const ready = await downloads.advance(task.taskId, 'ready', 100)
+        try {
+          const cleaned = await cacheCleanup.cleanupReady(ready)
+          if (cleaned.removed)
+            sendLog(
+              'SUCCESS',
+              `Arquivo local de ${ready.requestedTitle} removido após instalação verificada; ${(cleaned.freedBytes / 1024 / 1024).toFixed(0)} MB liberados.`
+            )
+        } catch (error) {
+          sendLog(
+            'WARNING',
+            `Jogo instalado, mas o cache local não pôde ser removido: ${error instanceof Error ? error.message : 'falha desconhecida'}`
+          )
+        }
       }
     )
   })
