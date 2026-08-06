@@ -2,9 +2,16 @@ node_modules/
 .corepack/
 dist/
 dist-electron/
+build/
 release/
 coverage/
 .env
+.env.*
+!.env.example
 .DS_Store
+Thumbs.db
 *.log
+*.tmp
+*.swp
 .vite/
+.idea/

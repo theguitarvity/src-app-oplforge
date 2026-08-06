@@ -10,3 +10,4 @@ describe('EmptyState', () => {
     expect(screen.getByText('Conecte um volume.')).toBeInTheDocument()
   })
 })
+// @vitest-environment jsdom

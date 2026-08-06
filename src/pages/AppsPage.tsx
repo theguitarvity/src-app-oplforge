@@ -1,6 +1,16 @@
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { Boxes, PackagePlus, Trash2 } from 'lucide-react'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import {
+  Boxes,
+  ExternalLink,
+  FolderOpen,
+  HardDrive,
+  MemoryStick,
+  PackagePlus,
+  Play,
+  Search,
+  Trash2
+} from 'lucide-react'
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
@@ -13,18 +23,74 @@ import { Label } from '@/components/ui/label'
 import { oplApi } from '@/services/api'
 import { useDeviceStore } from '@/stores/device-store'
 
-const suggestedApps = ['OPL', 'uLaunchELF', 'GSM', 'POPStarter', 'Memory Card Annihilator', 'HDL Dump']
-const schema = z.object({ appName: z.string().min(1), sourcePath: z.string().min(1) })
+const source = 'https://www.psx-place.com/resources/categories/apps.23/'
+const catalog = [
+  {
+    name: 'wLaunchELF R3Z',
+    version: '4.76',
+    description: 'Gerenciador de arquivos com suporte a USB, memory cards e HDD.',
+    url: 'https://www.psx-place.com/resources/wlaunchelf-r3z-fork.1492/'
+  },
+  {
+    name: 'Apollo Save Tool',
+    version: '1.0.2',
+    description: 'Gerencia, copia e converte saves do PlayStation 2.',
+    url: 'https://www.psx-place.com/resources/apollo-save-tool-ps2.1251/'
+  },
+  {
+    name: 'Memory Card Annihilator',
+    version: '2.2.0',
+    description: 'Ferramenta avançada para formatar memory cards PS1 e PS2.',
+    url: 'https://www.psx-place.com/resources/memory-card-annihilator-coded-by-ffgriever-gfx-by-berion.673/'
+  },
+  {
+    name: 'Simple Media System',
+    version: '3.0',
+    description: 'Central multimídia para áudio e vídeo no PS2.',
+    url: 'https://www.psx-place.com/resources/categories/apps.23/'
+  },
+  {
+    name: 'PS2 Controller Tester',
+    version: '1.21',
+    description: 'Diagnóstico dos controles DualShock e DualShock 2.',
+    url: 'https://www.psx-place.com/resources/ps2-controller-tester-by-jbit.670/'
+  },
+  {
+    name: 'DKWDRV',
+    version: '1.7.6o',
+    description: 'Substituto homebrew do PS1DRV para consoles compatíveis.',
+    url: 'https://www.psx-place.com/resources/dkwdrv.1294/'
+  }
+]
+const schema = z.object({
+  appName: z.string().min(1),
+  sourcePath: z
+    .string()
+    .min(1)
+    .refine((value) => value.toLowerCase().endsWith('.elf'), 'Selecione um arquivo .ELF')
+})
 type FormValues = z.infer<typeof schema>
 
 export function AppsPage() {
   const [removeTarget, setRemoveTarget] = useState('')
+  const [search, setSearch] = useState('')
   const activeDevice = useDeviceStore((state) => state.activeDevice)
   const queryClient = useQueryClient()
-  const form = useForm<FormValues>({ resolver: zodResolver(schema), defaultValues: { appName: 'OPL', sourcePath: '' } })
+  const form = useForm<FormValues>({
+    resolver: zodResolver(schema),
+    defaultValues: { appName: '', sourcePath: '' }
+  })
+  const installed = useQuery({
+    queryKey: ['installed-apps', activeDevice?.path],
+    queryFn: () => oplApi.listInstalledApps(activeDevice!.path),
+    enabled: Boolean(activeDevice)
+  })
   const installMutation = useMutation({
-    mutationFn: (values: FormValues) => oplApi.installApp({ ...values, devicePath: activeDevice!.path }),
+    mutationFn: (values: FormValues) =>
+      oplApi.installApp({ ...values, devicePath: activeDevice!.path }),
     onSuccess: async () => {
+      form.reset({ appName: '', sourcePath: '' })
+      await installed.refetch()
       await queryClient.invalidateQueries({ queryKey: ['history'] })
       await queryClient.invalidateQueries({ queryKey: ['summary'] })
     }
@@ -33,42 +99,246 @@ export function AppsPage() {
     mutationFn: () => oplApi.removeApp(activeDevice!.path, removeTarget),
     onSuccess: async () => {
       setRemoveTarget('')
+      await installed.refetch()
       await queryClient.invalidateQueries({ queryKey: ['history'] })
       await queryClient.invalidateQueries({ queryKey: ['summary'] })
     }
   })
-
   async function pickFile() {
-    const [file] = await oplApi.openPathDialog({ mode: 'file' })
-    if (file) form.setValue('sourcePath', file)
+    const [file] = await oplApi.openPathDialog({
+      mode: 'file',
+      filters: [{ name: 'Aplicativo PS2', extensions: ['elf'] }]
+    })
+    if (file) {
+      form.setValue('sourcePath', file, { shouldValidate: true })
+      if (!form.getValues('appName'))
+        form.setValue(
+          'appName',
+          file
+            .split(/[\\/]/)
+            .pop()
+            ?.replace(/\.elf$/i, '') ?? ''
+        )
+    }
   }
-
-  if (!activeDevice) return <EmptyState icon={Boxes} title="Selecione um dispositivo" description="Escolha o dispositivo ativo antes de instalar ou remover homebrews." />
-
+  if (!activeDevice)
+    return (
+      <EmptyState
+        icon={Boxes}
+        title="Selecione um dispositivo"
+        description="Escolha o dispositivo ativo antes de instalar ou remover homebrews."
+      />
+    )
+  const filtered = catalog.filter((app) =>
+    `${app.name} ${app.description}`.toLowerCase().includes(search.toLowerCase())
+  )
   return (
-    <div className="grid gap-6 lg:grid-cols-[1fr_340px]">
-      <Card>
-        <div className="mb-6 flex items-center gap-3"><PackagePlus className="size-6 text-violet-200" /><div><h2 className="text-2xl font-semibold text-white">Apps & Homebrews</h2><p className="text-sm text-muted-foreground">Instale, atualize ou remova apps em /APPS/NOME_APP.</p></div></div>
-        <form className="grid gap-4" onSubmit={form.handleSubmit((values) => installMutation.mutate(values))}>
-          <div className="space-y-2"><Label>Nome do app</Label><Input {...form.register('appName')} placeholder="Ex: OPL" /></div>
-          <div className="space-y-2"><Label>Arquivo local</Label><div className="flex gap-2"><Input {...form.register('sourcePath')} placeholder="Selecione um ELF, ZIP ou arquivo do app" /><Button type="button" variant="secondary" onClick={pickFile}>Buscar</Button></div></div>
-          <Button className="w-fit" disabled={installMutation.isPending}>Instalar / Atualizar</Button>
-        </form>
+    <div className="space-y-5">
+      <Card className="bg-gradient-to-br from-violet-500/15 via-card/80 to-cyan-500/10">
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div>
+            <span className="mb-3 inline-flex rounded-xl bg-violet-400/10 p-2 text-violet-300">
+              <Boxes className="size-5" />
+            </span>
+            <h2 className="text-2xl font-semibold text-white">Loja de apps PS2</h2>
+            <p className="mt-1 max-w-2xl text-sm leading-6 text-muted-foreground">
+              Encontre homebrews confiáveis, baixe o pacote original e instale o executável ELF no
+              dispositivo ativo.
+            </p>
+          </div>
+          <Button variant="secondary" onClick={() => oplApi.openExternalUrl(source)}>
+            <ExternalLink className="size-4" />
+            Abrir PSX-Place
+          </Button>
+        </div>
       </Card>
-
+      <div className="grid gap-5 xl:grid-cols-[1fr_380px]">
+        <div className="space-y-4">
+          <Card>
+            <div className="relative">
+              <Search className="absolute left-3 top-3 size-4 text-muted-foreground" />
+              <Input
+                value={search}
+                onChange={(event) => setSearch(event.target.value)}
+                className="pl-9"
+                placeholder="Buscar na seleção de apps…"
+              />
+            </div>
+          </Card>
+          <div className="grid gap-3 md:grid-cols-2">
+            {filtered.map((app) => (
+              <Card key={app.name} className="flex flex-col">
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <h3 className="font-medium text-white">{app.name}</h3>
+                    <span className="text-xs text-violet-300">v{app.version}</span>
+                  </div>
+                  <PackagePlus className="size-5 text-muted-foreground" />
+                </div>
+                <p className="mt-3 flex-1 text-sm leading-6 text-muted-foreground">
+                  {app.description}
+                </p>
+                <div className="mt-4 flex gap-2">
+                  <Button
+                    size="sm"
+                    variant="secondary"
+                    onClick={() => oplApi.openExternalUrl(app.url)}
+                  >
+                    <ExternalLink className="size-3.5" />
+                    Ver e baixar
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => form.setValue('appName', app.name)}
+                  >
+                    Preparar instalação
+                  </Button>
+                </div>
+              </Card>
+            ))}
+          </div>
+        </div>
+        <div className="space-y-4">
+          <Card>
+            <div className="mb-5 flex items-center gap-3">
+              <PackagePlus className="size-5 text-violet-200" />
+              <div>
+                <h3 className="font-semibold text-white">Instalar ELF</h3>
+                <p className="text-xs text-muted-foreground">Destino: /APPS/NOME_APP</p>
+              </div>
+            </div>
+            <form
+              className="grid gap-4"
+              onSubmit={form.handleSubmit((values) => installMutation.mutate(values))}
+            >
+              <div className="space-y-2">
+                <Label>Nome do app</Label>
+                <Input {...form.register('appName')} placeholder="Ex: wLaunchELF" />
+                {form.formState.errors.appName ? (
+                  <p className="text-xs text-red-300">{form.formState.errors.appName.message}</p>
+                ) : null}
+              </div>
+              <div className="space-y-2">
+                <Label>Executável baixado</Label>
+                <div className="flex gap-2">
+                  <Input {...form.register('sourcePath')} placeholder="Arquivo .ELF" />
+                  <Button type="button" variant="secondary" onClick={pickFile}>
+                    <FolderOpen className="size-4" />
+                  </Button>
+                </div>
+                {form.formState.errors.sourcePath ? (
+                  <p className="text-xs text-red-300">{form.formState.errors.sourcePath.message}</p>
+                ) : null}
+              </div>
+              <Button disabled={installMutation.isPending}>
+                {installMutation.isPending ? 'Instalando…' : 'Instalar no HD'}
+              </Button>
+              {installMutation.error ? (
+                <p className="text-sm text-red-300" role="alert">
+                  {installMutation.error.message}
+                </p>
+              ) : null}
+              {installMutation.data ? (
+                <p
+                  className={`text-sm ${installMutation.data.result === 'success' ? 'text-emerald-300' : 'text-red-300'}`}
+                >
+                  {installMutation.data.message}
+                </p>
+              ) : null}
+            </form>
+          </Card>
+          <Card>
+            <h3 className="font-semibold text-white">Como executar</h3>
+            <div className="mt-4 space-y-3">
+              <Instruction
+                icon={Play}
+                title="Pelo OPL"
+                text="Ative Apps nas configurações. O Forge atualiza conf_apps.cfg; o app aparecerá na lista do OPL."
+              />
+              <Instruction
+                icon={HardDrive}
+                title="Pelo wLaunchELF"
+                text="Abra mass:/APPS/NOME_APP/ e execute o arquivo ELF."
+              />
+              <Instruction
+                icon={MemoryStick}
+                title="Mover para memory card"
+                text="No wLaunchELF, copie a pasta do app de mass:/APPS para mc0:/APPS ou mc1:/APPS. Depois configure a entrada no FMCB Configurator se quiser exibi-la no menu inicial."
+              />
+            </div>
+          </Card>
+        </div>
+      </div>
       <Card>
-        <h3 className="font-semibold text-white">Catalogo inicial</h3>
-        <div className="mt-4 space-y-2">
-          {suggestedApps.map((app) => (
-            <div key={app} className="flex items-center justify-between rounded-xl border border-white/10 bg-white/5 px-3 py-2">
-              <button className="text-left text-sm text-white/80" onClick={() => form.setValue('appName', app)}>{app}</button>
-              <Button size="sm" variant="ghost" onClick={() => setRemoveTarget(app)}><Trash2 className="size-4" /></Button>
+        <div className="flex items-center justify-between">
+          <div>
+            <h3 className="font-semibold text-white">Instalados no dispositivo</h3>
+            <p className="mt-1 text-xs text-muted-foreground">
+              Executáveis ELF encontrados em /APPS.
+            </p>
+          </div>
+          <span className="text-sm text-muted-foreground">{installed.data?.length ?? 0}</span>
+        </div>
+        {installed.isLoading ? (
+          <p className="mt-4 text-sm text-muted-foreground">Lendo aplicativos…</p>
+        ) : null}
+        <div className="mt-4 grid gap-2 md:grid-cols-2">
+          {installed.data?.map((app) => (
+            <div
+              key={app.relativePath}
+              className="flex items-center gap-3 rounded-xl border border-white/10 bg-white/[0.03] p-3"
+            >
+              <Play className="size-4 text-emerald-300" />
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-sm font-medium text-white">{app.name}</p>
+                <p className="truncate text-xs text-muted-foreground">{app.launchPath}</p>
+              </div>
+              <Button
+                size="sm"
+                variant="ghost"
+                aria-label={`Remover ${app.name}`}
+                onClick={() => setRemoveTarget(app.name)}
+              >
+                <Trash2 className="size-4" />
+              </Button>
             </div>
           ))}
         </div>
+        {!installed.isLoading && installed.data?.length === 0 ? (
+          <p className="mt-4 text-sm text-muted-foreground">Nenhum ELF instalado ainda.</p>
+        ) : null}
       </Card>
+      <ConfirmDialog
+        open={Boolean(removeTarget)}
+        onOpenChange={(open) => !open && setRemoveTarget('')}
+        title="Remover app?"
+        description={`Remover ${removeTarget} de /APPS e da lista de aplicativos do OPL.`}
+        confirmLabel="Remover"
+        onConfirm={() => removeMutation.mutate()}
+      />
+    </div>
+  )
+}
 
-      <ConfirmDialog open={Boolean(removeTarget)} onOpenChange={(open) => !open && setRemoveTarget('')} title="Remover app?" description={`Remover ${removeTarget} de /APPS. Esta operacao exige confirmacao.`} confirmLabel="Remover" onConfirm={() => removeMutation.mutate()} />
+function Instruction({
+  icon: Icon,
+  title,
+  text
+}: {
+  icon: typeof Play
+  title: string
+  text: string
+}) {
+  return (
+    <div className="flex items-start gap-3">
+      <span className="rounded-lg bg-white/5 p-2">
+        <Icon className="size-4 text-violet-300" />
+      </span>
+      <div>
+        <p className="text-sm font-medium text-white">{title}</p>
+        <p className="mt-1 text-xs leading-5 text-muted-foreground">{text}</p>
+      </div>
     </div>
   )
 }

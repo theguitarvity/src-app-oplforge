@@ -3,7 +3,7 @@ import os from 'node:os'
 import path from 'node:path'
 import { execFile } from 'node:child_process'
 import { promisify } from 'node:util'
-import type { DeviceInfo, DeviceSummary } from '../../src/types/opl'
+import type { DeviceIdentity, DeviceInfo, DeviceSummary } from '../../src/types/opl'
 import { getHistory } from './history.service'
 
 const execFileAsync = promisify(execFile)
@@ -77,7 +77,11 @@ async function macCandidates(): Promise<MountCandidate[]> {
   const volumes = await fs.readdir('/Volumes', { withFileTypes: true })
   return volumes
     .filter((entry) => entry.isDirectory())
-    .map((entry) => ({ path: path.join('/Volumes', entry.name), name: entry.name, fileSystem: 'volume' }))
+    .map((entry) => ({
+      path: path.join('/Volumes', entry.name),
+      name: entry.name,
+      fileSystem: 'volume'
+    }))
 }
 
 async function windowsCandidates(): Promise<MountCandidate[]> {
@@ -114,11 +118,40 @@ export async function listDevices(): Promise<DeviceInfo[]> {
   }
 }
 
+export async function inspectDevice(
+  devicePath: string,
+  fileSystemHint?: string
+): Promise<DeviceIdentity> {
+  const realPath = await fs.realpath(devicePath)
+  const stats = await fs.statfs(realPath)
+  const fileSystem =
+    fileSystemHint ??
+    (await listDevices()).find((item) => item.path === devicePath)?.fileSystem ??
+    'unknown'
+  const totalBytes = Number(stats.blocks) * Number(stats.bsize)
+  const freeBytes = Number(stats.bavail) * Number(stats.bsize)
+  return {
+    deviceId: safeId(realPath),
+    mountPath: path.resolve(devicePath),
+    realPath,
+    fileSystem,
+    totalBytes,
+    freeBytes,
+    clusterBytes: Number(stats.bsize) || undefined,
+    supportsLargeFiles: /^(v?fat|fat32)$/i.test(fileSystem)
+      ? 'failed'
+      : fileSystem === 'unknown'
+        ? 'not-verified'
+        : 'verified',
+    observedAt: new Date().toISOString()
+  }
+}
+
 export async function getDeviceSummary(devicePath?: string): Promise<DeviceSummary> {
   const devices = await listDevices()
   const device = devicePath
-    ? devices.find((item) => item.path === devicePath) ?? null
-    : devices[0] ?? null
+    ? (devices.find((item) => item.path === devicePath) ?? null)
+    : (devices[0] ?? null)
 
   const count = async (dir: string, extensions?: string[]) => {
     if (!device) return 0
@@ -135,7 +168,7 @@ export async function getDeviceSummary(devicePath?: string): Promise<DeviceSumma
 
   return {
     device,
-    ps2Games: (await count('DVD', ['.iso'])) + (await count('CD', ['.iso'])) ,
+    ps2Games: (await count('DVD', ['.iso'])) + (await count('CD', ['.iso'])),
     ps1Games: await count('PS1', ['.bin', '.cue', '.iso']),
     apps: await count('APPS'),
     recentHistory: (await getHistory()).slice(0, 5)

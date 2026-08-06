@@ -8,7 +8,12 @@ files:
   - dist-electron/**
   - package.json
 asar: true
+icon: build/icon.png
+extraResources:
+  - from: build/icon.png
+    to: icon.png
 win:
+  icon: build/icon.ico
   target:
     - target: nsis
       arch:
@@ -21,6 +26,7 @@ mac:
         - x64
         - arm64
 linux:
+  icon: build/icon.png
   target:
     - AppImage
     - deb

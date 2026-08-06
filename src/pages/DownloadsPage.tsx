@@ -1,131 +1,202 @@
-import { zodResolver } from '@hookform/resolvers/zod'
-import { useMutation, useQuery } from '@tanstack/react-query'
-import { Download, FolderOpen, Pause, Play, RotateCcw, Square, Trash2 } from 'lucide-react'
-import { useEffect } from 'react'
-import { useForm } from 'react-hook-form'
-import { z } from 'zod'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { Activity, Download, HardDrive, Layers3 } from 'lucide-react'
+import { useEffect, useMemo, useState } from 'react'
+import { DownloadPipelineCard } from '@/components/downloads/DownloadPipelineCard'
 import { EmptyState } from '@/components/EmptyState'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Select } from '@/components/ui/select'
 import { oplApi } from '@/services/api'
 import { useDeviceStore } from '@/stores/device-store'
 import { useDownloadStore } from '@/stores/download-store'
-import type { DownloadTask } from '@/types/opl'
-import { formatBytes } from '@/utils/format'
-
-const schema = z.object({
-  source: z.enum(['torrent-url', 'torrent-file', 'magnet']),
-  value: z.string().min(1, 'Informe uma URL, magnet link ou arquivo torrent.'),
-  selectedFiles: z.string().optional()
-})
-
-type FormValues = z.infer<typeof schema>
-
-function suggestDestination(task: DownloadTask) {
-  const value = `${task.name} ${task.selectedFiles.join(' ')}`.toLowerCase()
-  if (value.includes('.iso')) return '/DVD ou /CD'
-  if (value.includes('.bin') || value.includes('.cue')) return '/PS1'
-  if (value.includes('.zip') || value.includes('.7z')) return 'manter em staging para extracao manual'
-  return 'revisar staging e escolher destino final'
-}
 
 export function DownloadsPage() {
   const activeDevice = useDeviceStore((state) => state.activeDevice)
-  const tasks = useDownloadStore((state) => state.tasks)
-  const setTasks = useDownloadStore((state) => state.setTasks)
-  const upsertTask = useDownloadStore((state) => state.upsertTask)
-  const progressByTask = useDownloadStore((state) => state.progressByTask)
-  const form = useForm<FormValues>({ resolver: zodResolver(schema), defaultValues: { source: 'magnet', value: '' } })
-
-  const queueQuery = useQuery({ queryKey: ['downloads'], queryFn: oplApi.getDownloadQueue })
+  const queryClient = useQueryClient()
+  const [source, setSource] = useState('')
+  const taskMap = useDownloadStore((state) => state.tasks)
+  const tasks = useMemo(
+    () =>
+      Object.values(taskMap).filter(
+        (task) =>
+          !activeDevice ||
+          task.targetDeviceId === activeDevice.id ||
+          task.targetDeviceId === activeDevice.path
+      ),
+    [activeDevice, taskMap]
+  )
+  const setSnapshot = useDownloadStore((state) => state.setSnapshot)
+  const applyEvent = useDownloadStore((state) => state.applyEvent)
+  const queue = useQuery({
+    queryKey: ['durable-downloads'],
+    queryFn: () => oplApi.listDownloads({ limit: 500 }),
+    enabled: Boolean(activeDevice),
+    refetchInterval: 1000
+  })
   useEffect(() => {
-    if (queueQuery.data) setTasks(queueQuery.data)
-  }, [queueQuery.data, setTasks])
-
-  const addMutation = useMutation({
-    mutationFn: (values: FormValues) =>
-      oplApi.addP2PDownload({
-        source: values.source,
-        value: values.value,
-        destinationPath: activeDevice!.path,
-        selectedFiles: values.selectedFiles?.split('\n').map((item) => item.trim()).filter(Boolean)
+    if (queue.data) setSnapshot(queue.data)
+  }, [queue.data, setSnapshot])
+  useEffect(() => {
+    return oplApi.onOplPipelineEvent((event) => {
+      if (applyEvent(event)) void queryClient.invalidateQueries({ queryKey: ['durable-downloads'] })
+    })
+  }, [applyEvent, queryClient])
+  const enqueue = useMutation({
+    mutationFn: () =>
+      oplApi.enqueueDownload({
+        source: source.startsWith('magnet:')
+          ? { kind: 'torrent', magnet: source }
+          : { kind: 'http', url: source },
+        deviceId: activeDevice!.id,
+        profileId: 'opl-default'
       }),
-    onSuccess: (task) => {
-      upsertTask(task)
-      form.reset({ source: 'magnet', value: '' })
+    onSuccess: async () => {
+      setSource('')
+      await queryClient.invalidateQueries({ queryKey: ['durable-downloads'] })
     }
   })
-
-  async function pickTorrentFile() {
-    const [file] = await oplApi.openPathDialog({ mode: 'file', filters: [{ name: 'Torrent', extensions: ['torrent'] }] })
-    if (file) {
-      form.setValue('source', 'torrent-file')
-      form.setValue('value', file)
+  const executeAction = async (
+    action: 'pause' | 'resume' | 'retry' | 'cancel',
+    taskId: string,
+    expectedRevision: number
+  ) => {
+    let reference = { taskId, expectedRevision }
+    const invoke = async () => {
+      if (action === 'pause') await oplApi.pauseDurableDownload(reference)
+      if (action === 'resume') await oplApi.resumeDurableDownload(reference)
+      if (action === 'retry') await oplApi.retryDurableDownload(reference)
+      if (action === 'cancel')
+        await oplApi.cancelDurableDownload({ ...reference, partialPolicy: 'keep-for-resume' })
     }
+    try {
+      await invoke()
+    } catch (error) {
+      if (!/stale/i.test((error as Error).message)) throw error
+      const latest = await oplApi.getDurableDownload(taskId)
+      if (!latest) throw error
+      reference = { taskId, expectedRevision: latest.revision }
+      await invoke()
+    }
+    await queryClient.invalidateQueries({ queryKey: ['durable-downloads'] })
   }
-
-  if (!activeDevice) {
-    return <EmptyState icon={Download} title="Selecione um dispositivo" description="Escolha um dispositivo ativo para baixar em /_OPL_FORGE_STAGING/." />
-  }
-
+  const action = useMutation({
+    mutationFn: ({
+      kind,
+      taskId,
+      revision
+    }: {
+      kind: 'pause' | 'resume' | 'retry' | 'cancel'
+      taskId: string
+      revision: number
+    }) => executeAction(kind, taskId, revision)
+  })
+  if (!activeDevice)
+    return (
+      <EmptyState
+        icon={Download}
+        title="Selecione um dispositivo"
+        description="Escolha o dispositivo de destino da fila durável."
+      />
+    )
+  const active = tasks.filter(
+    (task) => !['ready', 'failed', 'cancelled'].includes(task.phase)
+  ).length
+  const ready = tasks.filter((task) => task.phase === 'ready').length
   return (
     <div className="space-y-6">
-      <Card>
-        <div className="mb-5 flex items-center justify-between gap-4">
+      <section className="overflow-hidden rounded-3xl border border-violet-400/20 bg-gradient-to-br from-violet-500/15 via-card/80 to-fuchsia-500/10 p-6 shadow-glow">
+        <div className="flex items-start justify-between gap-4">
           <div>
-            <h2 className="text-2xl font-semibold text-white">Download Manager</h2>
-            <p className="mt-1 text-sm text-muted-foreground">Fila P2P com staging em {activeDevice.path}/_OPL_FORGE_STAGING/.</p>
+            <div className="mb-3 flex size-11 items-center justify-center rounded-2xl bg-violet-500/20">
+              <Download className="size-5 text-violet-200" />
+            </div>
+            <h2 className="text-2xl font-semibold text-white">Central de downloads</h2>
+            <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
+              Downloads retomáveis em cache local, com instalação OPL segura e serializada no
+              dispositivo.
+            </p>
           </div>
-          <Button variant="secondary" onClick={pickTorrentFile}><FolderOpen className="size-4" /> Arquivo .torrent</Button>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="rounded-2xl border border-white/10 bg-black/20 px-4 py-3">
+              <p className="text-2xl font-semibold text-white">{active}</p>
+              <p className="text-xs text-muted-foreground">em andamento</p>
+            </div>
+            <div className="rounded-2xl border border-white/10 bg-black/20 px-4 py-3">
+              <p className="text-2xl font-semibold text-emerald-200">{ready}</p>
+              <p className="text-xs text-muted-foreground">concluídos</p>
+            </div>
+          </div>
         </div>
-        <form className="grid gap-4" onSubmit={form.handleSubmit((values) => addMutation.mutate(values))}>
-          <div className="grid gap-4 md:grid-cols-[220px_1fr]">
-            <div className="space-y-2"><Label>Tipo</Label><Select {...form.register('source')}><option value="magnet">Magnet</option><option value="torrent-url">URL .torrent</option><option value="torrent-file">Arquivo .torrent</option></Select></div>
-            <div className="space-y-2"><Label>Origem</Label><Input {...form.register('value')} placeholder="magnet:?xt=... ou https://.../arquivo.torrent" /></div>
-          </div>
-          <div className="space-y-2"><Label>Arquivos selecionados (opcional, um por linha)</Label><textarea className="min-h-24 w-full rounded-xl border border-white/10 bg-black/20 px-3 py-2 text-sm text-white outline-none focus:border-violet-400" {...form.register('selectedFiles')} /></div>
-          {form.formState.errors.value ? <p className="text-sm text-red-300">{form.formState.errors.value.message}</p> : null}
-          <Button className="w-fit" disabled={addMutation.isPending}>Adicionar à fila</Button>
+        <form
+          className="mt-6 flex gap-2"
+          onSubmit={(event) => {
+            event.preventDefault()
+            enqueue.mutate()
+          }}
+        >
+          <Input
+            aria-label="URL ou magnet"
+            value={source}
+            onChange={(event) => setSource(event.target.value)}
+            placeholder="Cole uma URL HTTP do seu backup"
+          />
+          <Button disabled={!source || enqueue.isPending}>
+            {enqueue.isPending ? 'Adicionando…' : 'Adicionar à fila'}
+          </Button>
         </form>
-      </Card>
-
-      <div className="grid gap-4">
-        {tasks.length === 0 ? <EmptyState icon={Download} title="Fila vazia" description="Adicione um torrent ou magnet para iniciar o download em staging." /> : null}
-        {tasks.map((task) => {
-          const progress = progressByTask[task.id]
-          const percent = progress?.progress ?? 0
-          return (
-            <Card key={task.id}>
-              <div className="flex items-start justify-between gap-4">
-                <div>
-                  <h3 className="font-semibold text-white">{task.name}</h3>
-                  <p className="mt-1 text-sm text-muted-foreground">{task.status} - destino sugerido: {suggestDestination(task)}</p>
-                  <p className="mt-1 text-xs text-white/40">{task.stagingPath}</p>
-                </div>
-                <div className="flex gap-2">
-                  <Button size="sm" variant="secondary" onClick={() => oplApi.pauseDownload(task.id)}><Pause className="size-4" /></Button>
-                  <Button size="sm" variant="secondary" onClick={() => oplApi.resumeDownload(task.id)}><Play className="size-4" /></Button>
-                  <Button size="sm" variant="secondary" onClick={() => oplApi.openFolder(task.stagingPath)}><FolderOpen className="size-4" /></Button>
-                  <Button size="sm" variant="danger" onClick={() => oplApi.cancelDownload(task.id)}><Square className="size-4" /></Button>
-                </div>
-              </div>
-              <div className="mt-5 h-2 rounded-full bg-white/8"><div className="h-full rounded-full bg-gradient-to-r from-violet-500 to-fuchsia-400" style={{ width: `${percent}%` }} /></div>
-              <div className="mt-3 grid gap-2 text-xs text-muted-foreground md:grid-cols-5">
-                <span>{percent}%</span>
-                <span>{formatBytes(progress?.downloadedBytes ?? 0)} / {formatBytes(progress?.totalBytes ?? 0)}</span>
-                <span>Down {formatBytes(progress?.downloadSpeed ?? 0)}/s</span>
-                <span>Up {formatBytes(progress?.uploadSpeed ?? 0)}/s</span>
-                <span>Peers {progress?.peers ?? 0}</span>
-              </div>
-              {task.status === 'completed' ? <div className="mt-4 flex items-center gap-2 rounded-xl border border-emerald-400/20 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-100"><RotateCcw className="size-4" /> Reprocessar: abra a pasta staging, valide o arquivo e mova pelo importador PS2/PS1 conforme o tipo detectado.</div> : null}
-              {progress?.error ? <p className="mt-3 text-sm text-red-300"><Trash2 className="mr-1 inline size-4" />{progress.error}</p> : null}
-            </Card>
-          )
-        })}
+        {enqueue.error ? (
+          <p className="mt-3 text-sm text-red-300" role="alert">
+            {enqueue.error.message}
+          </p>
+        ) : null}
+      </section>
+      <div className="flex items-center gap-4 text-xs text-muted-foreground">
+        <span className="flex items-center gap-1.5">
+          <HardDrive className="size-4 text-violet-300" /> {activeDevice.name}
+        </span>
+        <span className="flex items-center gap-1.5">
+          <Layers3 className="size-4 text-violet-300" /> {tasks.length} tarefa(s)
+        </span>
+        {active ? (
+          <span className="flex items-center gap-1.5 text-emerald-300">
+            <Activity className="size-4" /> Atualização em tempo real
+          </span>
+        ) : null}
       </div>
+      {action.error ? (
+        <Card className="border-red-400/25 bg-red-500/5 text-sm text-red-200" role="alert">
+          Não foi possível executar a ação: {action.error.message}
+        </Card>
+      ) : null}
+      {tasks.length === 0 ? (
+        <EmptyState
+          icon={Download}
+          title="Fila vazia"
+          description="Downloads persistidos aparecerão aqui mesmo após reiniciar o Forge."
+        />
+      ) : (
+        <div className="grid gap-4 xl:grid-cols-2">
+          {tasks.map((task) => (
+            <DownloadPipelineCard
+              key={task.taskId}
+              task={task}
+              pending={action.isPending && action.variables?.taskId === task.taskId}
+              onPause={() =>
+                action.mutate({ kind: 'pause', taskId: task.taskId, revision: task.revision })
+              }
+              onResume={() =>
+                action.mutate({ kind: 'resume', taskId: task.taskId, revision: task.revision })
+              }
+              onRetry={() =>
+                action.mutate({ kind: 'retry', taskId: task.taskId, revision: task.revision })
+              }
+              onCancel={() =>
+                action.mutate({ kind: 'cancel', taskId: task.taskId, revision: task.revision })
+              }
+            />
+          ))}
+        </div>
+      )}
     </div>
   )
 }

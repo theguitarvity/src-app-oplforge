@@ -1,0 +1,7 @@
+Filesystem type is: 65735546
+File size of /fixtures/DVD/SLUS_000.00.Synthetic.iso is 49152 (12 blocks of 4096 bytes)
+ ext:     logical_offset:        physical_offset: length:   expected: flags:
+   0:        0..       3:      1000..      1003:      4:
+   1:        4..       7:      2000..      2003:      4:       1004:
+   2:        8..      11:      3000..      3003:      4:       2004: last,eof
+/fixtures/DVD/SLUS_000.00.Synthetic.iso: 3 extents found

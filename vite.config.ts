@@ -6,7 +6,9 @@ export default defineConfig({
   plugins: [react()],
   resolve: {
     alias: {
-      '@': path.resolve(__dirname, './src')
+      '@': path.resolve(import.meta.dirname, './src'),
+      '@electron': path.resolve(import.meta.dirname, './electron'),
+      '@tests': path.resolve(import.meta.dirname, './tests')
     }
   },
   server: {
@@ -18,7 +20,7 @@ export default defineConfig({
     emptyOutDir: true
   },
   test: {
-    environment: 'jsdom',
+    environment: 'node',
     setupFiles: './vitest.setup.ts',
     css: true
   }

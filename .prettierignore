@@ -1,0 +1,11 @@
+node_modules/
+.corepack/
+dist/
+dist-electron/
+build/
+release/
+coverage/
+*.min.js
+package-lock.json
+pnpm-lock.yaml
+yarn.lock

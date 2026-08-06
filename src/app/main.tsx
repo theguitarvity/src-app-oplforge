@@ -11,7 +11,11 @@ import { DevicesPage } from '@/pages/DevicesPage'
 import { DownloadsPage } from '@/pages/DownloadsPage'
 import { EssentialsCatalogPage } from '@/pages/EssentialsCatalogPage'
 import { HistoryPage } from '@/pages/HistoryPage'
+import { GameLibraryPage } from '@/pages/GameLibraryPage'
+import { FragmentationRepairPage } from '@/pages/FragmentationRepairPage'
+import { ValidationPage } from '@/pages/ValidationPage'
 import { OnlineSourcesPage } from '@/pages/OnlineSourcesPage'
+import { OplNamingPage } from '@/pages/OplNamingPage'
 import { PreparePage } from '@/pages/PreparePage'
 import { Ps1ImportPage } from '@/pages/Ps1ImportPage'
 import { Ps2ImportPage } from '@/pages/Ps2ImportPage'
@@ -32,6 +36,10 @@ const router = createHashRouter([
       { path: 'devices', element: <DevicesPage /> },
       { path: 'prepare', element: <PreparePage /> },
       { path: 'games/ps2', element: <Ps2ImportPage /> },
+      { path: 'library', element: <GameLibraryPage /> },
+      { path: 'fragmentation-repair', element: <FragmentationRepairPage /> },
+      { path: 'naming', element: <OplNamingPage /> },
+      { path: 'validation', element: <ValidationPage /> },
       { path: 'games/ps1', element: <Ps1ImportPage /> },
       { path: 'apps', element: <AppsPage /> },
       { path: 'catalog', element: <CatalogPage /> },

@@ -1,0 +1,16 @@
+[
+  {
+    "id": "opl-1.2.0-release",
+    "version": "1.2.0",
+    "variant": "release",
+    "officialUrl": "https://github.com/ps2homebrew/Open-PS2-Loader/releases/tag/v1.2.0",
+    "elfSha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "obtainedAt": "2026-01-01T00:00:00.000Z",
+    "capabilities": {
+      "iso": true,
+      "zso": true,
+      "usbExtreme": true,
+      "fileSystems": ["FAT32", "exFAT"]
+    }
+  }
+]

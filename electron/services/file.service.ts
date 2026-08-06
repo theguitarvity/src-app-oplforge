@@ -1,7 +1,12 @@
 import { createReadStream, createWriteStream } from 'node:fs'
 import { promises as fs } from 'node:fs'
 import path from 'node:path'
-import type { AppInstallInput, GameImportInput, Ps1ImportInput } from '../../src/types/opl'
+import type {
+  AppInstallInput,
+  GameImportInput,
+  InstalledApp,
+  Ps1ImportInput
+} from '../../src/types/opl'
 import { addHistory, recordFailure } from './history.service'
 import { OPL_DIRS } from './device.service'
 import { sendLog, sendProgress } from './logger'
@@ -44,7 +49,11 @@ async function copyFileWithProgress(source: string, destination: string, label: 
 
     read.on('data', (chunk) => {
       copied += chunk.length
-      sendProgress({ label, value: Math.round((copied / stat.size) * 100), detail: path.basename(source) })
+      sendProgress({
+        label,
+        value: Math.round((copied / stat.size) * 100),
+        detail: path.basename(source)
+      })
     })
     read.on('error', reject)
     write.on('error', reject)
@@ -113,7 +122,12 @@ export async function copyGame(input: GameImportInput) {
     }
     return entries
   } catch (error) {
-    const entry = await recordFailure('Importar jogo PS2', error, input.sourcePaths.join(', '), destinationDir)
+    const entry = await recordFailure(
+      'Importar jogo PS2',
+      error,
+      input.sourcePaths.join(', '),
+      destinationDir
+    )
     sendLog('ERROR', entry.message ?? 'Falha ao importar jogo PS2.')
     return [entry]
   }
@@ -147,7 +161,12 @@ export async function copyPs1Game(input: Ps1ImportInput) {
     }
     return entries
   } catch (error) {
-    const entry = await recordFailure('Importar jogo PS1', error, input.sourcePaths.join(', '), destinationDir)
+    const entry = await recordFailure(
+      'Importar jogo PS1',
+      error,
+      input.sourcePaths.join(', '),
+      destinationDir
+    )
     sendLog('ERROR', entry.message ?? 'Falha ao importar jogo PS1.')
     return [entry]
   }
@@ -155,19 +174,23 @@ export async function copyPs1Game(input: Ps1ImportInput) {
 
 export async function installApp(input: AppInstallInput) {
   const appName = sanitizeSegment(input.appName)
-  const destination = path.join(input.devicePath, 'APPS', appName, path.basename(input.sourcePath))
+  if (path.extname(input.sourcePath).toLowerCase() !== '.elf')
+    throw new Error('Selecione o executável .ELF do aplicativo.')
+  const elfName = path.basename(input.sourcePath)
+  const destination = path.join(input.devicePath, 'APPS', appName, elfName)
 
   try {
     await ensureSpace(input.devicePath, [input.sourcePath])
     await ensureInsideDevice(input.devicePath, destination)
     await copyFileWithProgress(input.sourcePath, destination, 'Instalando app')
+    await updateAppsConfiguration(input.devicePath, appName, elfName)
     sendLog('SUCCESS', `App instalado: ${appName}`)
     return addHistory({
       operation: 'Instalar app',
       origin: input.sourcePath,
       destination,
       result: 'success',
-      message: `${appName} instalado.`
+      message: `${appName} instalado. Execute no OPL Apps ou em mass:/APPS/${appName}/${elfName}.`
     })
   } catch (error) {
     sendLog('ERROR', error instanceof Error ? error.message : 'Falha ao instalar app.')
@@ -175,11 +198,71 @@ export async function installApp(input: AppInstallInput) {
   }
 }
 
+async function updateAppsConfiguration(
+  devicePath: string,
+  appName: string,
+  elfName: string
+): Promise<void> {
+  const configPath = path.join(devicePath, 'conf_apps.cfg')
+  await ensureInsideDevice(devicePath, configPath)
+  const current = await fs.readFile(configPath, 'utf8').catch((error: NodeJS.ErrnoException) => {
+    if (error.code === 'ENOENT') return ''
+    throw error
+  })
+  const entry = `${appName}=mass:/APPS/${appName}/${elfName}`
+  const lines = current
+    .split(/\r?\n/)
+    .filter(Boolean)
+    .filter(
+      (line) =>
+        !line.toLocaleLowerCase('pt-BR').startsWith(`${appName.toLocaleLowerCase('pt-BR')}=`)
+    )
+  lines.push(entry)
+  await fs.writeFile(configPath, `${lines.join('\n')}\n`, 'utf8')
+}
+
+export async function listInstalledApps(devicePath: string): Promise<InstalledApp[]> {
+  const appsRoot = path.join(devicePath, 'APPS')
+  await ensureInsideDevice(devicePath, appsRoot)
+  const directories = await fs
+    .readdir(appsRoot, { withFileTypes: true })
+    .catch((error: NodeJS.ErrnoException) => {
+      if (error.code === 'ENOENT') return []
+      throw error
+    })
+  const installed: InstalledApp[] = []
+  for (const directory of directories) {
+    if (!directory.isDirectory()) continue
+    const files = await fs.readdir(path.join(appsRoot, directory.name), { withFileTypes: true })
+    for (const file of files)
+      if (file.isFile() && path.extname(file.name).toLowerCase() === '.elf')
+        installed.push({
+          name: directory.name,
+          elfName: file.name,
+          relativePath: `APPS/${directory.name}/${file.name}`,
+          launchPath: `mass:/APPS/${directory.name}/${file.name}`
+        })
+  }
+  return installed.sort((a, b) => a.name.localeCompare(b.name, 'pt-BR'))
+}
+
 export async function removeApp(devicePath: string, appName: string) {
   const destination = path.join(devicePath, 'APPS', sanitizeSegment(appName))
   try {
     await ensureInsideDevice(devicePath, destination)
     await fs.rm(destination, { recursive: true, force: true })
+    const configPath = path.join(devicePath, 'conf_apps.cfg')
+    const config = await fs.readFile(configPath, 'utf8').catch(() => '')
+    if (config) {
+      const lines = config
+        .split(/\r?\n/)
+        .filter(Boolean)
+        .filter(
+          (line) =>
+            !line.toLocaleLowerCase('pt-BR').startsWith(`${appName.toLocaleLowerCase('pt-BR')}=`)
+        )
+      await fs.writeFile(configPath, lines.length ? `${lines.join('\n')}\n` : '', 'utf8')
+    }
     sendLog('WARNING', `App removido: ${appName}`)
     return addHistory({
       operation: 'Remover app',

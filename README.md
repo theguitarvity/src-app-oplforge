@@ -135,3 +135,7 @@ A pipeline GitHub Actions executa checkout, setup de Node via `.nvmrc`, instalac
 - Windows x64 e arm64
 - macOS Intel e Apple Silicon
 - Linux AppImage e DEB
+
+## Pipeline OPL resiliente
+
+Downloads HTTP e Essentials usam fila persistente, cache local retomável e um único writer por dispositivo. A instalação reconhece FAT32/USBExtreme, valida hash e fragmentação, extrai Game ID interno e aplica nome canônico. Artes em massa e adequação da biblioteca existente têm jobs/journals recuperáveis. Consulte [docs/opl-finalization.md](docs/opl-finalization.md) e [docs/opl-finalization-security.md](docs/opl-finalization-security.md).

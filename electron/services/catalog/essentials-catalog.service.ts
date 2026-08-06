@@ -11,11 +11,15 @@ import type {
   SmartFillPlan
 } from '../../../src/types/opl'
 import { InternetArchiveDirectoryProvider } from '../../../src/services/sources/providers/InternetArchiveDirectoryProvider'
-import { scoreArchiveFile, sortCatalogGames } from '../../../src/services/catalog/GameScoringService'
+import {
+  scoreArchiveFile,
+  sortCatalogGames
+} from '../../../src/services/catalog/GameScoringService'
 import { DEFAULT_REMOTE_SOURCES } from '../../../src/services/sources/defaultRemoteSources'
 import { addHistory } from '../history.service'
 import { sendLog } from '../logger'
-import { p2pDownloadService } from '../downloads/p2p-download.service'
+import { getDownloadCoordinator } from '../downloads/download-coordinator.service'
+import { listDevices } from '../device.service'
 
 const legalConfirmationText =
   'Confirmo que possuo este jogo fisicamente/digitalmente ou tenho autorização legal para baixar este backup.'
@@ -32,10 +36,16 @@ function getEssentialsSource() {
 
 function applyQuery(games: CatalogGame[], query?: CatalogQuery) {
   return games.filter((game) => {
-    if (query?.search && !`${game.title} ${game.fileName}`.toLowerCase().includes(query.search.toLowerCase())) return false
+    if (
+      query?.search &&
+      !`${game.title} ${game.fileName}`.toLowerCase().includes(query.search.toLowerCase())
+    )
+      return false
     if (query?.tier && query.tier !== 'all' && game.scoreTier !== query.tier) return false
-    if (query?.mediaType && query.mediaType !== 'all' && game.mediaType !== query.mediaType) return false
-    if (query?.priority && query.priority !== 'all' && game.priority !== query.priority) return false
+    if (query?.mediaType && query.mediaType !== 'all' && game.mediaType !== query.mediaType)
+      return false
+    if (query?.priority && query.priority !== 'all' && game.priority !== query.priority)
+      return false
     return true
   })
 }
@@ -67,7 +77,10 @@ function sourceLinkToArchiveFile(link: CatalogSourceLink): ArchiveDirectoryFile 
 }
 
 function linkTitle(name: string) {
-  return name.replace(/\.(iso|bin|cue|7z|zip|torrent)$/i, '').replace(/[_.,-]+/g, ' ').trim()
+  return name
+    .replace(/\.(iso|bin|cue|7z|zip|torrent)$/i, '')
+    .replace(/[_.,-]+/g, ' ')
+    .trim()
 }
 
 async function checkLink(file: ArchiveDirectoryFile): Promise<CatalogSourceLink> {
@@ -81,7 +94,8 @@ async function checkLink(file: ArchiveDirectoryFile): Promise<CatalogSourceLink>
       title: linkTitle(file.name),
       fileName: file.name,
       url: file.url,
-      sizeBytes: Number(response.headers.get('content-length') ?? file.sizeBytes ?? 0) || file.sizeBytes,
+      sizeBytes:
+        Number(response.headers.get('content-length') ?? file.sizeBytes ?? 0) || file.sizeBytes,
       mediaType: file.mediaType,
       accessible: response.ok,
       checkedAt,
@@ -160,7 +174,8 @@ async function getEssentialsSourceLinks() {
   const source = getEssentialsSource()
   const provider = new InternetArchiveDirectoryProvider(source.baseUrl!)
   const files = (await provider.listFiles()).filter(
-    (file) => file.mediaType === 'ps2-dvd' || file.mediaType === 'ps2-cd' || file.mediaType === 'ps1'
+    (file) =>
+      file.mediaType === 'ps2-dvd' || file.mediaType === 'ps2-cd' || file.mediaType === 'ps1'
   )
   const index: CatalogSourceLinkIndex = {
     sourceId: source.id,
@@ -175,7 +190,8 @@ export async function refreshEssentialsSourceLinks(): Promise<CatalogSourceLinkI
   const source = getEssentialsSource()
   const provider = new InternetArchiveDirectoryProvider(source.baseUrl!)
   const files = (await provider.listFiles()).filter(
-    (file) => file.mediaType === 'ps2-dvd' || file.mediaType === 'ps2-cd' || file.mediaType === 'ps1'
+    (file) =>
+      file.mediaType === 'ps2-dvd' || file.mediaType === 'ps2-cd' || file.mediaType === 'ps1'
   )
   const links = await mapWithConcurrency(files, 8, checkLink)
   const index: CatalogSourceLinkIndex = {
@@ -184,7 +200,10 @@ export async function refreshEssentialsSourceLinks(): Promise<CatalogSourceLinkI
     links
   }
   await writeSourceLinks(index)
-  sendLog('SUCCESS', `Links diretos do Essentials atualizados: ${links.filter((link) => link.accessible).length}/${links.length} acessiveis.`)
+  sendLog(
+    'SUCCESS',
+    `Links diretos do Essentials atualizados: ${links.filter((link) => link.accessible).length}/${links.length} acessiveis.`
+  )
   return index
 }
 
@@ -236,6 +255,13 @@ export async function addCatalogGamesToQueue(input: CatalogDownloadInput) {
     throw new Error('Confirmacao legal obrigatoria ausente ou invalida.')
   }
 
+  const device = (await listDevices()).find(
+    (item) => item.path === input.devicePath || item.id === input.devicePath
+  )
+  if (!device)
+    throw Object.assign(new Error('Dispositivo de destino não está montado.'), {
+      code: 'DEVICE_NOT_FOUND'
+    })
   const tasks = []
   for (const game of input.games) {
     await addHistory({
@@ -246,15 +272,20 @@ export async function addCatalogGamesToQueue(input: CatalogDownloadInput) {
       message: `${input.legalConfirmationText} Item: ${game.title}`
     })
 
+    const legalReceiptId = `essentials:${game.id}:${Date.now()}`
     tasks.push(
-      await p2pDownloadService.addTorrent({
-        source: 'direct-url',
-        value: game.url,
-        destinationPath: input.devicePath,
-        finalizeTo: game.mediaType === 'ps2-cd' ? 'CD' : 'DVD',
+      await getDownloadCoordinator().enqueue({
+        source: {
+          kind: 'http',
+          url: game.url,
+          originalFileName: game.fileName,
+          expectedBytes: game.sizeBytes
+        },
+        deviceId: device.id,
+        profileId: 'opl-default',
         title: game.title,
-        fileName: game.fileName,
-        expectedSizeBytes: game.sizeBytes
+        mediaHint: game.mediaType === 'ps2-cd' ? 'CD' : 'DVD',
+        legalReceiptId
       })
     )
   }

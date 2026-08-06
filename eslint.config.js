@@ -6,7 +6,18 @@ import tseslint from 'typescript-eslint'
 import prettier from 'eslint-config-prettier'
 
 export default tseslint.config(
-  { ignores: ['dist/**', 'dist-electron/**', 'release/**', 'node_modules/**', '.corepack/**'] },
+  {
+    ignores: [
+      'dist/**',
+      'dist-electron/**',
+      'build/**',
+      'release/**',
+      'coverage/**',
+      'node_modules/**',
+      '.corepack/**',
+      '**/*.min.js'
+    ]
+  },
   js.configs.recommended,
   ...tseslint.configs.recommended,
   {
