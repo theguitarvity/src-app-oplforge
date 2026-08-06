@@ -1,10 +1,11 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { Activity, Download, HardDrive, Layers3 } from 'lucide-react'
+import { Activity, Download, HardDrive, Layers3, Trash2 } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { DownloadPipelineCard } from '@/components/downloads/DownloadPipelineCard'
 import { EmptyState } from '@/components/EmptyState'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
+import { ConfirmDialog } from '@/components/ConfirmDialog'
 import { Input } from '@/components/ui/input'
 import { oplApi } from '@/services/api'
 import { useDeviceStore } from '@/stores/device-store'
@@ -14,6 +15,7 @@ export function DownloadsPage() {
   const activeDevice = useDeviceStore((state) => state.activeDevice)
   const queryClient = useQueryClient()
   const [source, setSource] = useState('')
+  const [clearConfirmOpen, setClearConfirmOpen] = useState(false)
   const taskMap = useDownloadStore((state) => state.tasks)
   const tasks = useMemo(
     () =>
@@ -90,6 +92,16 @@ export function DownloadsPage() {
       revision: number
     }) => executeAction(kind, taskId, revision)
   })
+  const clearTerminal = useMutation({
+    mutationFn: () =>
+      oplApi.clearTerminalDownloads({
+        expectedQueueRevision: queue.data?.revision ?? 0
+      }),
+    onSuccess: async () => {
+      setClearConfirmOpen(false)
+      await queryClient.invalidateQueries({ queryKey: ['durable-downloads'] })
+    }
+  })
   if (!activeDevice)
     return (
       <EmptyState
@@ -102,6 +114,9 @@ export function DownloadsPage() {
     (task) => !['ready', 'failed', 'cancelled'].includes(task.phase)
   ).length
   const ready = tasks.filter((task) => task.phase === 'ready').length
+  const terminal = tasks.filter((task) =>
+    ['ready', 'failed', 'cancelled'].includes(task.phase)
+  ).length
   return (
     <div className="space-y-6">
       <section className="overflow-hidden rounded-3xl border border-violet-400/20 bg-gradient-to-br from-violet-500/15 via-card/80 to-fuchsia-500/10 p-6 shadow-glow">
@@ -162,6 +177,15 @@ export function DownloadsPage() {
             <Activity className="size-4" /> Atualização em tempo real
           </span>
         ) : null}
+        <Button
+          className="ml-auto"
+          size="sm"
+          variant="secondary"
+          disabled={terminal === 0 || clearTerminal.isPending}
+          onClick={() => setClearConfirmOpen(true)}
+        >
+          <Trash2 className="size-4" /> Limpar finalizados
+        </Button>
       </div>
       {action.error ? (
         <Card className="border-red-400/25 bg-red-500/5 text-sm text-red-200" role="alert">
@@ -197,6 +221,14 @@ export function DownloadsPage() {
           ))}
         </div>
       )}
+      <ConfirmDialog
+        open={clearConfirmOpen}
+        onOpenChange={setClearConfirmOpen}
+        title="Limpar histórico de downloads?"
+        description={`Remover ${terminal} tarefa(s) concluída(s), cancelada(s) ou com falha desta lista. Downloads em andamento e arquivos instalados não serão alterados.`}
+        confirmLabel="Limpar registros"
+        onConfirm={() => clearTerminal.mutate()}
+      />
     </div>
   )
 }

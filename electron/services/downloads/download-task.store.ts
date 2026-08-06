@@ -37,6 +37,13 @@ export class DownloadTaskStore {
     }
   }
 
+  async replaceAll(tasks: DurableDownloadTask[]): Promise<void> {
+    await this.flushAll()
+    await this.entities.replaceAll(tasks.map((task) => structuredClone(task)))
+    this.persistedBytes.clear()
+    for (const task of tasks) this.persistedBytes.set(task.taskId, task.transfer.bytesConfirmed)
+  }
+
   checkpoint(taskId: string, bytesConfirmed: number, totalBytes?: number): Promise<void> {
     return new Promise<void>((resolve, reject) => {
       const current = this.pending.get(taskId)

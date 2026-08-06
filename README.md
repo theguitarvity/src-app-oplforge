@@ -1,141 +1,257 @@
+<div align="center">
+  <img src="src/assets/opl-forge-logo.png" alt="Logo do OPL Forge" width="112" />
+
 # OPL Forge
 
-Prepare, organize e gerencie seu HD do PS2 com facilidade.
+**Prepare, organize e mantenha seu dispositivo do Open PS2 Loader em um só lugar.**
 
-OPL Forge e uma aplicacao desktop moderna para preparar e gerenciar dispositivos USB usados com Open PS2 Loader, homebrews, jogos PS2, jogos PS1 e aplicativos complementares.
+Uma aplicação desktop para importar jogos, estruturar dispositivos USB, gerenciar artes,
+validar a biblioteca e acompanhar cada operação com segurança.
 
-> Utilize apenas backups de jogos que voce possua legalmente ou arquivos distribuidos por seus respectivos autores.
+[![CI](https://github.com/theguitarvity/oplforge/actions/workflows/ci.yml/badge.svg)](https://github.com/theguitarvity/oplforge/actions/workflows/ci.yml)
+![Node.js 22](https://img.shields.io/badge/Node.js-22-5FA04E?logo=nodedotjs&logoColor=white)
+![Electron](https://img.shields.io/badge/Electron-42-47848F?logo=electron&logoColor=white)
+![TypeScript](https://img.shields.io/badge/TypeScript-6-3178C6?logo=typescript&logoColor=white)
+![Status](https://img.shields.io/badge/status-em%20desenvolvimento-8B5CF6)
+
+</div>
+
+![Dashboard do OPL Forge com um dispositivo PS2 conectado](docs/screenshots/dashboard.jpg)
+
+> [!IMPORTANT]
+> O OPL Forge não fornece jogos nem incentiva pirataria. Use somente backups de mídias que você possui legalmente e arquivos distribuídos ou autorizados por seus respectivos autores.
+
+## Sobre o projeto
+
+Preparar um HD ou pendrive para o Open PS2 Loader normalmente exige várias ferramentas, convenções de nomes e verificações manuais. O OPL Forge reúne esse fluxo em uma interface desktop para Windows, macOS e Linux.
+
+Com ele, você pode preparar a estrutura esperada pelo OPL, importar jogos de PS2 e PS1, instalar homebrews, organizar artes, corrigir nomes e fragmentação, validar a biblioteca no PCSX2 e acompanhar downloads e operações persistentes.
+
+## Principais recursos
+
+- **Preparação de dispositivos:** cria as pastas `DVD`, `CD`, `PS1`, `APPS`, `ART`, `CFG` e `VMC` esperadas pelo OPL.
+- **Biblioteca PS2 e PS1:** importa arquivos individuais ou em lote, detecta Game ID e mantém um catálogo local.
+- **Compatibilidade com FAT32/USBExtreme:** planeja a instalação, valida hashes e identifica fragmentação antes da finalização.
+- **Diagnóstico e reparo:** audita nomes, organização e fragmentação com operações recuperáveis.
+- **ART Manager:** indexa pacotes OPLM e sincroniza capas e outros tipos de arte com o dispositivo.
+- **Catálogo e fontes:** reúne fontes locais e remotas configuradas pelo usuário, com seleção explícita dos arquivos.
+- **Downloads resilientes:** usa fila persistente, staging, retomada e um único writer por dispositivo.
+- **Validação com PCSX2:** auxilia na verificação da biblioteca antes de levá-la ao console.
+- **Histórico e observabilidade:** exibe progresso, logs e histórico das operações realizadas.
+
+## Screenshots
+
+<table>
+  <tr>
+    <td width="50%">
+      <img src="docs/screenshots/devices.jpg" alt="Gerenciador com o dispositivo PS2 selecionado" />
+      <p align="center"><strong>Detecção e seleção de dispositivos</strong></p>
+    </td>
+    <td width="50%">
+      <img src="docs/screenshots/prepare.jpg" alt="Estrutura criada durante a preparação para OPL" />
+      <p align="center"><strong>Preparação segura da estrutura OPL</strong></p>
+    </td>
+  </tr>
+  <tr>
+    <td width="50%">
+      <img src="docs/screenshots/ps2-import.jpg" alt="Importador de jogos PS2 com o dispositivo selecionado" />
+      <p align="center"><strong>Importação e validação de jogos PS2</strong></p>
+    </td>
+    <td width="50%">
+      <img src="docs/screenshots/fragmentation.jpg" alt="Diagnóstico de fragmentação do dispositivo PS2" />
+      <p align="center"><strong>Diagnóstico de fragmentação</strong></p>
+    </td>
+  </tr>
+  <tr>
+    <td width="50%">
+      <img src="docs/screenshots/essentials-pacman.jpg" alt="Catálogo Essentials filtrado por Pac-Man" />
+      <p align="center"><strong>Catálogo Essentials com busca e seleção</strong></p>
+    </td>
+    <td width="50%">
+      <img src="docs/screenshots/download-pacman-progress.jpg" alt="Download de Pac-Man World 2 em andamento para o dispositivo PS2" />
+      <p align="center"><strong>Fila persistente com progresso em tempo real</strong></p>
+    </td>
+  </tr>
+  <tr>
+    <td width="50%">
+      <img src="docs/screenshots/apps.jpg" alt="Catálogo de homebrews e instalação de arquivos ELF" />
+      <p align="center"><strong>Homebrews e instalação de ELF</strong></p>
+    </td>
+    <td width="50%">
+      <img src="docs/screenshots/legal-confirmation.jpg" alt="Confirmação legal exigida antes de adicionar um backup à fila" />
+      <p align="center"><strong>Confirmação legal explícita por jogo</strong></p>
+    </td>
+  </tr>
+</table>
+
+> As capturas foram feitas com um dispositivo real chamado `PS2`. A estrutura OPL foi criada sem formatação ou remoção de arquivos e o fluxo do Essentials foi exercitado com um backup autorizado de Pac-Man World 2.
 
 ## Requisitos
 
-- Node.js 22 LTS
-- pnpm
+Antes de começar, instale:
+
+- [Node.js 22 LTS](https://nodejs.org/)
+- [pnpm 9 ou superior](https://pnpm.io/installation)
+- Git
+
+O Electron e as demais dependências são instalados pelo próprio projeto.
+
+## Início rápido
+
+```bash
+git clone https://github.com/theguitarvity/oplforge.git
+cd oplforge
+corepack enable
+pnpm install
+pnpm electron:dev
+```
+
+Se você usa `nvm`, o repositório já informa a versão correta do Node:
 
 ```bash
 nvm install
 nvm use
 ```
 
-## Instalacao
+## Como usar
 
-```bash
-pnpm install
-```
+1. **Conecte o dispositivo** USB ou HD externo que será usado pelo OPL.
+2. Abra **Dispositivos**, atualize a lista e selecione a unidade correta.
+3. Em **Preparar**, confira o plano antes de criar a estrutura de diretórios.
+4. Use **Jogos PS2**, **Jogos PS1** ou **Apps** para adicionar seu conteúdo autorizado.
+5. Revise a biblioteca em **Nomes OPL**, **Fragmentação** e **Validar no PCSX2**.
+6. Use o **ART Manager** para sincronizar capas e outros recursos visuais.
+7. Acompanhe o andamento em **Downloads**, **Histórico** e no painel de logs.
+8. Ejete o dispositivo com segurança antes de conectá-lo ao PlayStation 2.
+
+### Limpar históricos
+
+- Em **Downloads**, selecione **Limpar finalizados** e confirme em **Limpar registros**. Somente tarefas concluídas, canceladas ou com falha saem da lista; transferências ativas e jogos instalados não são alterados.
+- Em **Histórico**, selecione **Limpar histórico** para apagar os registros locais de operações. Essa ação não remove arquivos do dispositivo.
+
+### Formatos e destinos
+
+| Conteúdo                       | Formatos principais                | Destino sugerido      |
+| ------------------------------ | ---------------------------------- | --------------------- |
+| Jogos PS2                      | `.iso`                             | `/DVD` ou `/CD`       |
+| Jogos PS1                      | `.bin`, `.cue`, `.iso`             | `/PS1`                |
+| Apps e homebrews               | pasta do aplicativo                | `/APPS/NOME_APP`      |
+| Artes OPLM                     | COV, COV2, LAB, ICO, SCR, BG e LGO | `/ART`                |
+| Arquivos ainda não finalizados | arquivos baixados ou compactados   | `/_OPL_FORGE_STAGING` |
+
+> [!CAUTION]
+> Sempre confirme o caminho e o dispositivo selecionado antes de preparar, reorganizar ou reparar uma unidade. Mantenha backup dos arquivos importantes.
 
 ## Desenvolvimento
+
+Inicie a aplicação completa, com Vite e Electron:
 
 ```bash
 pnpm electron:dev
 ```
 
-No Linux, se o Electron abortar com erro de `chrome-sandbox` sem permissao setuid, use o comando de desenvolvimento abaixo:
+Para trabalhar somente na interface web com a API de Electron simulada:
+
+```bash
+pnpm dev
+```
+
+No Linux, se o Electron abortar por causa das permissões de `chrome-sandbox`, use apenas no ambiente local de desenvolvimento:
 
 ```bash
 pnpm electron:dev:linux
 ```
 
-Alternativamente, corrija a permissao do binario baixado pelo Electron:
+Esse script inicia o Electron com `--no-sandbox`. A configuração normal da janela continua usando `contextIsolation: true`, `nodeIntegration: false` e `sandbox: true`.
 
-```bash
-sudo chown root:root node_modules/.pnpm/electron@*/node_modules/electron/dist/chrome-sandbox
-sudo chmod 4755 node_modules/.pnpm/electron@*/node_modules/electron/dist/chrome-sandbox
-```
+### Comandos úteis
 
-O script `electron:dev:linux` usa `--no-sandbox` apenas para desenvolvimento local. A janela da aplicacao continua configurada com `contextIsolation: true`, `nodeIntegration: false` e `sandbox: true`.
-
-## Testes
-
-```bash
-pnpm test
-```
-
-## Build
-
-```bash
-pnpm electron:build
-```
-
-## Funcionalidades MVP
-
-- Dashboard com dispositivo ativo, capacidade, espaco livre, jogos, apps e historico recente.
-- Gerenciador de dispositivos para Windows, macOS e Linux.
-- Preparacao de estrutura OPL: `DVD`, `CD`, `PS1`, `APPS`, `ART`, `CFG`, `VMC` e `README_OPL_FORGE.txt`.
-- Importador PS2 para ISO unica, multiplas ISOs e pasta local com ISOs.
-- Importador PS1 para `.bin`, `.cue` e `.iso`.
-- Apps & Homebrews em `/APPS/NOME_APP`.
-- Fontes extensivas com `LocalFolderProvider` implementado e providers remotos documentados como TODO.
-- Fontes online com Internet Archive, busca remota, detalhes de item e listagem de arquivos.
-- Download Manager P2P com torrents, magnet links, progresso em tempo real e staging.
-- Essentials Catalog em `/catalog/essentials`, com fonte `playstation2_essentials`, links HTTP diretos por jogo, scoring local, Smart Fill 500GB e confirmação legal por item.
-- ART Manager em `/art-manager`, com indexação do pacote `OPLM_ART_2024_09` e cópia de artes OPLM para `/ART`.
-- Game ID detection por nome/ISO e biblioteca local em `userData/game-library.json`.
-- Historico persistido em `userData/history.json`.
-- Painel de logs inferior com INFO, WARNING, ERROR e SUCCESS.
-- IPC seguro com `contextIsolation`, `nodeIntegration=false`, `sandbox=true` e `contextBridge`.
+| Comando                 | Descrição                                      |
+| ----------------------- | ---------------------------------------------- |
+| `pnpm dev`              | inicia somente o renderer com Vite             |
+| `pnpm electron:dev`     | inicia a aplicação Electron em desenvolvimento |
+| `pnpm test:run`         | executa toda a suíte uma vez                   |
+| `pnpm test:unit`        | executa os testes unitários                    |
+| `pnpm test:contract`    | executa os testes de contrato IPC              |
+| `pnpm test:integration` | executa os testes de integração                |
+| `pnpm lint`             | verifica o código com ESLint                   |
+| `pnpm build`            | valida tipos e gera os bundles                 |
+| `pnpm electron:build`   | gera os instaladores com Electron Builder      |
 
 ## Arquitetura
 
-```txt
-electron/
-  main.ts
-  preload.ts
-  ipc/
-  services/
-src/
-  app/
-  pages/
-  components/
-  hooks/
-  stores/
-  services/
-  types/
-  utils/
-  layouts/
-  styles/
+```text
+oplforge/
+├── electron/
+│   ├── ipc/          # contratos e handlers IPC
+│   ├── services/     # operações de dispositivo e filesystem
+│   ├── main.ts       # processo principal do Electron
+│   └── preload.ts    # ponte tipada e isolada para o renderer
+├── src/
+│   ├── app/          # bootstrap e rotas
+│   ├── components/   # componentes compartilhados e por domínio
+│   ├── pages/        # telas da aplicação
+│   ├── services/     # API do renderer e serviços de catálogo
+│   ├── stores/       # estado com Zustand
+│   └── types/        # contratos TypeScript
+├── tests/
+│   ├── unit/
+│   ├── contract/
+│   └── integration/
+├── docs/             # documentação técnica e screenshots
+└── specs/            # especificações e planos das funcionalidades
 ```
 
-## Seguranca
+O renderer React nunca acessa Node.js diretamente. Operações privilegiadas ficam no processo principal e são expostas por uma API IPC tipada através do preload.
 
-OPL Forge nao implementa obtencao nao autorizada de jogos. A aplicacao trabalha apenas com arquivos locais, backups proprios e fontes autorizadas configuradas pelo usuario.
+## Segurança e integridade
 
-Formatacao real de dispositivos e protegida por ambiente:
+- `contextIsolation` habilitado, `nodeIntegration` desabilitado e renderer em sandbox.
+- Schemas validam mensagens IPC antes de operações privilegiadas.
+- Downloads são gravados primeiro em `/_OPL_FORGE_STAGING/`.
+- A finalização valida o arquivo e sugere o destino conforme o formato detectado.
+- Operações longas usam jobs e journals recuperáveis.
+- Downloads do Essentials exigem confirmação legal explícita por item.
+- O app não formata dispositivos por padrão.
 
-```bash
+A formatação real só pode ser habilitada conscientemente no ambiente:
+
+```dotenv
 ENABLE_REAL_FORMAT=false
 ```
 
-Por padrao, a aplicacao nao formata dispositivos.
+Detalhes adicionais estão em [finalização OPL](docs/opl-finalization.md), [modelo de segurança](docs/opl-finalization-security.md), [matriz de plataformas](docs/opl-finalization-platform-matrix.md) e [suporte a fragmentação](docs/fragmentation-repair-support.md).
 
-Downloads P2P sao executados somente no processo main do Electron. O renderer acessa apenas chamadas IPC tipadas, e os arquivos sao salvos primeiro em:
+## Builds suportados
 
-```txt
-/_OPL_FORGE_STAGING/
-```
+O `electron-builder` está configurado para gerar:
 
-Apos a conclusao, o app sugere o destino OPL conforme a extensao detectada: `/DVD` ou `/CD` para `.iso`, `/PS1` para `.bin`/`.cue`, e staging para arquivos compactados.
+| Sistema | Arquiteturas / formatos |
+| ------- | ----------------------- |
+| Windows | x64 e arm64             |
+| macOS   | Intel e Apple Silicon   |
+| Linux   | AppImage e DEB          |
 
-Downloads iniciados pelo Essentials Catalog exigem confirmação explícita por item:
+> O projeto ainda está em desenvolvimento. Consulte a página de [Releases](https://github.com/theguitarvity/oplforge/releases) para verificar se já existe um instalador publicado; caso contrário, execute-o a partir do código-fonte.
 
-```txt
-Confirmo que possuo este jogo fisicamente/digitalmente ou tenho autorização legal para baixar este backup.
-```
+## Contribuindo
 
-Essa confirmação é persistida no histórico antes de o download entrar na fila.
+Contribuições são bem-vindas. Para propor uma mudança:
 
-O Essentials não baixa o torrent único do item. O app gera e reutiliza um índice local em `userData/catalog-source-links.json`, validando links diretos com `HEAD` e baixando somente os arquivos selecionados.
+1. Crie um fork do repositório.
+2. Abra uma branch descritiva: `git switch -c feat/minha-melhoria`.
+3. Implemente a alteração e adicione ou atualize os testes.
+4. Execute `pnpm lint`, `pnpm test:run` e `pnpm build`.
+5. Envie um pull request explicando o problema e a solução.
 
-## CI/CD
+Para bugs e sugestões, abra uma [issue](https://github.com/theguitarvity/oplforge/issues) com passos para reprodução, sistema operacional e logs relevantes — sem incluir dados pessoais ou conteúdo protegido.
 
-A pipeline GitHub Actions executa checkout, setup de Node via `.nvmrc`, instalacao, lint, testes e build.
+## Licença
 
-## Build multiplataforma
+O projeto declara a licença MIT em seu `package.json`.
 
-`electron-builder.yml` esta configurado para:
+---
 
-- Windows x64 e arm64
-- macOS Intel e Apple Silicon
-- Linux AppImage e DEB
-
-## Pipeline OPL resiliente
-
-Downloads HTTP e Essentials usam fila persistente, cache local retomável e um único writer por dispositivo. A instalação reconhece FAT32/USBExtreme, valida hash e fragmentação, extrai Game ID interno e aplica nome canônico. Artes em massa e adequação da biblioteca existente têm jobs/journals recuperáveis. Consulte [docs/opl-finalization.md](docs/opl-finalization.md) e [docs/opl-finalization-security.md](docs/opl-finalization-security.md).
+<div align="center">
+  Feito para tornar a manutenção de bibliotecas OPL mais previsível, segura e agradável.
+</div>

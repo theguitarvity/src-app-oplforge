@@ -61,4 +61,13 @@ describe('DownloadTaskStore', () => {
     const second = new DownloadTaskStore(file)
     await expect(second.list()).resolves.toMatchObject({ items: [{ taskId: 't1' }], revision: 1 })
   })
+
+  it('replaces the persisted task history atomically', async () => {
+    const root = await mkdtemp(path.join(os.tmpdir(), 'task-clear-'))
+    roots.push(root)
+    const store = new DownloadTaskStore(path.join(root, 'tasks.json'))
+    await store.put(task())
+    await store.replaceAll([])
+    await expect(store.list()).resolves.toMatchObject({ items: [], revision: 2 })
+  })
 })

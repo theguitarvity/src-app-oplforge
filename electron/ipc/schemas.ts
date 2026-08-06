@@ -111,6 +111,9 @@ export const schemas = {
   downloadRetryFailed: z
     .object({ deviceId: strictId.optional(), expectedQueueRevision: revision })
     .strict(),
+  downloadClearTerminal: z
+    .object({ deviceId: strictId.optional(), expectedQueueRevision: revision })
+    .strict(),
   finalizationGetPlan: z.object({ planId: strictId }).strict(),
   finalizationConfirm: z
     .object({

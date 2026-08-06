@@ -188,6 +188,32 @@ export class DownloadCoordinatorService {
     return { queuedTaskIds, skippedTaskIds }
   }
 
+  async clearTerminal(
+    expectedQueueRevision: number,
+    deviceId?: string
+  ): Promise<{ removedTaskIds: string[]; queueRevision: number }> {
+    await this.initialize()
+    if (expectedQueueRevision !== this.queueRevision)
+      throw Object.assign(new Error('Queue revision is stale'), { code: 'STALE_REVISION' })
+
+    const terminalPhases = new Set<DurableDownloadTask['phase']>(['ready', 'failed', 'cancelled'])
+    const removedTaskIds = [...this.tasks.values()]
+      .filter(
+        (task) => terminalPhases.has(task.phase) && (!deviceId || task.targetDeviceId === deviceId)
+      )
+      .map((task) => task.taskId)
+
+    if (!removedTaskIds.length) return { removedTaskIds, queueRevision: this.queueRevision }
+
+    for (const taskId of removedTaskIds) {
+      this.tasks.delete(taskId)
+      this.sources.delete(taskId)
+    }
+    this.queueRevision += 1
+    if (this.store) await this.store.replaceAll([...this.tasks.values()])
+    return { removedTaskIds, queueRevision: this.queueRevision }
+  }
+
   async process(
     taskId: string,
     transfer: (

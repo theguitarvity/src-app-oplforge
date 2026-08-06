@@ -33,7 +33,12 @@ export type SourceType =
   | 'magnet'
 export type SourceLegalMode = 'user-owned-backup-required' | 'metadata-assets' | 'user-configured'
 export type DownloadStatus =
-  'queued' | 'downloading' | 'paused' | 'completed' | 'failed' | 'cancelled'
+  | 'queued'
+  | 'downloading'
+  | 'paused'
+  | 'completed'
+  | 'failed'
+  | 'cancelled'
 export type ArchiveMediaType = 'ps2-dvd' | 'ps2-cd' | 'ps1' | 'torrent' | 'archive' | 'unknown'
 export type GameScoreTier = 'S' | 'A' | 'B' | 'C' | 'Unrated'
 export type GamePriority = 'must-have' | 'recommended' | 'optional' | 'unrated'
@@ -42,17 +47,30 @@ export type ArtAssetType = 'ICO' | 'SCR' | 'SCR2' | 'BG' | 'LGO' | 'COV' | 'LAB'
 export type GameArtStatus = 'missing' | 'cover-ready' | 'partial' | 'complete'
 export type VerificationState = 'verified' | 'not-verified' | 'failed' | 'not-run'
 export type ReadinessStatus =
-  'ready' | 'ready-with-warnings' | 'requires-reorganization' | 'incompatible'
+  | 'ready'
+  | 'ready-with-warnings'
+  | 'requires-reorganization'
+  | 'incompatible'
 export type FindingSeverity = 'info' | 'warning' | 'error'
 export type InstallationFormat = 'ISO' | 'ZSO' | 'USBExtreme'
 export type FragmentationState = 'contiguous' | 'fragmented' | 'unknown' | 'not-applicable'
 export type OperationState =
-  'planned' | 'running' | 'awaiting-confirmation' | 'completed' | 'failed' | 'cancelled'
+  | 'planned'
+  | 'running'
+  | 'awaiting-confirmation'
+  | 'completed'
+  | 'failed'
+  | 'cancelled'
 
 // Fragmentation-repair domain. These types deliberately keep persisted paths
 // relative; absolute paths are resolved only by the privileged process.
 export type DiagnosticState =
-  'contiguous' | 'fragmented' | 'partially-fragmented' | 'incomplete' | 'invalid' | 'unverifiable'
+  | 'contiguous'
+  | 'fragmented'
+  | 'partially-fragmented'
+  | 'incomplete'
+  | 'invalid'
+  | 'unverifiable'
 export type VerificationCapability =
   | 'supported'
   | 'unsupported'
@@ -61,7 +79,12 @@ export type VerificationCapability =
   | 'unrecognized-output'
   | 'not-homologated'
 export type RepairOutcome =
-  'corrected' | 'unchanged' | 'skipped' | 'failed' | 'cancelled' | 'recovery-pending'
+  | 'corrected'
+  | 'unchanged'
+  | 'skipped'
+  | 'failed'
+  | 'cancelled'
+  | 'recovery-pending'
 export type RepairOperationStatus =
   | 'planned'
   | 'awaiting-confirmation'
@@ -996,6 +1019,10 @@ export interface OplApi {
     deviceId?: string
     expectedQueueRevision: number
   }): Promise<{ queuedTaskIds: string[]; skippedTaskIds: string[] }>
+  clearTerminalDownloads(input: {
+    deviceId?: string
+    expectedQueueRevision: number
+  }): Promise<{ removedTaskIds: string[]; queueRevision: number }>
   getFinalizationPlan(planId: string): Promise<FinalizationPlan | undefined>
   confirmFinalization(input: ConfirmFinalizationInput): Promise<DurableDownloadTask>
   setFinalizationGameId(input: SetFinalizationGameIdInput): Promise<FinalizationPlan>
@@ -1083,9 +1110,7 @@ export interface OplApi {
   planArtSync(input: { deviceId: string; snapshotId: string }): Promise<ArtSyncPlan>
   confirmArtSync(operationId: string): Promise<ArtSyncEntryResult[]>
   detectPcsx2(executablePath: string): Promise<Pcsx2Profile>
-  planValidation(
-    input: ValidationPlanInput
-  ): Promise<{
+  planValidation(input: ValidationPlanInput): Promise<{
     id: string
     pcsx2: Pcsx2Profile
     bios: BiosIdentity

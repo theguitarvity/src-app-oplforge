@@ -32,6 +32,7 @@ const api: OplApi = {
   retryDurableDownload: (input) => ipcRenderer.invoke('downloads:retry', input),
   cancelDurableDownload: (input) => ipcRenderer.invoke('downloads:cancel-v2', input),
   retryFailedDownloads: (input) => ipcRenderer.invoke('downloads:retry-failed', input),
+  clearTerminalDownloads: (input) => ipcRenderer.invoke('downloads:clear-terminal', input),
   getFinalizationPlan: (planId) => ipcRenderer.invoke('finalization:get-plan', { planId }),
   confirmFinalization: (input) => ipcRenderer.invoke('finalization:confirm', input),
   setFinalizationGameId: (input) => ipcRenderer.invoke('finalization:set-game-id', input),

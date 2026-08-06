@@ -33,6 +33,10 @@ export function registerDurableDownloadIpc(
     const parsed = parseInput('downloadRetryFailed', input)
     return coordinator.retryFailed(parsed.expectedQueueRevision, parsed.deviceId)
   })
+  main.handle('downloads:clear-terminal', (_event, input: unknown) => {
+    const parsed = parseInput('downloadClearTerminal', input)
+    return coordinator.clearTerminal(parsed.expectedQueueRevision, parsed.deviceId)
+  })
 }
 
 export function registerShellIpc(main: IpcMain): void {

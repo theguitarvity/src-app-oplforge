@@ -1,8 +1,8 @@
 // @vitest-environment jsdom
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { render, screen, waitFor } from '@testing-library/react'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { DownloadPipelineCard } from '@/components/downloads/DownloadPipelineCard'
 import { DownloadsPage } from '@/pages/DownloadsPage'
 import { oplApi } from '@/services/api'
@@ -11,6 +11,10 @@ import { useDownloadStore } from '@/stores/download-store'
 import type { DurableDownloadTaskSummary } from '@/types/opl-finalization'
 
 describe('DownloadsPage pipeline presentation', () => {
+  afterEach(() => {
+    cleanup()
+  })
+
   beforeEach(() => {
     useDeviceStore.setState({ activeDevice: null, selectionRevision: 0 })
     useDownloadStore.setState({ tasks: {}, queueRevision: 0, lastSequenceByOperation: {} })
@@ -75,6 +79,46 @@ describe('DownloadsPage pipeline presentation', () => {
     )
     expect(await screen.findAllByText('Mega Man X7')).not.toHaveLength(0)
     expect(screen.getAllByText('Baixando')).not.toHaveLength(0)
+  })
+
+  it('clears only terminal download records after confirmation', async () => {
+    const device = {
+      id: 'device-1',
+      path: '/media/opl',
+      name: 'OPL',
+      fileSystem: 'FAT32',
+      total: 1,
+      free: 1,
+      used: 0,
+      status: 'ready'
+    } as const
+    useDeviceStore.setState({ activeDevice: device, selectionRevision: 1 })
+    const task = {
+      taskId: 'failed-task',
+      targetDeviceId: device.id,
+      requestedTitle: 'Download antigo',
+      phase: 'failed',
+      overallProgress: 70,
+      phaseProgress: 100,
+      revision: 2,
+      transfer: { bytesConfirmed: 100, totalBytes: 100 }
+    } as DurableDownloadTaskSummary
+    vi.spyOn(oplApi, 'listDownloads').mockResolvedValue({ items: [task], revision: 3 })
+    vi.spyOn(oplApi, 'onOplPipelineEvent').mockReturnValue(() => undefined)
+    const clear = vi
+      .spyOn(oplApi, 'clearTerminalDownloads')
+      .mockResolvedValue({ removedTaskIds: [task.taskId], queueRevision: 4 })
+    const client = new QueryClient({ defaultOptions: { queries: { retry: false } } })
+    render(
+      <QueryClientProvider client={client}>
+        <DownloadsPage />
+      </QueryClientProvider>
+    )
+    await screen.findByText('Download antigo')
+    const button = screen.getByRole('button', { name: 'Limpar finalizados' })
+    fireEvent.click(button)
+    fireEvent.click(screen.getByRole('button', { name: 'Limpar registros' }))
+    await waitFor(() => expect(clear).toHaveBeenCalledWith({ expectedQueueRevision: 3 }))
   })
 
   it('exposes phase, progress, actionable error and retry accessibly', () => {

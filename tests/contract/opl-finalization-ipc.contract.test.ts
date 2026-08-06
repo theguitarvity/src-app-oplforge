@@ -114,6 +114,9 @@ describe('OPL finalization IPC security contract', () => {
     expect(parseInput('downloadRetryFailed', { expectedQueueRevision: 4 })).toEqual({
       expectedQueueRevision: 4
     })
+    expect(parseInput('downloadClearTerminal', { expectedQueueRevision: 4 })).toEqual({
+      expectedQueueRevision: 4
+    })
   })
 
   it('validates paginated art index and durable art job controls', () => {

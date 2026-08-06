@@ -13,6 +13,7 @@ const fallbackApi: OplApi = {
   retryDurableDownload: unsupported,
   cancelDurableDownload: unsupported,
   retryFailedDownloads: unsupported,
+  clearTerminalDownloads: unsupported,
   getFinalizationPlan: async () => undefined,
   confirmFinalization: unsupported,
   setFinalizationGameId: unsupported,
