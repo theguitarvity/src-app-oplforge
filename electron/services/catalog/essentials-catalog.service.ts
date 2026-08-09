@@ -28,10 +28,20 @@ const defaultTargetBytes = 500 * 1000 ** 3
 let catalogCache: { timestamp: number; games: CatalogGame[] } | null = null
 const sourceLinksPath = () => path.join(app.getPath('userData'), 'catalog-source-links.json')
 
-function getEssentialsSource() {
-  const source = DEFAULT_REMOTE_SOURCES.find((item) => item.id === 'ia-playstation2-essentials')
-  if (!source?.baseUrl) throw new Error('Fonte PlayStation 2 Essentials nao configurada.')
-  return source
+function getEssentialsSources() {
+  const sources = DEFAULT_REMOTE_SOURCES.filter((item) =>
+    item.id.startsWith('ia-playstation2-essentials')
+  )
+  if (!sources.length || sources.some((source) => !source.baseUrl)) {
+    throw new Error('Fontes PlayStation 2 Essentials nao configuradas.')
+  }
+  return sources
+}
+
+function getMergedSourceId() {
+  return getEssentialsSources()
+    .map((source) => source.id)
+    .join('+')
 }
 
 function applyQuery(games: CatalogGame[], query?: CatalogQuery) {
@@ -53,13 +63,15 @@ function applyQuery(games: CatalogGame[], query?: CatalogQuery) {
 async function loadCatalog() {
   if (catalogCache && Date.now() - catalogCache.timestamp < 10 * 60_000) return catalogCache.games
 
-  const source = getEssentialsSource()
+  const source = getEssentialsSources()[0]
   const sourceLinks = await getEssentialsSourceLinks()
-  const games = sortCatalogGames(
-    sourceLinks.links
-      .filter((link) => link.accessible)
-      .filter((file) => file.mediaType === 'ps2-dvd' || file.mediaType === 'ps2-cd')
-      .map((file) => scoreArchiveFile(sourceLinkToArchiveFile(file), source.id, source.legalMode))
+  const games = removeDuplicates(
+    sortCatalogGames(
+      sourceLinks.links
+        .filter((link) => link.accessible)
+        .filter((file) => file.mediaType === 'ps2-dvd' || file.mediaType === 'ps2-cd')
+        .map((file) => scoreArchiveFile(sourceLinkToArchiveFile(file), source.id, source.legalMode))
+    )
   )
   catalogCache = { timestamp: Date.now(), games }
   return games
@@ -161,24 +173,34 @@ async function writeSourceLinks(index: CatalogSourceLinkIndex) {
   await fs.writeFile(sourceLinksPath(), JSON.stringify(index, null, 2), 'utf-8')
 }
 
+async function listEssentialsFiles() {
+  const fileLists = await Promise.all(
+    getEssentialsSources().map((source) =>
+      new InternetArchiveDirectoryProvider(source.baseUrl!).listFiles()
+    )
+  )
+  return fileLists
+    .flat()
+    .filter(
+      (file) =>
+        file.mediaType === 'ps2-dvd' || file.mediaType === 'ps2-cd' || file.mediaType === 'ps1'
+    )
+}
+
 async function getEssentialsSourceLinks() {
   const cached = await readSourceLinks()
   if (
     cached &&
+    cached.sourceId === getMergedSourceId() &&
     Date.now() - new Date(cached.generatedAt).getTime() < 24 * 60 * 60_000 &&
     cached.links.some((link) => link.accessible)
   ) {
     return cached
   }
 
-  const source = getEssentialsSource()
-  const provider = new InternetArchiveDirectoryProvider(source.baseUrl!)
-  const files = (await provider.listFiles()).filter(
-    (file) =>
-      file.mediaType === 'ps2-dvd' || file.mediaType === 'ps2-cd' || file.mediaType === 'ps1'
-  )
+  const files = await listEssentialsFiles()
   const index: CatalogSourceLinkIndex = {
-    sourceId: source.id,
+    sourceId: getMergedSourceId(),
     generatedAt: new Date().toISOString(),
     links: files.map(createUnverifiedLink)
   }
@@ -187,19 +209,15 @@ async function getEssentialsSourceLinks() {
 }
 
 export async function refreshEssentialsSourceLinks(): Promise<CatalogSourceLinkIndex> {
-  const source = getEssentialsSource()
-  const provider = new InternetArchiveDirectoryProvider(source.baseUrl!)
-  const files = (await provider.listFiles()).filter(
-    (file) =>
-      file.mediaType === 'ps2-dvd' || file.mediaType === 'ps2-cd' || file.mediaType === 'ps1'
-  )
+  const files = await listEssentialsFiles()
   const links = await mapWithConcurrency(files, 8, checkLink)
   const index: CatalogSourceLinkIndex = {
-    sourceId: source.id,
+    sourceId: getMergedSourceId(),
     generatedAt: new Date().toISOString(),
     links
   }
   await writeSourceLinks(index)
+  catalogCache = null
   sendLog(
     'SUCCESS',
     `Links diretos do Essentials atualizados: ${links.filter((link) => link.accessible).length}/${links.length} acessiveis.`

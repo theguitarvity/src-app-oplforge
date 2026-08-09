@@ -88,7 +88,8 @@ export function EssentialsCatalogPage() {
           <div>
             <h2 className="text-2xl font-semibold text-white">Essentials Catalog</h2>
             <p className="mt-1 text-sm text-muted-foreground">
-              Fonte pré-configurada: Internet Archive - PlayStation 2 Essentials.
+              Fontes pré-configuradas: Internet Archive - PlayStation 2 Essentials (Partes 1 e 2),
+              reunidas em uma única lista.
             </p>
           </div>
           <div className="flex gap-2">
