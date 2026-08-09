@@ -57,7 +57,11 @@ export function UpdateDialog() {
           </select>
         </label>
       )}
-      {session.lastError && <p className="text-sm text-rose-300">{session.lastError.message}</p>}
+      {session.lastError && (
+        <p className="max-h-32 overflow-y-auto whitespace-pre-wrap break-words rounded-lg border border-rose-500/20 bg-rose-500/10 p-2 text-sm text-rose-300">
+          {session.lastError.message}
+        </p>
+      )}
       {session.installBlockedByOperations.length > 0 && (
         <p className="text-sm text-amber-300">Conclua as operações ativas antes de reiniciar.</p>
       )}

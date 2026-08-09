@@ -1,6 +1,18 @@
 import { lstat, realpath } from 'node:fs/promises'
 import path from 'node:path'
 
+/**
+ * True if `target` is `root` or a descendant of it. Uses `path.relative`
+ * instead of `startsWith(root + sep)` because on Windows a drive-root path
+ * (e.g. `D:\`) already ends in a separator, which made the old prefix check
+ * reject every legitimate subpath.
+ */
+function isInsideRoot(root: string, target: string): boolean {
+  if (target === root) return true
+  const relative = path.relative(root, target)
+  return relative !== '' && !relative.startsWith('..') && !path.isAbsolute(relative)
+}
+
 export interface SafeRoot {
   requested: string
   real: string
@@ -27,7 +39,7 @@ export async function resolveInside(
   if (currentRoot.dev !== root.device || currentRoot.ino !== root.inode)
     throw Object.assign(new Error('Selected device mount changed'), { code: 'DEVICE_CHANGED' })
   const resolved = path.resolve(root.real, candidate)
-  if (resolved !== root.real && !resolved.startsWith(`${root.real}${path.sep}`)) {
+  if (!isInsideRoot(root.real, resolved)) {
     throw Object.assign(new Error('Path escapes the selected device'), { code: 'PATH_ESCAPE' })
   }
   let actual: string
@@ -38,7 +50,7 @@ export async function resolveInside(
     const parent = await realpath(path.dirname(resolved))
     actual = path.join(parent, path.basename(resolved))
   }
-  if (actual !== root.real && !actual.startsWith(`${root.real}${path.sep}`)) {
+  if (!isInsideRoot(root.real, actual)) {
     throw Object.assign(new Error('Symbolic link escapes the selected device'), {
       code: 'PATH_ESCAPE'
     })

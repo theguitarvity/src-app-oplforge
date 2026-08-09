@@ -15,11 +15,12 @@ import type { DeviceInfo } from '@/types/opl'
 interface PrepWizardProps {
   onClose: () => void
   onSuccess: () => void
+  preselectedDevicePath?: string | null
 }
 
-export function PrepWizard({ onClose, onSuccess }: PrepWizardProps) {
-  const [step, setStep] = useState<1 | 2 | 3 | 4 | 5>(1)
-  const [selectedDevice, setSelectedDevice] = useState<DeviceInfo | null>(null)
+export function PrepWizard({ onClose, onSuccess, preselectedDevicePath }: PrepWizardProps) {
+  const [step, setStep] = useState<1 | 2 | 3 | 4 | 5>(preselectedDevicePath ? 2 : 1)
+  const [pickedDevice, setPickedDevice] = useState<DeviceInfo | null>(null)
   const [fileSystem, setFileSystem] = useState<'exFAT' | 'FAT32'>('exFAT')
   const [confirmed, setConfirmed] = useState(false)
   const [isExecuting, setIsExecuting] = useState(false)
@@ -29,6 +30,10 @@ export function PrepWizard({ onClose, onSuccess }: PrepWizardProps) {
     queryKey: ['devices'],
     queryFn: oplApi.listDevices
   })
+
+  const selectedDevice =
+    pickedDevice ?? devices.find((d) => d.path === preselectedDevicePath) ?? null
+  const setSelectedDevice = setPickedDevice
 
   const handleExecutePreparation = async () => {
     if (!selectedDevice || !confirmed) return

@@ -1,5 +1,5 @@
 import { useSearchParams } from 'react-router-dom'
-import { HardDrive, ScanSearch, CheckCircle2, FolderPlus, RefreshCw } from 'lucide-react'
+import { HardDrive, ScanSearch, CheckCircle2, FolderPlus, RefreshCw, Wrench } from 'lucide-react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { DeviceCard } from '@/components/DeviceCard'
 import { DisconnectedEmptyState } from '@/components/device/DisconnectedEmptyState'
@@ -79,7 +79,8 @@ export function DevicesPage() {
   if (action === 'prepare') {
     return (
       <PrepWizard
-        onClose={() => setSearchParams({ tab: 'overview' })}
+        preselectedDevicePath={searchParams.get('device')}
+        onClose={() => setSearchParams({ tab: 'manage' })}
         onSuccess={() => {
           refreshDevices()
           setSearchParams({ tab: 'overview' })
@@ -175,6 +176,12 @@ export function DevicesPage() {
               Atualizar Lista
             </button>
             <button
+              onClick={() => setSearchParams({ tab: 'manage', action: 'prepare' })}
+              className="flex items-center gap-1.5 rounded-lg border border-violet-400/30 bg-violet-500/10 px-3 py-1.5 text-xs font-medium text-violet-100 hover:bg-violet-500/20"
+            >
+              <Wrench className="size-3.5" /> Preparar Dispositivo
+            </button>
+            <button
               onClick={() => void addLocalLibrary()}
               className="flex items-center gap-1.5 rounded-lg bg-violet-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-violet-500"
             >
@@ -192,6 +199,9 @@ export function DevicesPage() {
                   void queryClient.invalidateQueries({ queryKey: ['device-catalog'] })
                   diagnostic.mutate(item.path)
                 }}
+                onPrepare={() =>
+                  setSearchParams({ tab: 'manage', action: 'prepare', device: item.path })
+                }
               />
             ))}
           </div>

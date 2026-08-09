@@ -8,9 +8,10 @@ interface DeviceCardProps {
   device: DeviceInfo
   selected?: boolean
   onSelect?: () => void
+  onPrepare?: () => void
 }
 
-export function DeviceCard({ device, selected, onSelect }: DeviceCardProps) {
+export function DeviceCard({ device, selected, onSelect, onPrepare }: DeviceCardProps) {
   const usage = device.total > 0 ? Math.round((device.used / device.total) * 100) : 0
 
   return (
@@ -40,14 +41,20 @@ export function DeviceCard({ device, selected, onSelect }: DeviceCardProps) {
           </div>
         </div>
         <div className="flex flex-col items-end gap-3">
-          <span className="inline-flex items-center gap-1 rounded-full border border-white/10 px-2 py-1 text-xs text-white/80">
-            {device.status === 'ready' ? (
+          {device.status === 'ready' ? (
+            <span className="inline-flex items-center gap-1 rounded-full border border-white/10 px-2 py-1 text-xs text-white/80">
               <CheckCircle2 className="size-3 text-emerald-300" />
-            ) : (
+              Pronto
+            </span>
+          ) : (
+            <button
+              onClick={onPrepare}
+              className="inline-flex items-center gap-1 rounded-full border border-amber-400/30 bg-amber-500/10 px-2 py-1 text-xs font-medium text-amber-200 hover:bg-amber-500/20"
+            >
               <TriangleAlert className="size-3 text-amber-300" />
-            )}
-            {device.status === 'ready' ? 'Pronto' : 'Preparar'}
-          </span>
+              Preparar
+            </button>
+          )}
           <Button variant={selected ? 'secondary' : 'primary'} onClick={onSelect}>
             {selected ? 'Selecionado' : 'Selecionar'}
           </Button>

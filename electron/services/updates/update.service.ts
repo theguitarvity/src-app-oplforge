@@ -7,6 +7,26 @@ import type {
   UpdateSession
 } from '../../../src/types/opl-finalization'
 import { internalToPublic } from '../../../scripts/release-version'
+
+const MAX_ERROR_MESSAGE_LENGTH = 220
+
+/**
+ * electron-updater/builder-util-runtime often wrap network failures in nested
+ * errors whose message includes the full response headers and stack trace
+ * (e.g. a GitHub rate-limit or proxy block page). Only the first line carries
+ * anything actionable for the user, so drop everything after it and cap the
+ * length to keep the update UI from being blown out by a header/stack dump.
+ */
+function sanitizeUpdateErrorMessage(message: string): string {
+  const firstLine = message
+    .split('\n')[0]
+    .replace(/https?:\/\/\S+/g, '[feed]')
+    .trim()
+  return firstLine.length > MAX_ERROR_MESSAGE_LENGTH
+    ? `${firstLine.slice(0, MAX_ERROR_MESSAGE_LENGTH)}…`
+    : firstLine
+}
+
 export class UpdateService {
   private session: UpdateSession
   private listeners = new Set<(session: UpdateSession) => void>()
@@ -93,7 +113,7 @@ export class UpdateService {
   private fail(error: Error, code = 'UPDATE_FAILED'): UpdateSession {
     this.session.lastError = {
       code,
-      message: error.message.replace(/https?:\/\/\S+/g, '[feed]'),
+      message: sanitizeUpdateErrorMessage(error.message),
       retryable: true,
       phase: this.session.state
     }

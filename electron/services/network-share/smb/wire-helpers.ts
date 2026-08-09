@@ -32,10 +32,17 @@ export function writeOemString(value: string): Buffer {
  * Principle II). Throws if the resolved path would escape the root.
  */
 export function resolveSharePath(libraryRootPath: string, smbPath: string): string {
-  const relative = smbPath.replace(/\\/g, '/').replace(/^\/+/, '')
-  const resolved = path.resolve(libraryRootPath, relative)
+  const relativeSmbPath = smbPath.replace(/\\/g, '/').replace(/^\/+/, '')
+  const resolved = path.resolve(libraryRootPath, relativeSmbPath)
   const root = path.resolve(libraryRootPath)
-  if (resolved !== root && !resolved.startsWith(root + path.sep)) {
+  // Uses path.relative rather than startsWith(root + sep): on Windows a
+  // drive-root path (e.g. `D:\`) already ends in a separator, so the old
+  // prefix check rejected every legitimate subpath under it.
+  const relativeToRoot = path.relative(root, resolved)
+  const isInsideRoot =
+    resolved === root ||
+    (relativeToRoot !== '' && !relativeToRoot.startsWith('..') && !path.isAbsolute(relativeToRoot))
+  if (!isInsideRoot) {
     throw Object.assign(new Error('Path escapes the shared library root'), {
       code: 'PATH_TRAVERSAL'
     })
