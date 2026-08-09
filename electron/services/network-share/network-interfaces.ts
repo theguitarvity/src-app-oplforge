@@ -25,3 +25,42 @@ export function listLocalNetworkAddresses(): string[] {
 export function primaryLocalNetworkAddress(): string | undefined {
   return listLocalNetworkAddresses()[0]
 }
+
+function ipv4ToInt(address: string): number | undefined {
+  const parts = address.split('.').map(Number)
+  if (parts.length !== 4 || parts.some((part) => !Number.isInteger(part) || part < 0 || part > 255))
+    return undefined
+  return parts.reduce((acc, part) => (acc << 8) + part, 0) >>> 0
+}
+
+function sameSubnet(address: string, netmask: string, candidate: string): boolean {
+  const addressInt = ipv4ToInt(address)
+  const maskInt = ipv4ToInt(netmask)
+  const candidateInt = ipv4ToInt(candidate)
+  if (addressInt === undefined || maskInt === undefined || candidateInt === undefined) return false
+  return (addressInt & maskInt) === (candidateInt & maskInt)
+}
+
+/**
+ * On a multi-homed host (this app's own dev machine has two active LAN
+ * subnets at once — Vivo 192.168.15.0/24 and a secondary router's
+ * 192.168.100.0/24), a single hardcoded bind address is frequently the
+ * wrong one for whichever subnet the PS2 actually landed on. Both SMB and
+ * FTP now bind `0.0.0.0` (all interfaces) instead, with the local-network
+ * guard doing the actual access-control enforcement (FR-006) — so this
+ * function's only job is figuring out which *specific* local address to
+ * hand back to a given client, e.g. for FTP passive-mode data connections,
+ * by matching the client's source subnet against this host's interfaces.
+ */
+export function resolveAdvertisedAddress(remoteAddress: string): string {
+  const interfaces = os.networkInterfaces()
+  for (const entries of Object.values(interfaces)) {
+    if (!entries) continue
+    for (const entry of entries) {
+      if (entry.internal || entry.family !== 'IPv4') continue
+      if (!isLocalNetworkAddress(entry.address)) continue
+      if (sameSubnet(entry.address, entry.netmask, remoteAddress)) return entry.address
+    }
+  }
+  return listLocalNetworkAddresses()[0] ?? '127.0.0.1'
+}

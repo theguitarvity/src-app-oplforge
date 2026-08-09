@@ -178,11 +178,14 @@ function handleNegotiate(request: SmbMessage): SmbMessage {
 // --- SMB_COM_SESSION_SETUP_ANDX (0x73) ------------------------------------
 
 function handleSessionSetup(request: SmbMessage, session: SmbSession): SmbMessage {
-  const ansiPasswordLength = request.params.readUInt16LE(15)
+  // Words: AndXCommand(1)+AndXReserved(1)+AndXOffset(2)+MaxBufferSize(2)+
+  // MaxMpxCount(2)+VcNumber(2)+SessionKey(4) = 14 bytes before the password
+  // lengths — confirmed against MS-CIFS 2.2.4.53.1 (WordCount=13, 26 bytes).
+  const ansiPasswordLength = request.params.readUInt16LE(14)
   let offset = 0
   const ansiPassword = request.data.subarray(offset, offset + ansiPasswordLength)
   offset += ansiPasswordLength
-  const unicodePasswordLength = request.params.readUInt16LE(17)
+  const unicodePasswordLength = request.params.readUInt16LE(16)
   offset += unicodePasswordLength // Unicode not negotiated; ignored if a client sends it anyway.
   const account = readOemString(request.data, offset)
 
@@ -334,8 +337,9 @@ function handleClose(request: SmbMessage, session: SmbSession): SmbMessage {
 // --- SMB_COM_READ_ANDX (0x2E) ----------------------------------------------
 
 async function handleReadAndx(request: SmbMessage, session: SmbSession): Promise<SmbMessage> {
-  const fid = request.params.readUInt16LE(2)
-  const offsetLow = request.params.readUInt32LE(4)
+  // AndXCommand(1)+AndXReserved(1)+AndXOffset(2) = 4 bytes precede FID.
+  const fid = request.params.readUInt16LE(4)
+  const offsetLow = request.params.readUInt32LE(6)
   const maxCountLow = request.params.readUInt16LE(10)
   const handle = session.handles.get(fid)
   if (!handle) return errorResponse(request, NT_STATUS.INVALID_HANDLE)
@@ -368,8 +372,9 @@ async function handleReadAndx(request: SmbMessage, session: SmbSession): Promise
 // --- SMB_COM_WRITE_ANDX (0x2F) ---------------------------------------------
 
 async function handleWriteAndx(request: SmbMessage, session: SmbSession): Promise<SmbMessage> {
-  const fid = request.params.readUInt16LE(2)
-  const offsetLow = request.params.readUInt32LE(4)
+  // AndXCommand(1)+AndXReserved(1)+AndXOffset(2) = 4 bytes precede FID.
+  const fid = request.params.readUInt16LE(4)
+  const offsetLow = request.params.readUInt32LE(6)
   const dataLength = request.params.readUInt16LE(20)
   const dataOffsetInPacket = request.params.readUInt16LE(22)
   const handle = session.handles.get(fid)
@@ -461,7 +466,10 @@ function buildTrans2Response(
   // then Bytes = [Pad][Parameters][Pad2][Data], with ParameterOffset/
   // DataOffset expressed as absolute offsets from the start of the SMB header.
   const pad = 1 // single alignment pad byte before Parameters (OEM strings only, no 2-byte alignment need)
-  const paramsStart = SMB_HEADER_SIZE + 1 + 20 + pad // header + wordCount + 10 words*2 + pad
+  // header + wordCount(1) + 10 words*2 + byteCount field(2) + pad — the 2-byte
+  // ByteCount field sits between the response's words and its Bytes blob
+  // (frame-codec's encodeSmbMessage layout), and was previously omitted here.
+  const paramsStart = SMB_HEADER_SIZE + 1 + 20 + 2 + pad
   const dataStart = paramsStart + trans2Parameters.length
 
   const params = Buffer.alloc(20)
@@ -484,12 +492,14 @@ function buildTrans2Response(
 async function handleFindFirst2(
   request: SmbMessage,
   session: SmbSession,
-  trans2Params: Buffer,
-  trans2Data: Buffer
+  trans2Params: Buffer
 ): Promise<SmbMessage> {
   const searchCount = trans2Params.readUInt16LE(2)
   const informationLevel = trans2Params.readUInt16LE(6)
-  const fileName = readOemString(trans2Data, 12).value // SearchAttributes(2)+SearchCount(2)+Flags(2)+InfoLevel(2)+SearchStorageType(4)=12
+  // FileName is part of Trans2_Parameters for FIND_FIRST2 (Trans2_Data is
+  // empty on this request) — SearchAttributes(2)+SearchCount(2)+Flags(2)+
+  // InfoLevel(2)+SearchStorageType(4)=12 bytes precede it.
+  const fileName = readOemString(trans2Params, 12).value
 
   if (informationLevel !== INFO_LEVEL.FIND_FILE_BOTH_DIRECTORY_INFO) {
     return errorResponse(request, NT_STATUS.NOT_IMPLEMENTED)
@@ -567,28 +577,28 @@ async function handleFindNext2(
 }
 
 async function handleTransaction2(request: SmbMessage, session: SmbSession): Promise<SmbMessage> {
-  const paramCount = request.params.readUInt16LE(9)
-  const paramOffset = request.params.readUInt16LE(11)
-  const dataCount = request.params.readUInt16LE(13)
-  const dataOffset = request.params.readUInt16LE(15)
-  const setupCount = request.params.readUInt8(19)
-  const subcommand = setupCount > 0 ? request.params.readUInt16LE(22) : 0
+  // Request words (MS-CIFS 2.2.4.46.1): TotalParameterCount(2)+TotalDataCount(2)+
+  // MaxParameterCount(2)+MaxDataCount(2)+MaxSetupCount(1)+Reserved1(1)+Flags(2)+
+  // Timeout(4)+Reserved2(2) = 18 bytes precede ParameterCount.
+  const paramCount = request.params.readUInt16LE(18)
+  const paramOffset = request.params.readUInt16LE(20)
+  const setupCount = request.params.readUInt8(26)
+  const subcommand = setupCount > 0 ? request.params.readUInt16LE(28) : 0
 
   // Offsets are absolute from the start of the SMB header; request.data
   // already excludes header+wordcount+params+bytecount, so translate back.
+  // Only Trans2_Parameters is needed: both FIND_FIRST2 and FIND_NEXT2 carry
+  // their request fields (including the search filename) there, with an
+  // empty Trans2_Data section.
   const dataStart = SMB_HEADER_SIZE + 1 + request.params.length + 2
   const trans2Params = request.data.subarray(
     paramOffset - dataStart,
     paramOffset - dataStart + paramCount
   )
-  const trans2Data = request.data.subarray(
-    dataOffset - dataStart,
-    dataOffset - dataStart + dataCount
-  )
 
   switch (subcommand) {
     case TRANS2_SUBCOMMAND.FIND_FIRST2:
-      return handleFindFirst2(request, session, trans2Params, trans2Data)
+      return handleFindFirst2(request, session, trans2Params)
     case TRANS2_SUBCOMMAND.FIND_NEXT2:
       return handleFindNext2(request, session, trans2Params)
     default:

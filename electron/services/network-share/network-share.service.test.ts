@@ -103,8 +103,8 @@ describe('NetworkShareService', () => {
     expect(status.smb.port).toBe(SMB_TEST_PORT)
     expect(status.ftp.port).toBe(FTP_TEST_PORT)
 
-    expect(await canConnect(SMB_TEST_PORT, status.smb.boundAddress)).toBe(true)
-    expect(await canConnect(FTP_TEST_PORT, status.ftp.boundAddress)).toBe(true)
+    expect(await canConnect(SMB_TEST_PORT, status.smb.boundAddresses[0])).toBe(true)
+    expect(await canConnect(FTP_TEST_PORT, status.ftp.boundAddresses[0])).toBe(true)
 
     const stopped = await service.stop()
     expect(stopped.smb.state).toBe('off')

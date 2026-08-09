@@ -3,7 +3,9 @@ import {
   decodeSmbMessage,
   defaultSecurityFeatures,
   encodeNbssFrame,
+  encodePositiveSessionResponse,
   encodeSmbMessage,
+  NBSS_TYPE,
   NbssFrameReader,
   type SmbMessage
 } from './frame-codec'
@@ -93,8 +95,9 @@ describe('NbssFrameReader', () => {
     const second = framed.subarray(10)
     expect(reader.push(first)).toHaveLength(0)
     const [result] = reader.push(second)
-    expect(result).toEqual(packet)
-    expect(decodeSmbMessage(result).data.toString()).toBe('OPL Forge')
+    expect(result.type).toBe(NBSS_TYPE.SESSION_MESSAGE)
+    expect(result.payload).toEqual(packet)
+    expect(decodeSmbMessage(result.payload).data.toString()).toBe('OPL Forge')
   })
 
   it('splits multiple frames delivered in a single chunk', () => {
@@ -104,8 +107,8 @@ describe('NbssFrameReader', () => {
     const combined = Buffer.concat([encodeNbssFrame(packetA), encodeNbssFrame(packetB)])
     const results = reader.push(combined)
     expect(results).toHaveLength(2)
-    expect(decodeSmbMessage(results[0]).header.mid).toBe(1)
-    expect(decodeSmbMessage(results[1]).header.mid).toBe(2)
+    expect(decodeSmbMessage(results[0].payload).header.mid).toBe(1)
+    expect(decodeSmbMessage(results[1].payload).header.mid).toBe(2)
   })
 
   it('retains a trailing partial frame across pushes', () => {
@@ -119,6 +122,21 @@ describe('NbssFrameReader', () => {
     expect(firstBatch).toHaveLength(1)
     const secondBatch = reader.push(framedB.subarray(5))
     expect(secondBatch).toHaveLength(1)
-    expect(decodeSmbMessage(secondBatch[0]).header.mid).toBe(2)
+    expect(decodeSmbMessage(secondBatch[0].payload).header.mid).toBe(2)
+  })
+
+  it('recognizes a classic NBT SESSION_REQUEST frame type distinctly from SMB traffic', () => {
+    const reader = new NbssFrameReader()
+    // RFC 1002 4.3.1: type(1)=0x81 + length(3) + encoded NetBIOS names — the
+    // exact name payload doesn't matter to the reader, only the type byte.
+    const sessionRequest = Buffer.concat([Buffer.from([0x81, 0x00, 0x00, 0x04]), Buffer.from('name')])
+    const [frame] = reader.push(sessionRequest)
+    expect(frame.type).toBe(NBSS_TYPE.SESSION_REQUEST)
+    expect(frame.payload.toString()).toBe('name')
+  })
+
+  it('encodePositiveSessionResponse produces a zero-length type-0x82 frame', () => {
+    const response = encodePositiveSessionResponse()
+    expect(response).toEqual(Buffer.from([0x82, 0x00, 0x00, 0x00]))
   })
 })

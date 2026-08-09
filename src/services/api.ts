@@ -80,8 +80,8 @@ const fallbackApi: OplApi = {
   startNetworkShare: unsupported,
   stopNetworkShare: unsupported,
   getNetworkShareStatus: async () => ({
-    smb: { state: 'off' },
-    ftp: { state: 'off' },
+    smb: { state: 'off', boundAddresses: [] },
+    ftp: { state: 'off', boundAddresses: [] },
     connectedClients: []
   }),
   getNetworkShareSetupInstructions: unsupported,

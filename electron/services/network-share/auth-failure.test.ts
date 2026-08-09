@@ -15,6 +15,7 @@ import {
   defaultSecurityFeatures,
   encodeNbssFrame,
   encodeSmbMessage,
+  NBSS_TYPE,
   NbssFrameReader
 } from './smb/frame-codec'
 import { NT_STATUS, SMB_COMMAND } from './smb/protocol-constants'
@@ -73,9 +74,12 @@ function negotiateRequest() {
 }
 
 function sessionSetupRequest(username: string, password: string) {
+  // MS-CIFS 2.2.4.53.1: AndXCommand(1)+AndXReserved(1)+AndXOffset(2)+
+  // MaxBufferSize(2)+MaxMpxCount(2)+VcNumber(2)+SessionKey(4) = 14 bytes
+  // precede the ANSI/Unicode password length fields.
   const params = Buffer.alloc(26)
-  params.writeUInt16LE(password.length, 15)
-  params.writeUInt16LE(0, 17)
+  params.writeUInt16LE(password.length, 14)
+  params.writeUInt16LE(0, 16)
   const data = Buffer.concat([
     Buffer.from(password, 'latin1'),
     Buffer.from(`${username}\0`, 'latin1')
@@ -105,10 +109,10 @@ async function sendAndReceive(
 ): Promise<Buffer> {
   return new Promise((resolve) => {
     const onData = (chunk: Buffer) => {
-      const packets = reader.push(chunk)
-      if (packets.length > 0) {
+      const frames = reader.push(chunk)
+      if (frames.length > 0) {
         socket.off('data', onData)
-        resolve(packets[0])
+        resolve(frames[0].payload)
       }
     }
     socket.on('data', onData)
@@ -138,7 +142,7 @@ describe('Authentication failure handling (FR-015)', () => {
   })
 
   it('SMB rejects an invalid password with LOGON_FAILURE and creates no connected client', async () => {
-    const socket = net.connect({ port: SMB_TEST_PORT, host: service.getStatus().smb.boundAddress })
+    const socket = net.connect({ port: SMB_TEST_PORT, host: service.getStatus().smb.boundAddresses[0] })
     const reader = new NbssFrameReader()
     await new Promise((resolve) => socket.once('connect', resolve))
 
@@ -155,8 +159,43 @@ describe('Authentication failure handling (FR-015)', () => {
     socket.destroy()
   })
 
+  it('completes the classic NBT SESSION_REQUEST handshake before SMB traffic (real PS2/OPL clients send this unconditionally)', async () => {
+    const socket = net.connect({ port: SMB_TEST_PORT, host: service.getStatus().smb.boundAddresses[0] })
+    const reader = new NbssFrameReader()
+    await new Promise((resolve) => socket.once('connect', resolve))
+
+    // RFC 1002 4.3.1: type(1)=0x81 + length(3) + encoded called/calling
+    // NetBIOS names. The exact name encoding doesn't matter to this server —
+    // only that a POSITIVE_SESSION_RESPONSE (type 0x82) comes back before
+    // any SMB traffic is accepted.
+    const sessionRequestBody = Buffer.alloc(68, 0x20)
+    const sessionRequest = Buffer.concat([
+      Buffer.from([NBSS_TYPE.SESSION_REQUEST, 0x00, 0x00, sessionRequestBody.length]),
+      sessionRequestBody
+    ])
+    const [sessionResponseFrame] = await new Promise<Awaited<ReturnType<NbssFrameReader['push']>>>(
+      (resolve) => {
+        socket.once('data', (chunk: Buffer) => resolve(reader.push(chunk)))
+        socket.write(sessionRequest)
+      }
+    )
+    expect(sessionResponseFrame.type).toBe(NBSS_TYPE.POSITIVE_SESSION_RESPONSE)
+    expect(sessionResponseFrame.payload).toHaveLength(0)
+
+    // The rest of the exchange proceeds exactly as the no-handshake path.
+    const negotiateResponse = await sendAndReceive(socket, reader, negotiateRequest())
+    expect(decodeSmbMessage(negotiateResponse).header.status).toBe(NT_STATUS.SUCCESS)
+    const sessionSetupResponse = await sendAndReceive(
+      socket,
+      reader,
+      sessionSetupRequest('tester', CORRECT_PASSWORD)
+    )
+    expect(decodeSmbMessage(sessionSetupResponse).header.status >>> 0).toBe(NT_STATUS.SUCCESS)
+    socket.destroy()
+  })
+
   it('SMB accepts the correct password with SUCCESS status', async () => {
-    const socket = net.connect({ port: SMB_TEST_PORT, host: service.getStatus().smb.boundAddress })
+    const socket = net.connect({ port: SMB_TEST_PORT, host: service.getStatus().smb.boundAddresses[0] })
     const reader = new NbssFrameReader()
     await new Promise((resolve) => socket.once('connect', resolve))
 
@@ -172,7 +211,7 @@ describe('Authentication failure handling (FR-015)', () => {
   })
 
   it('FTP rejects an invalid password without revealing which field was wrong, creating no connected client', async () => {
-    const socket = net.connect({ port: FTP_TEST_PORT, host: service.getStatus().ftp.boundAddress })
+    const socket = net.connect({ port: FTP_TEST_PORT, host: service.getStatus().ftp.boundAddresses[0] })
     const lines: string[] = []
     socket.on('data', (chunk) => lines.push(chunk.toString('utf-8')))
     await new Promise((resolve) => socket.once('connect', resolve))

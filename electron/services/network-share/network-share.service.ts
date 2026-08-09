@@ -17,7 +17,7 @@ import { OPL_DIRS } from '../device.service'
 import { addHistory } from '../history.service'
 import * as configStoreModule from './config-store'
 import { isLocalNetworkAddress } from './local-network-guard'
-import { primaryLocalNetworkAddress } from './network-interfaces'
+import { listLocalNetworkAddresses } from './network-interfaces'
 
 export interface ProtocolServerContext {
   libraryRootPath: string
@@ -69,7 +69,7 @@ export class NetworkShareServiceError extends Error {
   }
 }
 
-const emptyProtocolStatus = (): ProtocolStatus => ({ state: 'off' })
+const emptyProtocolStatus = (): ProtocolStatus => ({ state: 'off', boundAddresses: [] })
 
 async function libraryStructureValid(libraryRootPath: string): Promise<boolean> {
   for (const dir of OPL_DIRS) {
@@ -127,12 +127,20 @@ export class NetworkShareService {
 
   async getSetupInstructions(protocol: NetworkShareProtocol): Promise<SetupInstructions> {
     const status = protocol === 'smb' ? this.smbStatus : this.ftpStatus
-    if (status.state !== 'running' || !status.boundAddress || !status.port) {
+    if (status.state !== 'running' || status.boundAddresses.length === 0 || !status.port) {
       throw new NetworkShareServiceError('SERVICE_NOT_RUNNING', 'Sharing is not running yet')
     }
     const config = await this.getConfig()
+    // This host may have more than one local subnet active at once (e.g. a
+    // secondary router) — list every address as its own step rather than
+    // guessing which one the PS2 can actually reach; the user tries them in
+    // order if the first doesn't connect.
+    const addressSteps = status.boundAddresses.map((address, index) => ({
+      label: status.boundAddresses.length > 1 ? `Endereço (opção ${index + 1})` : 'Endereço',
+      value: address
+    }))
     const steps = [
-      { label: 'Endereço', value: status.boundAddress },
+      ...addressSteps,
       { label: 'Porta', value: String(status.port) },
       { label: 'Compartilhamento', value: config.shareName },
       { label: 'Usuário', value: config.username }
@@ -174,13 +182,20 @@ export class NetworkShareService {
       )
     }
 
-    const address = primaryLocalNetworkAddress()
-    if (!address) {
+    // Advertised (displayed) addresses vs. bind address are deliberately
+    // different: this host can have more than one active local subnet (a
+    // real, observed case for this project — see network-interfaces.ts), so
+    // servers bind every interface (0.0.0.0) and the local-network guard is
+    // what actually enforces FR-006, while every locally-relevant address is
+    // shown to the user since only they know which subnet the PS2 is on.
+    const advertisedAddresses = listLocalNetworkAddresses()
+    if (advertisedAddresses.length === 0) {
       throw new NetworkShareServiceError(
         'BIND_FAILED',
         'No local network interface is available to bind to'
       )
     }
+    const bindAddress = '0.0.0.0'
 
     const password = await this.configStore.getPassword()
     if (!password) {
@@ -193,7 +208,8 @@ export class NetworkShareService {
     if (config.enabledProtocols.includes('smb')) {
       await this.startProtocol('smb', this.smbServer, {
         libraryRootPath,
-        address,
+        address: bindAddress,
+        advertisedAddresses,
         port: config.smbPort,
         username: config.username,
         password
@@ -202,7 +218,8 @@ export class NetworkShareService {
     if (config.enabledProtocols.includes('ftp')) {
       await this.startProtocol('ftp', this.ftpServer, {
         libraryRootPath,
-        address,
+        address: bindAddress,
+        advertisedAddresses,
         port: config.ftpPort,
         username: config.username,
         password
@@ -212,7 +229,7 @@ export class NetworkShareService {
     await this.historySink.record({
       operation: 'network-share-start',
       result: 'success',
-      message: `Compartilhamento de rede iniciado (${config.enabledProtocols.join(', ')}) em ${address}`
+      message: `Compartilhamento de rede iniciado (${config.enabledProtocols.join(', ')}) em ${advertisedAddresses.join(', ')}`
     })
 
     return this.getStatus()
@@ -224,26 +241,28 @@ export class NetworkShareService {
     params: {
       libraryRootPath: string
       address: string
+      advertisedAddresses: string[]
       port: number
       username: string
       password: string
     }
   ): Promise<void> {
-    this.setProtocolStatus(protocol, { state: 'starting' })
+    this.setProtocolStatus(protocol, { state: 'starting', boundAddresses: [] })
     try {
+      const { advertisedAddresses, ...serverParams } = params
       await server.start({
-        ...params,
+        ...serverParams,
         isLocalAddress: isLocalNetworkAddress,
         onListening: () => {
           this.setProtocolStatus(protocol, {
             state: 'running',
-            boundAddress: params.address,
+            boundAddresses: advertisedAddresses,
             port: params.port,
             startedAt: new Date().toISOString()
           })
         },
         onBindError: (error) => {
-          this.setProtocolStatus(protocol, { state: 'error', error })
+          this.setProtocolStatus(protocol, { state: 'error', error, boundAddresses: [] })
         },
         onClientConnected: (client) => this.handleClientConnected(client),
         onClientDisconnected: (clientId) => this.handleClientDisconnected(clientId),
@@ -264,7 +283,7 @@ export class NetworkShareService {
         message: error instanceof Error ? error.message : 'Failed to start server',
         retryable: true
       }
-      this.setProtocolStatus(protocol, { state: 'error', error: serialized })
+      this.setProtocolStatus(protocol, { state: 'error', error: serialized, boundAddresses: [] })
       throw new NetworkShareServiceError(
         serialized.code === 'PORT_IN_USE' ? 'PORT_IN_USE' : 'BIND_FAILED',
         serialized.message

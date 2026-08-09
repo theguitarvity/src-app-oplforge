@@ -309,9 +309,15 @@ export function NetworkShareStatus() {
               <div className="flex items-center justify-between rounded-xl border border-white/10 bg-white/5 px-4 py-3">
                 <div className="text-sm text-white">
                   <div className="font-medium">
-                    SMB — {status.smb.boundAddress}:{status.smb.port}
+                    SMB — {status.smb.boundAddresses.join(' ou ')}:{status.smb.port}
                   </div>
                   <div className="text-muted-foreground">Compartilhamento: {config?.shareName}</div>
+                  {status.smb.boundAddresses.length > 1 && (
+                    <div className="text-xs text-amber-300">
+                      Mais de uma rede local ativa — se o primeiro endereço não conectar no PS2,
+                      tente o outro (veja o tutorial).
+                    </div>
+                  )}
                 </div>
                 <Button variant="ghost" size="sm" onClick={() => setTutorialProtocol('smb')}>
                   Ver tutorial
@@ -322,7 +328,7 @@ export function NetworkShareStatus() {
               <div className="flex items-center justify-between rounded-xl border border-white/10 bg-white/5 px-4 py-3">
                 <div className="text-sm text-white">
                   <div className="font-medium">
-                    FTP — {status.ftp.boundAddress}:{status.ftp.port}
+                    FTP — {status.ftp.boundAddresses.join(' ou ')}:{status.ftp.port}
                   </div>
                 </div>
                 <Button variant="ghost" size="sm" onClick={() => setTutorialProtocol('ftp')}>

@@ -697,7 +697,10 @@ export interface SaveNetworkShareConfigInput {
 
 export interface ProtocolStatus {
   state: NetworkShareProtocolState
-  boundAddress?: string
+  // Every address the server is reachable on — a multi-homed host (e.g. a
+  // secondary router creating a second local subnet) can have more than
+  // one; the PS2 may only be able to reach one of them.
+  boundAddresses: string[]
   port?: number
   error?: SerializableError
   startedAt?: string

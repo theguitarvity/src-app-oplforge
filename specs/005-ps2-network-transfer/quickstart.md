@@ -21,6 +21,8 @@ Validation guide for this feature. Assumes a PS2 running Open PS2 Loader on the 
 3. On the PS2, save and browse the network share from OPL's game list.
 4. **Expect**: PS2 lists the same PS2/PS1/Apps titles visible in OPL Forge's local library. Launch one title to confirm it boots (validates the SMB1-minimal server against real OPL client behavior, per `research.md` R3 — this step cannot be replaced by a unit test).
 
+**Post-implementation finding (real-hardware validation)**: this exact scenario caught real wire-format bugs that the original unit tests missed — `SESSION_SETUP_ANDX`/`READ_ANDX`/`WRITE_ANDX`/`TRANSACTION2` request parsers in `electron/services/network-share/smb/command-handlers.ts` read several fields from hand-recalled-but-wrong byte offsets (PS2 reported "Error 301: Cannot log into SMB server"). The existing tests didn't catch this because their hand-built request buffers used the *same* wrong offsets as the implementation, so they validated the code against itself rather than against the MS-CIFS spec. Fixed by re-deriving every affected offset from the MS-CIFS field tables and updating both the handlers and the test fixtures in `client-activity.test.ts`/`auth-failure.test.ts` independently. This is exactly the residual risk R3 called out — real PS2 hardware is still the only thing that can fully validate this protocol layer.
+
 ## Scenario 3 — Status reflects real connection state (US2)
 
 1. With sharing on and no PS2 connected, confirm the app shows `running-idle` (no active client).

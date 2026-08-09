@@ -14,6 +14,26 @@
 export const SMB_PROTOCOL_SIGNATURE = Buffer.from([0xff, 0x53, 0x4d, 0x42])
 export const SMB_HEADER_SIZE = 32
 
+/**
+ * RFC 1002 NetBIOS Session Service message types carried in the NBSS record
+ * header's first byte. Real PS2/OPL SMB clients (unlike modern "direct
+ * hosting of SMB over TCP" clients on port 445) send SESSION_REQUEST first
+ * regardless of port and expect a POSITIVE_SESSION_RESPONSE before any SMB
+ * traffic — skipping this handshake causes the client to see an immediate
+ * connection failure.
+ */
+export const NBSS_TYPE = {
+  SESSION_MESSAGE: 0x00,
+  SESSION_REQUEST: 0x81,
+  POSITIVE_SESSION_RESPONSE: 0x82,
+  NEGATIVE_SESSION_RESPONSE: 0x83
+} as const
+
+export interface NbssFrame {
+  type: number
+  payload: Buffer
+}
+
 export interface SmbHeader {
   command: number
   status: number
@@ -44,6 +64,11 @@ export function encodeNbssFrame(smbPacket: Buffer): Buffer {
   frameHeader.writeUInt8(0x00, 0)
   frameHeader.writeUIntBE(smbPacket.length, 1, 3)
   return Buffer.concat([frameHeader, smbPacket])
+}
+
+/** Reply to a classic NBT SESSION_REQUEST (RFC 1002 4.3.2): type + zero-length. */
+export function encodePositiveSessionResponse(): Buffer {
+  return Buffer.from([NBSS_TYPE.POSITIVE_SESSION_RESPONSE, 0x00, 0x00, 0x00])
 }
 
 export function encodeSmbMessage(message: SmbMessage): Buffer {
@@ -112,18 +137,19 @@ export function decodeSmbMessage(packet: Buffer): SmbMessage {
 export class NbssFrameReader {
   private buffer = Buffer.alloc(0)
 
-  push(chunk: Buffer): Buffer[] {
+  push(chunk: Buffer): NbssFrame[] {
     this.buffer =
       this.buffer.length === 0 ? Buffer.from(chunk) : Buffer.concat([this.buffer, chunk])
-    const packets: Buffer[] = []
+    const frames: NbssFrame[] = []
     for (;;) {
       if (this.buffer.length < 4) break
+      const type = this.buffer.readUInt8(0)
       const length = this.buffer.readUIntBE(1, 3)
       const total = 4 + length
       if (this.buffer.length < total) break
-      packets.push(Buffer.from(this.buffer.subarray(4, total)))
+      frames.push({ type, payload: Buffer.from(this.buffer.subarray(4, total)) })
       this.buffer = Buffer.from(this.buffer.subarray(total))
     }
-    return packets
+    return frames
   }
 }

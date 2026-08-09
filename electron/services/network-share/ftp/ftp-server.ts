@@ -2,6 +2,7 @@ import { FileSystem, FtpSrv } from 'ftp-srv'
 import type { NetworkShareClientActivity } from '../../../../src/types/opl'
 import type { ProtocolServer, ProtocolServerContext } from '../network-share.service'
 import { friendlyBindError } from '../bind-error'
+import { resolveAdvertisedAddress } from '../network-interfaces'
 import { releaseWriteLock, tryAcquireWriteLock } from '../write-lock'
 
 type ActivityCallback = (activity: NetworkShareClientActivity) => void
@@ -72,7 +73,13 @@ export class FtpProtocolServer implements ProtocolServer {
   async start(context: ProtocolServerContext): Promise<void> {
     const server = new FtpSrv({
       url: `ftp://${context.address}:${context.port}`,
-      pasv_url: context.address,
+      // ftp-srv's own .d.ts only declares `pasv_url` as a string, but the
+      // package's README documents (and the JS implementation supports) a
+      // per-connection resolver function — needed here because this host
+      // can have more than one active local subnet, and passive-mode data
+      // connections must advertise back an address on the *same* subnet
+      // the client connected from, not just any local address.
+      pasv_url: ((remoteAddress: string) => resolveAdvertisedAddress(remoteAddress)) as unknown as string,
       anonymous: false,
       greeting: 'OPL Forge network share'
     })

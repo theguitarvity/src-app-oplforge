@@ -36,7 +36,11 @@ function offConfig(overrides: Partial<NetworkShareConfig> = {}): NetworkShareCon
 }
 
 function offStatus(): NetworkShareStatusType {
-  return { smb: { state: 'off' }, ftp: { state: 'off' }, connectedClients: [] }
+  return {
+    smb: { state: 'off', boundAddresses: [] },
+    ftp: { state: 'off', boundAddresses: [] },
+    connectedClients: []
+  }
 }
 
 describe('NetworkShareStatus', () => {
@@ -68,11 +72,11 @@ describe('NetworkShareStatus', () => {
         status = {
           smb: {
             state: 'running',
-            boundAddress: '192.168.15.20',
+            boundAddresses: ['192.168.15.20'],
             port: 445,
             startedAt: new Date().toISOString()
           },
-          ftp: { state: 'off' },
+          ftp: { state: 'off', boundAddresses: [] },
           connectedClients: []
         }
         return status
