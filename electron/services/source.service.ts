@@ -27,10 +27,13 @@ export class LocalFolderProvider implements SourceProvider {
   constructor(private readonly rootPath: string) {}
 
   async listFiles(): Promise<SourceFile[]> {
+    const allowed = new Set(['.iso', '.bin'])
     const entries = await fs.readdir(this.rootPath, { withFileTypes: true })
     const files = await Promise.all(
       entries
-        .filter((entry) => entry.isFile())
+        .filter(
+          (entry) => entry.isFile() && allowed.has(path.extname(entry.name).toLowerCase())
+        )
         .map(async (entry) => {
           const filePath = path.join(this.rootPath, entry.name)
           const stat = await fs.stat(filePath)
