@@ -56,7 +56,7 @@ describe('Sidebar diagnosis activity', () => {
     expect(status).toHaveTextContent('35%')
     expect(screen.getByRole('link', { name: /Diagnóstico em andamento/ })).toHaveAttribute(
       'href',
-      '/fragmentation-repair'
+      '/tools?tab=diagnostics'
     )
   })
 })

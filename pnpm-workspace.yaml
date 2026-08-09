@@ -4,6 +4,7 @@ onlyBuiltDependencies:
   - esbuild
 allowBuilds:
   bufferutil: true
+  dtrace-provider: false
   electron-winstaller: true
   esbuild: true
   ip-set: true

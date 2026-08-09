@@ -17,6 +17,10 @@ import { registerOplIpc } from './ipc/opl.ipc'
 import { registerValidationIpc } from './ipc/validation.ipc'
 import { registerFragmentationRepairIpc } from './ipc/fragmentation-repair.ipc'
 import { registerNamingIpc } from './ipc/naming.ipc'
+import { registerNetworkShareIpc } from './ipc/network-share.ipc'
+import { NetworkShareService } from './services/network-share/network-share.service'
+import { SmbProtocolServer } from './services/network-share/smb/smb-server'
+import { FtpProtocolServer } from './services/network-share/ftp/ftp-server'
 import {
   createFragmentationRepairRuntime,
   type FragmentationRepairRuntime
@@ -46,7 +50,8 @@ const isDev = Boolean(process.env.VITE_DEV_SERVER_URL)
 
 function registerIpc(
   fragmentationRepairRuntime: FragmentationRepairRuntime,
-  downloads: DownloadCoordinatorService
+  downloads: DownloadCoordinatorService,
+  networkShare: NetworkShareService
 ) {
   registerArtIpc()
   registerCatalogIpc()
@@ -67,6 +72,7 @@ function registerIpc(
     ipcMain,
     fragmentationRepairRuntime
   )
+  registerNetworkShareIpc(ipcMain, networkShare)
 }
 
 async function createWindow() {
@@ -107,6 +113,7 @@ async function createWindow() {
 }
 
 let finalizationRuntime: FinalizationRuntime | undefined
+let networkShareService: NetworkShareService | undefined
 let coordinatedShutdown = false
 
 app.whenReady().then(async () => {
@@ -163,7 +170,8 @@ app.whenReady().then(async () => {
   const http = new HttpTransferService()
   const installationPlanner = new InstallationPlannerService()
   const installation = new GameInstallationService(fragmentationRepairRuntime.adapter)
-  registerIpc(fragmentationRepairRuntime, downloads)
+  networkShareService = new NetworkShareService(new SmbProtocolServer(), new FtpProtocolServer())
+  registerIpc(fragmentationRepairRuntime, downloads, networkShareService)
   void fragmentationRepairRuntime.recovery.reconcile().catch(() => undefined)
   void recoverKnownInstallations()
   void recoverKnownReorganizations()
@@ -265,10 +273,12 @@ app.on('before-quit', (event) => {
   if (coordinatedShutdown || !finalizationRuntime) return
   event.preventDefault()
   coordinatedShutdown = true
-  void finalizationRuntime
-    .stop()
-    .catch(() => undefined)
-    .finally(() => app.quit())
+  void Promise.all([
+    finalizationRuntime.stop().catch(() => undefined),
+    // FR-007/US3: sharing MUST stop even if the user never explicitly
+    // disabled it — it must not outlive the app process.
+    networkShareService?.stop().catch(() => undefined)
+  ]).finally(() => app.quit())
 })
 
 process.on('unhandledRejection', () => {

@@ -9,6 +9,8 @@ import type {
   ImportFromSourceInput,
   LogEntry,
   ManagedSourceConfig,
+  NetworkShareEvent,
+  NetworkShareProtocol,
   OpenPathDialogOptions,
   OperationProgress,
   OperationEvent,
@@ -18,6 +20,7 @@ import type {
   PrepareDeviceInput,
   Ps1ImportInput,
   RemoteSearchParams,
+  SaveNetworkShareConfigInput,
   SourceProviderConfig,
   TorrentInput
 } from '../src/types/opl'
@@ -110,6 +113,22 @@ const api: OplApi = {
   recordHardwareSmoke: (input) => ipcRenderer.invoke('reports:record-hardware-smoke', input),
   exportReadinessReport: (reportId, destinationPath) =>
     ipcRenderer.invoke('reports:export', { reportId, destinationPath }),
+  getNetworkShareConfig: () => ipcRenderer.invoke('network-share:get-config'),
+  saveNetworkShareConfig: (input: SaveNetworkShareConfigInput) =>
+    ipcRenderer.invoke('network-share:save-config', input),
+  acknowledgeNetworkShareWriteAccess: () =>
+    ipcRenderer.invoke('network-share:acknowledge-write-access'),
+  startNetworkShare: () => ipcRenderer.invoke('network-share:start'),
+  stopNetworkShare: () => ipcRenderer.invoke('network-share:stop'),
+  getNetworkShareStatus: () => ipcRenderer.invoke('network-share:get-status'),
+  getNetworkShareSetupInstructions: (protocol: NetworkShareProtocol) =>
+    ipcRenderer.invoke('network-share:get-setup-instructions', { protocol }),
+  onNetworkShareEvent: (callback: (event: NetworkShareEvent) => void) => {
+    const listener = (_event: Electron.IpcRendererEvent, payload: NetworkShareEvent) =>
+      callback(payload)
+    ipcRenderer.on('network-share:event', listener)
+    return () => ipcRenderer.removeListener('network-share:event', listener)
+  },
   listDevices: () => ipcRenderer.invoke('devices:list'),
   getDeviceSummary: (devicePath?: string) => ipcRenderer.invoke('devices:summary', devicePath),
   prepareDevice: (input: PrepareDeviceInput) => ipcRenderer.invoke('files:prepare-device', input),

@@ -74,6 +74,18 @@ const fallbackApi: OplApi = {
   getReadinessReport: async () => undefined,
   recordHardwareSmoke: unsupported,
   exportReadinessReport: unsupported,
+  getNetworkShareConfig: unsupported,
+  saveNetworkShareConfig: unsupported,
+  acknowledgeNetworkShareWriteAccess: unsupported,
+  startNetworkShare: unsupported,
+  stopNetworkShare: unsupported,
+  getNetworkShareStatus: async () => ({
+    smb: { state: 'off' },
+    ftp: { state: 'off' },
+    connectedClients: []
+  }),
+  getNetworkShareSetupInstructions: unsupported,
+  onNetworkShareEvent: () => () => undefined,
   listDevices: async () => [],
   getDeviceSummary: async () => ({
     device: null,

@@ -369,7 +369,27 @@ export const schemas = {
       action: z.enum(['restore-original', 'clean-verified-residue']),
       confirmation: z.literal('RECUPERAR JOGO')
     })
-    .strict()
+    .strict(),
+  networkShareSaveConfig: z
+    .object({
+      libraryRootPath: absolutePath,
+      enabledProtocols: z
+        .array(z.enum(['smb', 'ftp']))
+        .min(1)
+        .max(2)
+        .refine(
+          (protocols) => new Set(protocols).size === protocols.length,
+          'protocols must be unique'
+        ),
+      shareName: z.string().min(1).max(64),
+      username: z.string().min(1).max(64),
+      password: z.string().min(1).max(256).optional(),
+      smbPort: z.number().int().min(1).max(65535).optional(),
+      ftpPort: z.number().int().min(1).max(65535).optional(),
+      autoStartOnLaunch: z.boolean()
+    })
+    .strict(),
+  networkShareGetSetupInstructions: z.object({ protocol: z.enum(['smb', 'ftp']) }).strict()
 }
 
 export function parseInput<K extends keyof typeof schemas>(

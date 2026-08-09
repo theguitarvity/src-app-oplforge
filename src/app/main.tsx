@@ -3,25 +3,12 @@ import ReactDOM from 'react-dom/client'
 import { Navigate, RouterProvider, createHashRouter } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { AppShell } from '@/layouts/AppShell'
-import { ArtManagerPage } from '@/pages/ArtManagerPage'
-import { AppsPage } from '@/pages/AppsPage'
 import { CatalogPage } from '@/pages/CatalogPage'
 import { DashboardPage } from '@/pages/DashboardPage'
 import { DevicesPage } from '@/pages/DevicesPage'
-import { DownloadsPage } from '@/pages/DownloadsPage'
-import { EssentialsCatalogPage } from '@/pages/EssentialsCatalogPage'
-import { HistoryPage } from '@/pages/HistoryPage'
 import { GameLibraryPage } from '@/pages/GameLibraryPage'
-import { FragmentationRepairPage } from '@/pages/FragmentationRepairPage'
-import { ValidationPage } from '@/pages/ValidationPage'
-import { OnlineSourcesPage } from '@/pages/OnlineSourcesPage'
-import { OplNamingPage } from '@/pages/OplNamingPage'
-import { PreparePage } from '@/pages/PreparePage'
-import { Ps1ImportPage } from '@/pages/Ps1ImportPage'
-import { Ps2ImportPage } from '@/pages/Ps2ImportPage'
 import { SettingsPage } from '@/pages/SettingsPage'
-import { SourceSettingsPage } from '@/pages/SourceSettingsPage'
-import { SourcesPage } from '@/pages/SourcesPage'
+import { ToolsPage } from '@/pages/ToolsPage'
 import '@/styles/globals.css'
 
 const queryClient = new QueryClient()
@@ -31,26 +18,29 @@ const router = createHashRouter([
     path: '/',
     element: <AppShell />,
     children: [
-      { index: true, element: <Navigate to="/dashboard" replace /> },
-      { path: 'dashboard', element: <DashboardPage /> },
+      { index: true, element: <DashboardPage /> },
       { path: 'devices', element: <DevicesPage /> },
-      { path: 'prepare', element: <PreparePage /> },
-      { path: 'games/ps2', element: <Ps2ImportPage /> },
       { path: 'library', element: <GameLibraryPage /> },
-      { path: 'fragmentation-repair', element: <FragmentationRepairPage /> },
-      { path: 'naming', element: <OplNamingPage /> },
-      { path: 'validation', element: <ValidationPage /> },
-      { path: 'games/ps1', element: <Ps1ImportPage /> },
-      { path: 'apps', element: <AppsPage /> },
       { path: 'catalog', element: <CatalogPage /> },
-      { path: 'catalog/essentials', element: <EssentialsCatalogPage /> },
-      { path: 'art-manager', element: <ArtManagerPage /> },
-      { path: 'sources', element: <SourcesPage /> },
-      { path: 'sources/online', element: <OnlineSourcesPage /> },
-      { path: 'downloads', element: <DownloadsPage /> },
-      { path: 'history', element: <HistoryPage /> },
+      { path: 'tools', element: <ToolsPage /> },
       { path: 'settings', element: <SettingsPage /> },
-      { path: 'settings/sources', element: <SourceSettingsPage /> }
+
+      // Backward compatibility redirects for legacy routes
+      { path: 'dashboard', element: <Navigate to="/" replace /> },
+      { path: 'prepare', element: <Navigate to="/devices?action=prepare" replace /> },
+      { path: 'games/ps2', element: <Navigate to="/library?type=ps2" replace /> },
+      { path: 'games/ps1', element: <Navigate to="/library?type=ps1" replace /> },
+      { path: 'apps', element: <Navigate to="/library?type=apps" replace /> },
+      { path: 'fragmentation-repair', element: <Navigate to="/tools?tab=diagnostics" replace /> },
+      { path: 'naming', element: <Navigate to="/library" replace /> },
+      { path: 'validation', element: <Navigate to="/library" replace /> },
+      { path: 'catalog/essentials', element: <Navigate to="/catalog?tab=discover" replace /> },
+      { path: 'art-manager', element: <Navigate to="/catalog?tab=artsync" replace /> },
+      { path: 'sources', element: <Navigate to="/library?action=add" replace /> },
+      { path: 'sources/online', element: <Navigate to="/catalog?tab=online" replace /> },
+      { path: 'downloads', element: <Navigate to="/catalog?tab=downloads" replace /> },
+      { path: 'history', element: <Navigate to="/tools?tab=history" replace /> },
+      { path: 'settings/sources', element: <Navigate to="/settings?tab=sources" replace /> }
     ]
   }
 ])

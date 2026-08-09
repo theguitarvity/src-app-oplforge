@@ -1,13 +1,17 @@
 {
   "version": "0.15.1",
   "integration_state_schema": 1,
-  "installed_integrations": ["codex"],
+  "installed_integrations": ["agy", "claude"],
   "integration_settings": {
-    "codex": {
+    "agy": {
+      "script": "sh",
+      "invoke_separator": "-"
+    },
+    "claude": {
       "script": "sh",
       "invoke_separator": "-"
     }
   },
-  "integration": "codex",
-  "default_integration": "codex"
+  "integration": "agy",
+  "default_integration": "agy"
 }

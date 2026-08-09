@@ -33,12 +33,7 @@ export type SourceType =
   | 'magnet'
 export type SourceLegalMode = 'user-owned-backup-required' | 'metadata-assets' | 'user-configured'
 export type DownloadStatus =
-  | 'queued'
-  | 'downloading'
-  | 'paused'
-  | 'completed'
-  | 'failed'
-  | 'cancelled'
+  'queued' | 'downloading' | 'paused' | 'completed' | 'failed' | 'cancelled'
 export type ArchiveMediaType = 'ps2-dvd' | 'ps2-cd' | 'ps1' | 'torrent' | 'archive' | 'unknown'
 export type GameScoreTier = 'S' | 'A' | 'B' | 'C' | 'Unrated'
 export type GamePriority = 'must-have' | 'recommended' | 'optional' | 'unrated'
@@ -47,30 +42,17 @@ export type ArtAssetType = 'ICO' | 'SCR' | 'SCR2' | 'BG' | 'LGO' | 'COV' | 'LAB'
 export type GameArtStatus = 'missing' | 'cover-ready' | 'partial' | 'complete'
 export type VerificationState = 'verified' | 'not-verified' | 'failed' | 'not-run'
 export type ReadinessStatus =
-  | 'ready'
-  | 'ready-with-warnings'
-  | 'requires-reorganization'
-  | 'incompatible'
+  'ready' | 'ready-with-warnings' | 'requires-reorganization' | 'incompatible'
 export type FindingSeverity = 'info' | 'warning' | 'error'
 export type InstallationFormat = 'ISO' | 'ZSO' | 'USBExtreme'
 export type FragmentationState = 'contiguous' | 'fragmented' | 'unknown' | 'not-applicable'
 export type OperationState =
-  | 'planned'
-  | 'running'
-  | 'awaiting-confirmation'
-  | 'completed'
-  | 'failed'
-  | 'cancelled'
+  'planned' | 'running' | 'awaiting-confirmation' | 'completed' | 'failed' | 'cancelled'
 
 // Fragmentation-repair domain. These types deliberately keep persisted paths
 // relative; absolute paths are resolved only by the privileged process.
 export type DiagnosticState =
-  | 'contiguous'
-  | 'fragmented'
-  | 'partially-fragmented'
-  | 'incomplete'
-  | 'invalid'
-  | 'unverifiable'
+  'contiguous' | 'fragmented' | 'partially-fragmented' | 'incomplete' | 'invalid' | 'unverifiable'
 export type VerificationCapability =
   | 'supported'
   | 'unsupported'
@@ -79,12 +61,7 @@ export type VerificationCapability =
   | 'unrecognized-output'
   | 'not-homologated'
 export type RepairOutcome =
-  | 'corrected'
-  | 'unchanged'
-  | 'skipped'
-  | 'failed'
-  | 'cancelled'
-  | 'recovery-pending'
+  'corrected' | 'unchanged' | 'skipped' | 'failed' | 'cancelled' | 'recovery-pending'
 export type RepairOperationStatus =
   | 'planned'
   | 'awaiting-confirmation'
@@ -686,6 +663,75 @@ export interface HistoryEntry {
   message?: string
 }
 
+export type NetworkShareProtocol = 'smb' | 'ftp'
+export type NetworkShareProtocolState = 'off' | 'starting' | 'running' | 'error' | 'stopping'
+export type NetworkShareClientActivity = 'idle' | 'browsing' | 'transferring'
+export type NetworkShareEventKind =
+  | 'protocol-status-changed'
+  | 'client-connected'
+  | 'client-disconnected'
+  | 'client-activity-changed'
+  | 'write-conflict'
+
+export interface NetworkShareConfig {
+  libraryRootPath: string
+  enabledProtocols: NetworkShareProtocol[]
+  shareName: string
+  username: string
+  smbPort: number
+  ftpPort: number
+  autoStartOnLaunch: boolean
+  writeAccessAcknowledgedAt?: string
+}
+
+export interface SaveNetworkShareConfigInput {
+  libraryRootPath: string
+  enabledProtocols: NetworkShareProtocol[]
+  shareName: string
+  username: string
+  password?: string
+  smbPort?: number
+  ftpPort?: number
+  autoStartOnLaunch: boolean
+}
+
+export interface ProtocolStatus {
+  state: NetworkShareProtocolState
+  boundAddress?: string
+  port?: number
+  error?: SerializableError
+  startedAt?: string
+}
+
+export interface ConnectedClient {
+  id: string
+  protocol: NetworkShareProtocol
+  remoteAddress: string
+  connectedAt: string
+  activity: NetworkShareClientActivity
+  lastActivityAt: string
+}
+
+export interface NetworkShareStatus {
+  smb: ProtocolStatus
+  ftp: ProtocolStatus
+  connectedClients: ConnectedClient[]
+}
+
+export interface NetworkShareEvent {
+  kind: NetworkShareEventKind
+  status: NetworkShareStatus
+  client?: ConnectedClient
+  message: string
+  timestamp: string
+}
+
+export interface SetupInstructions {
+  protocol: NetworkShareProtocol
+  steps: Array<{ label: string; value: string }>
+  oplMenuPath: string[]
+}
+
 export interface PrepareDeviceInput {
   devicePath: string
 }
@@ -1151,6 +1197,14 @@ export interface OplApi {
     milestoneReached: boolean
   }): Promise<ReadinessReport>
   exportReadinessReport(reportId: string, destinationPath: string): Promise<void>
+  getNetworkShareConfig(): Promise<NetworkShareConfig>
+  saveNetworkShareConfig(input: SaveNetworkShareConfigInput): Promise<NetworkShareConfig>
+  acknowledgeNetworkShareWriteAccess(): Promise<NetworkShareConfig>
+  startNetworkShare(): Promise<NetworkShareStatus>
+  stopNetworkShare(): Promise<NetworkShareStatus>
+  getNetworkShareStatus(): Promise<NetworkShareStatus>
+  getNetworkShareSetupInstructions(protocol: NetworkShareProtocol): Promise<SetupInstructions>
+  onNetworkShareEvent(callback: (event: NetworkShareEvent) => void): () => void
   listDevices(): Promise<DeviceInfo[]>
   getDeviceSummary(devicePath?: string): Promise<DeviceSummary>
   prepareDevice(input: PrepareDeviceInput): Promise<HistoryEntry>

@@ -38,6 +38,7 @@ Com ele, você pode preparar a estrutura esperada pelo OPL, importar jogos de PS
 - **Downloads resilientes:** usa fila persistente, staging, retomada e um único writer por dispositivo.
 - **Validação com PCSX2:** auxilia na verificação da biblioteca antes de levá-la ao console.
 - **Histórico e observabilidade:** exibe progresso, logs e histórico das operações realizadas.
+- **Compartilhamento de rede (SMB/FTP):** permite que o PS2 navegue e lance jogos diretamente pela rede, sem precisar mover a unidade USB/HD entre o PC e o console.
 
 ## Screenshots
 
@@ -141,6 +142,20 @@ nvm use
 
 > [!CAUTION]
 > Sempre confirme o caminho e o dispositivo selecionado antes de preparar, reorganizar ou reparar uma unidade. Mantenha backup dos arquivos importantes.
+
+## Compartilhamento de rede (SMB/FTP)
+
+Em **Configurações → Rede**, você pode ligar um compartilhamento local para que o PS2 (rodando OPL, modo ETH) navegue e lance jogos direto pela rede — sem precisar remover o USB/HD do PC. O fluxo:
+
+1. Marque os protocolos desejados (**SMB** é o único que o menu de rede do OPL usa para navegar/lançar jogos; **FTP** é um canal secundário, útil para gerenciamento de arquivos ou ferramentas como uLaunchELF).
+2. Defina usuário e senha do compartilhamento.
+3. Confirme explicitamente que o PS2 poderá criar/sobrescrever arquivos na biblioteca local (essa confirmação é separada da senha).
+4. Clique em **Ligar compartilhamento** e siga o tutorial guiado exibido na tela para configurar o menu **Configurações de Rede → Servidor SMB** do próprio PS2 com os valores mostrados (endereço, porta, usuário, senha).
+
+> [!IMPORTANT]
+> As portas padrão (SMB `445`, FTP `21`) são portas privilegiadas — em Linux e macOS, um processo comum (sem root/admin) não consegue abrir essas portas por padrão, e o Electron **não deve** rodar como root. Se o compartilhamento falhar ao iniciar com um erro de porta, altere a porta SMB/FTP em **Configurações → Rede** para um valor acima de 1024 (ex.: `4450`) e informe essa mesma porta no campo **Porta** do menu **Servidor SMB** do PS2 — esse campo é editável no OPL.
+
+O compartilhamento fica desligado por padrão em toda inicialização e é encerrado automaticamente ao fechar o app, mesmo que você esqueça de desligá-lo manualmente. Conexões vindas de fora da rede local (fora das faixas `10.0.0.0/8`, `172.16.0.0/12`, `192.168.0.0/16`) são sempre rejeitadas.
 
 ## Desenvolvimento
 

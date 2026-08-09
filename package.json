@@ -29,7 +29,8 @@
     "lint": "eslint .",
     "format": "prettier --write .",
     "prepare": "husky",
-    "electron:build": "pnpm build && electron-builder"
+    "electron:build": "pnpm build && electron-builder",
+    "electron:install:local": "bash scripts/install-local.sh"
   },
   "dependencies": {
     "@hookform/resolvers": "latest",
@@ -43,6 +44,7 @@
     "class-variance-authority": "latest",
     "clsx": "latest",
     "electron-updater": "^6.8.9",
+    "ftp-srv": "^4.6.3",
     "lucide-react": "latest",
     "react": "latest",
     "react-dom": "latest",
