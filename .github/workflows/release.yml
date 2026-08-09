@@ -127,14 +127,18 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           path: dist-artifacts
+          merge-multiple: true
 
-      - name: Create release tag
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          TAG_NAME="v${GITHUB_RUN_NUMBER}"
-          gh release create "$TAG_NAME" dist-artifacts/**/* \
-            --title "Release $TAG_NAME" \
-            --generate-notes \
-            --prerelease \
-            --verify-tag || true
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ github.run_number }}
+          name: Release v${{ github.run_number }}
+          generate_release_notes: true
+          prerelease: true
+          fail_on_unmatched_files: false
+          files: |
+            dist-artifacts/**/*.AppImage
+            dist-artifacts/**/*.deb
+            dist-artifacts/**/*.exe
+            dist-artifacts/**/*.dmg
