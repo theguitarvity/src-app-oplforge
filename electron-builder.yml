@@ -32,6 +32,7 @@ publish:
   repo: src-app-oplforge
   releaseType: release
 mac:
+  artifactName: OPL-Forge-${env.OPL_PUBLIC_VERSION}-mac-${arch}.${ext}
   target:
     - target: dmg
       arch:
@@ -39,6 +40,7 @@ mac:
         - arm64
 linux:
   icon: build/icon.png
+  artifactName: OPL-Forge-${env.OPL_PUBLIC_VERSION}-linux-${arch}.${ext}
   target:
     - AppImage
     - deb

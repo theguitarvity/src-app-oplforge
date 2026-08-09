@@ -1,0 +1,111 @@
+name: Continuous installers
+
+on:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: continuous-installers
+  cancel-in-progress: true
+
+jobs:
+  build:
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.head_branch == 'master')
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: windows-x64
+            runner: windows-latest
+            package_command: pnpm exec electron-builder --win nsis --x64 --publish never
+            artifact_glob: release/*.exe
+          - platform: linux-x64
+            runner: ubuntu-latest
+            package_command: pnpm exec electron-builder --linux AppImage deb --x64 --publish never
+            artifact_glob: |
+              release/*.AppImage
+              release/*.deb
+          - platform: macos
+            runner: macos-latest
+            package_command: pnpm exec electron-builder --mac dmg --x64 --arm64 --publish never
+            artifact_glob: release/*.dmg
+    runs-on: ${{ matrix.runner }}
+    env:
+      CSC_IDENTITY_AUTO_DISCOVERY: false
+      OPL_PUBLIC_VERSION: continuous
+    steps:
+      - name: Checkout successful revision
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: '22'
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build application
+        run: pnpm build
+
+      - name: Package ${{ matrix.platform }}
+        run: ${{ matrix.package_command }}
+
+      - name: Upload ${{ matrix.platform }}
+        uses: actions/upload-artifact@v6
+        with:
+          name: continuous-${{ matrix.platform }}
+          if-no-files-found: error
+          path: ${{ matrix.artifact_glob }}
+
+  publish:
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.head_branch == 'master')
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Download installers
+        uses: actions/download-artifact@v6
+        with:
+          pattern: continuous-*
+          path: continuous-release
+          merge-multiple: true
+
+      - name: Generate checksums
+        working-directory: continuous-release
+        run: sha256sum * > SHA256SUMS.txt
+
+      - name: Publish continuous build
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: continuous
+          target_commitish: ${{ github.event.workflow_run.head_sha || github.sha }}
+          name: Continuous build
+          prerelease: true
+          make_latest: false
+          body: |
+            Automated installers from the latest successful CI run on `master`.
+
+            These builds are provided for testing and are not code-signed. Stable public
+            releases continue to use versioned tags and mandatory signature verification.
+          files: continuous-release/*
+          fail_on_unmatched_files: true
+          overwrite_files: true
