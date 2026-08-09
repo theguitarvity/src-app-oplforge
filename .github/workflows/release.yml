@@ -38,9 +38,11 @@ jobs:
         run: test -n "$CSC_LINK" && test -n "$CSC_KEY_PASSWORD"
       - run: pnpm build
       - run: pnpm exec electron-builder --win nsis --x64 --publish never
-      - run: pnpm exec tsx scripts/validate-artifacts.ts release
+      - run: pnpm exec tsx scripts/validate-artifacts.ts release windows
       - shell: pwsh
         run: pnpm exec tsx scripts/verify-signatures.ts public "release/OPL-Forge-$env:OPL_PUBLIC_VERSION-x64-Setup.exe"
+      - shell: bash
+        run: mv release/artifact-inventory.json release/artifact-inventory-windows.json
       - uses: actions/upload-artifact@v6
         with:
           name: public-windows
@@ -49,14 +51,71 @@ jobs:
             release/OPL-Forge-${{ env.OPL_PUBLIC_VERSION }}-x64-Setup.exe
             release/OPL-Forge-${{ env.OPL_PUBLIC_VERSION }}-x64-Setup.exe.blockmap
             release/latest.yml
-            release/artifact-inventory.json
+            release/artifact-inventory-windows.json
+  macos:
+    needs: validate
+    runs-on: macos-latest
+    env:
+      OPL_PUBLIC_VERSION: ${{ needs.validate.outputs.public_version }}
+      # No Apple Developer ID certificate is configured yet, so this build is
+      # unsigned/unnotarized (same as the "continuous" test channel). Users
+      # will need to right-click > Open the first time to bypass Gatekeeper.
+      CSC_IDENTITY_AUTO_DISCOVERY: false
+    steps:
+      - uses: actions/checkout@v6
+      - uses: pnpm/action-setup@v4.4.0
+      - uses: actions/setup-node@v6
+        with: { node-version: '22', cache: pnpm }
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+      - run: pnpm exec electron-builder --mac dmg --x64 --arm64 --publish never
+      - run: pnpm exec tsx scripts/validate-artifacts.ts release mac
+      - run: mv release/artifact-inventory.json release/artifact-inventory-macos.json
+      - uses: actions/upload-artifact@v6
+        with:
+          name: public-macos
+          if-no-files-found: error
+          path: |
+            release/OPL-Forge-${{ env.OPL_PUBLIC_VERSION }}-mac-x64.dmg
+            release/OPL-Forge-${{ env.OPL_PUBLIC_VERSION }}-mac-arm64.dmg
+            release/*.dmg.blockmap
+            release/latest-mac.yml
+            release/artifact-inventory-macos.json
+  linux:
+    needs: validate
+    runs-on: ubuntu-latest
+    env:
+      OPL_PUBLIC_VERSION: ${{ needs.validate.outputs.public_version }}
+    steps:
+      - uses: actions/checkout@v6
+      - uses: pnpm/action-setup@v4.4.0
+      - uses: actions/setup-node@v6
+        with: { node-version: '22', cache: pnpm }
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+      - run: pnpm exec electron-builder --linux AppImage deb --x64 --publish never
+      - run: pnpm exec tsx scripts/validate-artifacts.ts release linux
+      - run: mv release/artifact-inventory.json release/artifact-inventory-linux.json
+      - uses: actions/upload-artifact@v6
+        with:
+          name: public-linux
+          if-no-files-found: error
+          path: |
+            release/OPL-Forge-${{ env.OPL_PUBLIC_VERSION }}-linux-x64.AppImage
+            release/OPL-Forge-${{ env.OPL_PUBLIC_VERSION }}-linux-x64.deb
+            release/latest-linux.yml
+            release/artifact-inventory-linux.json
   publish:
-    needs: [validate, windows]
+    needs: [validate, windows, macos, linux]
     runs-on: ubuntu-latest
     permissions: { contents: write }
     steps:
       - uses: actions/download-artifact@v6
         with: { name: public-windows, path: release }
+      - uses: actions/download-artifact@v6
+        with: { name: public-macos, path: release }
+      - uses: actions/download-artifact@v6
+        with: { name: public-linux, path: release }
       - uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ github.ref_name }}
@@ -68,4 +127,13 @@ jobs:
             release/OPL-Forge-${{ needs.validate.outputs.public_version }}-x64-Setup.exe
             release/OPL-Forge-${{ needs.validate.outputs.public_version }}-x64-Setup.exe.blockmap
             release/latest.yml
-            release/artifact-inventory.json
+            release/artifact-inventory-windows.json
+            release/OPL-Forge-${{ needs.validate.outputs.public_version }}-mac-x64.dmg
+            release/OPL-Forge-${{ needs.validate.outputs.public_version }}-mac-arm64.dmg
+            release/*.dmg.blockmap
+            release/latest-mac.yml
+            release/artifact-inventory-macos.json
+            release/OPL-Forge-${{ needs.validate.outputs.public_version }}-linux-x64.AppImage
+            release/OPL-Forge-${{ needs.validate.outputs.public_version }}-linux-x64.deb
+            release/latest-linux.yml
+            release/artifact-inventory-linux.json
