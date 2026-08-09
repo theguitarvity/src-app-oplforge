@@ -293,7 +293,11 @@ async function handleNtCreate(request: SmbMessage, session: SmbSession): Promise
   const nameLength = request.params.readUInt16LE(5)
   const disposition = request.params.readUInt32LE(35)
   const nameOffset = 0 // Pad(0..1) handled by caller trimming; NameLength counts the path bytes only.
-  const rawName = request.data.subarray(nameOffset, nameOffset + nameLength).toString('latin1')
+  // Some clients (e.g. PS2 OPL) include the NUL terminator in NameLength; strip it like handleTreeConnect does for the password.
+  const rawName = request.data
+    .subarray(nameOffset, nameOffset + nameLength)
+    .toString('latin1')
+    .replace(/\0+$/, '')
 
   let absolutePath: string
   try {
@@ -313,9 +317,13 @@ async function handleNtCreate(request: SmbMessage, session: SmbSession): Promise
   const mayCreate = disposition === 0 || disposition === 2 || disposition === 5
   if (!stats && !mayCreate) return errorResponse(request, NT_STATUS.OBJECT_NAME_NOT_FOUND)
   if (!stats && mayCreate) {
-    await fs.mkdir(path.dirname(absolutePath), { recursive: true })
-    await fs.writeFile(absolutePath, Buffer.alloc(0), { flag: 'wx' }).catch(() => undefined)
-    stats = await fs.stat(absolutePath)
+    try {
+      await fs.mkdir(path.dirname(absolutePath), { recursive: true })
+      await fs.writeFile(absolutePath, Buffer.alloc(0), { flag: 'wx' }).catch(() => undefined)
+      stats = await fs.stat(absolutePath)
+    } catch {
+      return errorResponse(request, NT_STATUS.OBJECT_NAME_NOT_FOUND)
+    }
   }
 
   const fid = session.allocateFid()

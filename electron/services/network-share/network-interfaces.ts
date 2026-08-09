@@ -1,5 +1,16 @@
 import os from 'node:os'
+import { sendLog } from '../logger'
 import { isLocalNetworkAddress } from './local-network-guard'
+
+// Diagnostic-only: must never be able to break interface discovery (e.g. no
+// BrowserWindow yet, or running outside a real Electron app in tests).
+function debugLog(level: Parameters<typeof sendLog>[0], message: string): void {
+  try {
+    sendLog(level, message)
+  } catch {
+    // ignored — logging is best-effort
+  }
+}
 
 /**
  * Local (RFC1918) IPv4 addresses this host can bind to, one per non-internal
@@ -9,15 +20,21 @@ import { isLocalNetworkAddress } from './local-network-guard'
 export function listLocalNetworkAddresses(): string[] {
   const interfaces = os.networkInterfaces()
   const addresses: string[] = []
-  for (const entries of Object.values(interfaces)) {
+  const seen: string[] = []
+  for (const [name, entries] of Object.entries(interfaces)) {
     if (!entries) continue
     for (const entry of entries) {
+      seen.push(`${name}: ${entry.address} (${entry.family}${entry.internal ? ', internal' : ''})`)
       if (entry.internal) continue
       if (entry.family !== 'IPv4') continue
       if (!isLocalNetworkAddress(entry.address)) continue
       addresses.push(entry.address)
     }
   }
+  debugLog(
+    'INFO',
+    `[network-interfaces] raw: ${seen.join(', ') || '(none)'} | advertised: ${addresses.join(', ') || '(none)'}`
+  )
   return addresses
 }
 
