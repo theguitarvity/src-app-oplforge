@@ -59,8 +59,13 @@ export async function startFixtureHttpServer(
     }
 
     if (options.disconnectAfterBytes !== undefined) {
-      response.write(body.subarray(0, options.disconnectAfterBytes))
-      setTimeout(() => response.destroy(), 1)
+      const partialBody = body.subarray(0, options.disconnectAfterBytes)
+      response.write(partialBody, () => {
+        // Close only after Node has flushed the partial response. Destroying on a
+        // short timer races with busy CI runners and can reset the connection
+        // before the client receives any resumable bytes.
+        response.socket?.end()
+      })
       return
     }
     if (options.chunkBytes && options.chunkDelayMs) {
