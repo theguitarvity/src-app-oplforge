@@ -104,14 +104,15 @@ export class SmbProtocolServer implements ProtocolServer {
 
     socket.on('data', (chunk: Buffer | string) => {
       void (async () => {
+        const bufferChunk = Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk)
         let frames: NbssFrame[]
         try {
-          frames = reader.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk))
+          frames = reader.push(bufferChunk)
         } catch (error) {
           debugLog(
             'ERROR',
             `[SMB debug] ${remoteAddress}: bad NBSS framing (${(error as Error).message}); ` +
-              `first bytes=${chunk.subarray(0, 16).toString('hex')}`
+              `first bytes=${bufferChunk.subarray(0, 16).toString('hex')}`
           )
           socket.destroy()
           return
