@@ -57,11 +57,13 @@ export class JsonStore<T> {
       await handle.close()
     }
     await rename(temporary, this.filePath)
-    const directory = await open(path.dirname(this.filePath), 'r')
-    try {
-      await directory.sync()
-    } finally {
-      await directory.close()
+    if (process.platform !== 'win32') {
+      const directory = await open(path.dirname(this.filePath), 'r')
+      try {
+        await directory.sync()
+      } finally {
+        await directory.close()
+      }
     }
     return document
   }
