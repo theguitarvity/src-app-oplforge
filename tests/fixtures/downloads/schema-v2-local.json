@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 2,
+  "revision": 0,
+  "taskId": "local-task",
+  "target": {
+    "kind": "local-folder",
+    "authorizationId": "folder-1",
+    "rootToken": "opaque-token",
+    "collisionPolicy": "fail"
+  },
+  "phase": "queued"
+}

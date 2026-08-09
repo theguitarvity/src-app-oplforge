@@ -1,6 +1,6 @@
-import { app, BrowserWindow, ipcMain, shell } from 'electron'
+import { app, BrowserWindow, ipcMain, protocol, shell } from 'electron'
 import path from 'node:path'
-import { registerArtIpc } from './ipc/art.ipc'
+import { queueAutomaticArtSync, registerArtIpc } from './ipc/art.ipc'
 import { registerCatalogIpc } from './ipc/catalog.ipc'
 import { registerDeviceIpc } from './ipc/device.ipc'
 import { registerDialogIpc } from './ipc/dialog.ipc'
@@ -45,8 +45,21 @@ import {
 } from './services/installation/installation-planner.service'
 import { GameInstallationService } from './services/installation/game-installation.service'
 import { getOplProfileService } from './ipc/opl.ipc'
+import { operationEvents } from './services/operations/operation-event.publisher'
+import { registerLocalArtProtocol } from './services/art/local-art-protocol.service'
+import { LocalDestinationService } from './services/downloads/local-destination.service'
+import { UpdatePolicyStore } from './services/updates/update-policy.store'
+import { UpdateService } from './services/updates/update.service'
+import { registerUpdateIpc } from './ipc/update.ipc'
+import { ImportJobService } from './services/imports/import-job.service'
+import { registerImportIpc } from './ipc/import.ipc'
 
 const isDev = Boolean(process.env.VITE_DEV_SERVER_URL)
+
+app.setAppUserModelId('com.oplforge.app')
+protocol.registerSchemesAsPrivileged([
+  { scheme: 'opl-art', privileges: { standard: true, secure: true, supportFetchAPI: true } }
+])
 
 function registerIpc(
   fragmentationRepairRuntime: FragmentationRepairRuntime,
@@ -73,6 +86,7 @@ function registerIpc(
     fragmentationRepairRuntime
   )
   registerNetworkShareIpc(ipcMain, networkShare)
+  ipcMain.handle('operations:list', () => operationEvents.list())
 }
 
 async function createWindow() {
@@ -117,6 +131,7 @@ let networkShareService: NetworkShareService | undefined
 let coordinatedShutdown = false
 
 app.whenReady().then(async () => {
+  registerLocalArtProtocol()
   const userDataPath = app.getPath('userData')
   const taskStore = new DownloadTaskStore(
     path.join(userDataPath, 'opl-finalization', 'download-tasks.json')
@@ -170,8 +185,14 @@ app.whenReady().then(async () => {
   const http = new HttpTransferService()
   const installationPlanner = new InstallationPlannerService()
   const installation = new GameInstallationService(fragmentationRepairRuntime.adapter)
+  const localDestination = new LocalDestinationService()
   networkShareService = new NetworkShareService(new SmbProtocolServer(), new FtpProtocolServer())
   registerIpc(fragmentationRepairRuntime, downloads, networkShareService)
+  const updates = new UpdateService(() => operationEvents.list())
+  const updatePolicies = new UpdatePolicyStore(path.join(userDataPath, 'updates', 'policy.json'))
+  registerUpdateIpc(ipcMain, updates, updatePolicies)
+  void updatePolicies.get().then((policy) => updates.applyStartupPolicy(policy))
+  registerImportIpc(ipcMain, new ImportJobService(path.join(userDataPath, 'imports', 'jobs.json')))
   void fragmentationRepairRuntime.recovery.reconcile().catch(() => undefined)
   void recoverKnownInstallations()
   void recoverKnownReorganizations()
@@ -205,6 +226,18 @@ app.whenReady().then(async () => {
       async () => {
         const current = await downloads.get(task.taskId)
         if (!current) throw Object.assign(new Error('Task disappeared'), { code: 'TASK_NOT_FOUND' })
+        if (current.target?.kind === 'local-folder') {
+          await downloads.advance(task.taskId, 'validating', 100)
+          await downloads.advance(task.taskId, 'promoting')
+          await localDestination.promote(
+            path.join(downloadCacheRoot, current.transfer.partialRelativePath),
+            current.target,
+            current.source.originalFileName
+          )
+          await downloads.advance(task.taskId, 'verifying', 100)
+          await downloads.advance(task.taskId, 'ready', 100)
+          return
+        }
         const device = (await listDevices()).find(
           (item) => item.id === current.targetDeviceId || item.path === current.targetDeviceId
         )
@@ -246,6 +279,12 @@ app.whenReady().then(async () => {
         await downloads.advance(task.taskId, 'verifying', 100)
         await downloads.advance(task.taskId, 'cataloging', 100)
         await downloads.advance(task.taskId, 'queueing-art', 100)
+        await queueAutomaticArtSync(device.path).catch((error) => {
+          sendLog(
+            'WARNING',
+            `Jogo instalado, mas a sincronização automática de artes falhou: ${error instanceof Error ? error.message : 'falha desconhecida'}`
+          )
+        })
         const ready = await downloads.advance(task.taskId, 'ready', 100)
         try {
           const cleaned = await cacheCleanup.cleanupReady(ready)

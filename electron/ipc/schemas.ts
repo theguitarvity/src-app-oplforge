@@ -37,6 +37,24 @@ const uniqueIds = z
   .refine((ids) => new Set(ids).size === ids.length, 'IDs must be unique')
 const revisionedTask = z.object({ taskId: strictId, expectedRevision: revision }).strict()
 const revisionedJob = z.object({ jobId: strictId, expectedRevision: revision }).strict()
+const downloadTarget = z.discriminatedUnion('kind', [
+  z
+    .object({
+      kind: z.literal('opl-device'),
+      deviceId: strictId,
+      profileId: strictId,
+      mediaHint: z.enum(['CD', 'DVD']).optional()
+    })
+    .strict(),
+  z
+    .object({
+      kind: z.literal('local-folder'),
+      authorizationId: strictId,
+      rootToken: strictId,
+      collisionPolicy: z.enum(['fail', 'rename'])
+    })
+    .strict()
+])
 
 export const schemas = {
   downloadEnqueue: z
@@ -73,13 +91,18 @@ export const schemas = {
             'Provide exactly one torrent source'
           )
       ]),
-      deviceId: strictId,
-      profileId: strictId,
+      target: downloadTarget.optional(),
+      deviceId: strictId.optional(),
+      profileId: strictId.optional(),
       title: z.string().min(1).max(128).optional(),
       mediaHint: z.enum(['CD', 'DVD']).optional(),
       legalReceiptId: strictId.optional()
     })
-    .strict(),
+    .strict()
+    .refine(
+      (value) => Boolean(value.target) || (Boolean(value.deviceId) && Boolean(value.profileId)),
+      'Target or legacy device/profile is required'
+    ),
   downloadList: z
     .object({
       deviceId: strictId.optional(),
@@ -389,7 +412,56 @@ export const schemas = {
       autoStartOnLaunch: z.boolean()
     })
     .strict(),
-  networkShareGetSetupInstructions: z.object({ protocol: z.enum(['smb', 'ftp']) }).strict()
+  networkShareGetSetupInstructions: z.object({ protocol: z.enum(['smb', 'ftp']) }).strict(),
+  localFolderAuthorize: z.object({ selectedPath: absolutePath }).strict(),
+  localFolderCreate: z
+    .object({
+      authorizationId: strictId,
+      rootToken: z.string().min(16).max(256),
+      folderName: z.string().trim().min(1).max(120)
+    })
+    .strict(),
+  updateSetPolicy: z
+    .object({
+      mode: z.enum(['check-automatic', 'ask-before-download', 'download-automatic', 'manual-only']),
+      expectedRevision: revision
+    })
+    .strict(),
+  updateCheck: z.object({ expectedRevision: revision.optional() }).strict(),
+  updateDownload: z.object({ sessionId: strictId, expectedRevision: revision }).strict(),
+  updateInstall: z
+    .object({
+      sessionId: strictId,
+      expectedRevision: revision,
+      confirmation: z.literal('REINICIAR E ATUALIZAR')
+    })
+    .strict(),
+  importGet: z.object({ jobId: strictId }).strict(),
+  importList: z.object({ cursor: strictId.optional(), limit: pageLimit }).strict(),
+  importCreate: z
+    .object({
+      sourcePaths: z.array(absolutePath).min(1).max(500),
+      devicePath: absolutePath,
+      mediaType: z.enum(['DVD', 'CD']),
+      legalConfirmation: z.literal('IMPORTAR BACKUP AUTORIZADO')
+    })
+    .strict(),
+  importCancel: z
+    .object({
+      jobId: strictId,
+      expectedRevision: revision,
+      partialPolicy: z.enum(['discard', 'keep'])
+    })
+    .strict(),
+  importRetry: z.object({ jobId: strictId, expectedRevision: revision }).strict(),
+  operationList: z
+    .object({
+      kinds: z
+        .array(z.enum(['import', 'download', 'update', 'finalization', 'art', 'naming']))
+        .max(6)
+        .optional()
+    })
+    .strict()
 }
 
 export function parseInput<K extends keyof typeof schemas>(

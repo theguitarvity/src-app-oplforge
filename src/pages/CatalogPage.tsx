@@ -5,6 +5,7 @@ import { EssentialsCatalogPage } from '@/pages/EssentialsCatalogPage'
 import { ArtManagerPage } from '@/pages/ArtManagerPage'
 import { DownloadsPage } from '@/pages/DownloadsPage'
 import { OnlineSourcesPage } from '@/pages/OnlineSourcesPage'
+import { useDownloadFeedbackStore } from '@/stores/download-feedback-store'
 
 interface CatalogGameEntry {
   id: string
@@ -103,6 +104,8 @@ const tabs = [
 export function CatalogPage() {
   const [searchParams, setSearchParams] = useSearchParams()
   const activeTab = searchParams.get('tab') || 'discover'
+  const downloadAttention = useDownloadFeedbackStore((state) => state.attention)
+  const clearDownloadAttention = useDownloadFeedbackStore((state) => state.clearAttention)
 
   return (
     <div className="space-y-6">
@@ -120,8 +123,11 @@ export function CatalogPage() {
         {tabs.map((tab) => (
           <button
             key={tab.id}
-            onClick={() => setSearchParams({ tab: tab.id })}
-            className={`flex items-center gap-2 px-4 py-2.5 text-sm font-medium border-b-2 transition ${
+            onClick={() => {
+              setSearchParams({ tab: tab.id })
+              if (tab.id === 'downloads') clearDownloadAttention()
+            }}
+            className={`flex items-center gap-2 px-4 py-2.5 text-sm font-medium border-b-2 transition ${tab.id === 'downloads' && downloadAttention ? 'animate-[download-led_1.1s_ease-in-out_infinite] rounded-t-xl border-violet-400 bg-violet-500/15 text-white' : ''} ${
               activeTab === tab.id
                 ? 'border-violet-500 text-white bg-white/5 font-semibold'
                 : 'border-transparent text-muted-foreground hover:text-white'

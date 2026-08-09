@@ -12,6 +12,10 @@ import type {
   NamingAudit,
   NamingOperationResult,
   NamingPlan,
+  OperationSummary,
+  ImportJob,
+  UpdatePolicy,
+  UpdateSession,
   PipelineEvent,
   RevisionedJobRef,
   RevisionedTaskRef,
@@ -480,6 +484,43 @@ export interface CatalogItem {
   compatibility: VerificationState
   classification: CatalogItemClassification
   findings: Finding[]
+  artView?: GameArtView
+  health?: LibraryHealth
+}
+
+export interface LocalArtAsset {
+  assetId: string
+  deviceId: string
+  gameId: string
+  type: ArtAssetType
+  relativePath: string
+  sizeBytes: number
+  modifiedAt?: string
+  validity: 'valid' | 'invalid' | 'ambiguous-secondary'
+  findingCodes: string[]
+}
+export interface GameArtView {
+  primaryCoverAssetId?: string
+  coverUrl?: string
+  availableTypes: ArtAssetType[]
+  completeness: 'complete' | 'partial' | 'missing' | 'invalid' | 'ambiguous'
+  placeholderKind: 'ps2' | 'ps1' | 'app'
+  findings: Finding[]
+}
+export interface LibraryHealth {
+  readiness: 'ready' | 'needs-validation' | 'invalid-name' | 'fragmented' | 'incomplete' | 'unknown'
+  readinessReasons: Finding[]
+  artCompleteness: GameArtView['completeness']
+  metadataCompleteness: 'complete' | 'missing' | 'unknown'
+}
+
+export interface LocalFolderAuthorization {
+  authorizationId: string
+  rootToken: string
+  displayLabel: string
+  state: 'valid' | 'missing' | 'changed' | 'revoked'
+  createdAt: string
+  lastValidatedAt: string
 }
 export interface CatalogSnapshot {
   snapshotId: string
@@ -628,6 +669,7 @@ export interface DeviceInfo {
   used: number
   fileSystem: string
   status: DeviceStatus
+  sourceKind?: 'opl-device' | 'local-folder'
 }
 
 export interface DeviceSummary {
@@ -1052,6 +1094,30 @@ export interface P2PDownloadService {
 }
 
 export interface OplApi {
+  createImportJob(input: {
+    sourcePaths: string[]
+    devicePath: string
+    mediaType: 'DVD' | 'CD'
+    legalConfirmation: 'IMPORTAR BACKUP AUTORIZADO'
+  }): Promise<ImportJob>
+  getImportJob(jobId: string): Promise<ImportJob | undefined>
+  listImportJobs(): Promise<ImportJob[]>
+  cancelImportJob(input: {
+    jobId: string
+    expectedRevision: number
+    partialPolicy: 'discard' | 'keep'
+  }): Promise<ImportJob>
+  getUpdateSession(): Promise<UpdateSession>
+  getUpdatePolicy(): Promise<UpdatePolicy>
+  setUpdatePolicy(mode: UpdatePolicy['mode'], expectedRevision: number): Promise<UpdatePolicy>
+  checkForUpdates(): Promise<UpdateSession>
+  downloadUpdate(input: { sessionId: string; expectedRevision: number }): Promise<UpdateSession>
+  installUpdate(input: {
+    sessionId: string
+    expectedRevision: number
+    confirmation: 'REINICIAR E ATUALIZAR'
+  }): Promise<UpdateSession>
+  onUpdateEvent(callback: (session: UpdateSession) => void): () => void
   enqueueDownload(input: EnqueueDownloadInput): Promise<DurableDownloadTask>
   listDownloads(input?: ListDownloadsInput): Promise<Page<DurableDownloadTaskSummary>>
   getDurableDownload(taskId: string): Promise<DurableDownloadTask | undefined>
@@ -1245,6 +1311,13 @@ export interface OplApi {
   getHistory(): Promise<HistoryEntry[]>
   clearHistory(): Promise<void>
   openPathDialog(options?: OpenPathDialogOptions): Promise<string[]>
+  authorizeLocalFolder(selectedPath: string): Promise<LocalFolderAuthorization>
+  createLocalFolder(input: {
+    authorizationId: string
+    rootToken: string
+    folderName: string
+  }): Promise<LocalFolderAuthorization>
+  listActiveOperations(): Promise<OperationSummary[]>
   onLog(callback: (entry: LogEntry) => void): () => void
   onProgress(callback: (progress: OperationProgress) => void): () => void
   onOperationEvent(callback: (event: OperationEvent) => void): () => void

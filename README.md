@@ -3,6 +3,16 @@
 
 # OPL Forge
 
+## Feature 006 highlights
+
+- Existing OPL `ART/` covers are indexed once and rendered through the confined `opl-art:` protocol instead of `file://`.
+- Downloads can target either an OPL device or an authorized folder on this computer; local results preserve their original format and are never launched automatically.
+- Batch imports and downloads remain visible in the Activity Drawer with persisted progress and safe cancellation.
+- Settings exposes manual and policy-controlled update checks. Download/install use only the trusted packaged provider and restart always requires explicit confirmation.
+- The embedded SMB1 compatibility profile targets OPL's share-level/OEM flow: password authentication occurs at tree connect, with `OPEN_ANDX` and 64-bit reads supported. SMB1 should only be exposed on a trusted local network.
+
+Release maintainers should follow [docs/releasing.md](docs/releasing.md). Hardware and platform gates are recorded in [Feature 006 validation results](specs/006-release-hardening-library-experience/validation-results.md).
+
 **Prepare, organize e mantenha seu dispositivo do Open PS2 Loader em um só lugar.**
 
 Uma aplicação desktop para importar jogos, estruturar dispositivos USB, gerenciar artes,

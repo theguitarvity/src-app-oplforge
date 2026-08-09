@@ -1,144 +1,71 @@
-name: Build release artifacts
-
+name: Public release
 on:
-  workflow_dispatch:
   push:
-    branches: [master, main]
-    tags: ['v*']
-
+    tags: ['v1.*.*.*']
 permissions:
-  contents: write
-
+  contents: read
 jobs:
-  build-linux:
-    name: Build Linux artifacts
+  validate:
     runs-on: ubuntu-latest
-    env:
-      CSC_IDENTITY_AUTO_DISCOVERY: false
-
+    outputs:
+      public_version: ${{ steps.identity.outputs.opl_public_version }}
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: '22'
-          cache: 'pnpm'
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile=false
-
-      - name: Build app
-        run: pnpm build
-
-      - name: Package Linux installers
-        run: pnpm exec electron-builder --linux --publish never
-
-      - name: Upload Linux artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: linux-artifacts
-          path: release/*
-          if-no-files-found: error
-
-  build-windows:
-    name: Build Windows installer
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: '22', cache: pnpm }
+      - run: pnpm install --frozen-lockfile
+      - id: identity
+        run: pnpm exec tsx scripts/validate-release.ts
+      - run: pnpm lint
+      - run: pnpm test:run
+      - run: pnpm build
+  windows:
+    needs: validate
     runs-on: windows-latest
     env:
-      CSC_IDENTITY_AUTO_DISCOVERY: false
-
+      OPL_PUBLIC_VERSION: ${{ needs.validate.outputs.public_version }}
+      CSC_LINK: ${{ secrets.WINDOWS_CSC_LINK }}
+      CSC_KEY_PASSWORD: ${{ secrets.WINDOWS_CSC_KEY_PASSWORD }}
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-
-      - name: Setup Node
-        uses: actions/setup-node@v4
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: '22', cache: pnpm }
+      - run: pnpm install --frozen-lockfile
+      - name: Require signing secrets
+        shell: bash
+        run: test -n "$CSC_LINK" && test -n "$CSC_KEY_PASSWORD"
+      - run: pnpm build
+      - run: pnpm exec electron-builder --win nsis --x64 --publish never
+      - run: pnpm exec tsx scripts/validate-artifacts.ts release
+      - shell: pwsh
+        run: pnpm exec tsx scripts/verify-signatures.ts public "release/OPL-Forge-$env:OPL_PUBLIC_VERSION-x64-Setup.exe"
+      - uses: actions/upload-artifact@v4
         with:
-          node-version: '22'
-          cache: 'pnpm'
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile=false
-
-      - name: Build app
-        run: pnpm build
-
-      - name: Package Windows installer
-        run: pnpm exec electron-builder --win --x64 --publish never
-
-      - name: Upload Windows artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: windows-artifacts
-          path: release/*
+          name: public-windows
           if-no-files-found: error
-
-  build-macos:
-    name: Build macOS installers
-    runs-on: macos-latest
-    env:
-      CSC_IDENTITY_AUTO_DISCOVERY: false
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: '22'
-          cache: 'pnpm'
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile=false
-
-      - name: Build app
-        run: pnpm build
-
-      - name: Package macOS installers
-        run: pnpm exec electron-builder --mac --publish never
-
-      - name: Upload macOS artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: macos-artifacts
-          path: release/*
-          if-no-files-found: error
-
-  publish-release:
-    name: Publish GitHub Release
-    needs: [build-linux, build-windows, build-macos]
+          path: |
+            release/OPL-Forge-${{ env.OPL_PUBLIC_VERSION }}-x64-Setup.exe
+            release/OPL-Forge-${{ env.OPL_PUBLIC_VERSION }}-x64-Setup.exe.blockmap
+            release/latest.yml
+            release/artifact-inventory.json
+  publish:
+    needs: [validate, windows]
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
-
+    permissions: { contents: write }
     steps:
-      - name: Download all artifacts
-        uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v4
+        with: { name: public-windows, path: release }
+      - uses: softprops/action-gh-release@v2
         with:
-          path: dist-artifacts
-          merge-multiple: true
-
-      - name: Create GitHub Release
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: v${{ github.run_number }}
-          name: Release v${{ github.run_number }}
-          generate_release_notes: true
-          prerelease: true
-          fail_on_unmatched_files: false
+          tag_name: ${{ github.ref_name }}
+          name: ${{ github.ref_name }}
+          draft: false
+          prerelease: false
+          fail_on_unmatched_files: true
           files: |
-            dist-artifacts/**/*.AppImage
-            dist-artifacts/**/*.deb
-            dist-artifacts/**/*.exe
-            dist-artifacts/**/*.dmg
+            release/OPL-Forge-${{ needs.validate.outputs.public_version }}-x64-Setup.exe
+            release/OPL-Forge-${{ needs.validate.outputs.public_version }}-x64-Setup.exe.blockmap
+            release/latest.yml
+            release/artifact-inventory.json

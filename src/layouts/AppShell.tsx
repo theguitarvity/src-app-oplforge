@@ -5,6 +5,8 @@ import { ActivityDrawer } from '@/components/activity/ActivityDrawer'
 import { ProgressModal } from '@/components/ProgressModal'
 import { Sidebar } from '@/components/Sidebar'
 import { useElectronEvents } from '@/hooks/use-electron-events'
+import { DownloadToast } from '@/components/downloads/DownloadToast'
+import { DownloadLifecycleMonitor } from '@/components/downloads/DownloadLifecycleMonitor'
 
 export function AppShell() {
   useElectronEvents()
@@ -34,6 +36,8 @@ export function AppShell() {
       </main>
 
       <ProgressModal />
+      <DownloadToast />
+      <DownloadLifecycleMonitor />
     </div>
   )
 }

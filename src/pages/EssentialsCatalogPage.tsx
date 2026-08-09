@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { Download, RefreshCw, Search } from 'lucide-react'
+import { Download, FolderOpen, FolderPlus, RefreshCw, Search } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { CatalogGameCard } from '@/components/catalog/CatalogGameCard'
 import { DownloadPlanModal } from '@/components/catalog/DownloadPlanModal'
@@ -14,13 +14,21 @@ import { Select } from '@/components/ui/select'
 import { oplApi } from '@/services/api'
 import { useDeviceStore } from '@/stores/device-store'
 import { useDownloadStore } from '@/stores/download-store'
-import type { CatalogGame, CatalogQuery, SmartFillPlan } from '@/types/opl'
+import { useLocalLibraryStore } from '@/stores/local-library-store'
+import { useDownloadFeedbackStore } from '@/stores/download-feedback-store'
+import type {
+  CatalogGame,
+  CatalogQuery,
+  LocalFolderAuthorization,
+  SmartFillPlan
+} from '@/types/opl'
 import { formatBytes } from '@/utils/format'
 
 export function EssentialsCatalogPage() {
   const activeDevice = useDeviceStore((state) => state.activeDevice)
   const upsertTask = useDownloadStore((state) => state.upsertTask)
   const queryClient = useQueryClient()
+  const notifyDownload = useDownloadFeedbackStore((state) => state.notify)
   const [query, setQuery] = useState<CatalogQuery>({
     search: '',
     tier: 'all',
@@ -31,6 +39,15 @@ export function EssentialsCatalogPage() {
   const [plan, setPlan] = useState<SmartFillPlan | null>(null)
   const [planOpen, setPlanOpen] = useState(false)
   const [legalOpen, setLegalOpen] = useState(false)
+  const [targetKind, setTargetKind] = useState<'opl-device' | 'local-folder'>(() =>
+    activeDevice ? 'opl-device' : 'local-folder'
+  )
+  const localFolder = useLocalLibraryStore((state) => state.folder)
+  const setLocalFolder = useLocalLibraryStore((state) => state.setFolder)
+  const [collisionPolicy, setCollisionPolicy] = useState<'fail' | 'rename'>('rename')
+  const [showSubfolder, setShowSubfolder] = useState(false)
+  const [subfolderName, setSubfolderName] = useState('')
+  const [destinationError, setDestinationError] = useState('')
 
   const catalogQuery = useQuery({
     queryKey: ['essentials-catalog', query],
@@ -48,13 +65,43 @@ export function EssentialsCatalogPage() {
     onSuccess: () => void catalogQuery.refetch()
   })
   const addMutation = useMutation({
-    mutationFn: (confirmation: string) =>
-      oplApi.addCatalogGamesToQueue({
-        devicePath: activeDevice!.path,
+    mutationFn: async (confirmation: string) => {
+      if (targetKind === 'local-folder') {
+        if (!localFolder) throw new Error('Selecione uma pasta local.')
+        await Promise.all(
+          selected.map((game) =>
+            oplApi.enqueueDownload({
+              source: {
+                kind: 'http',
+                url: game.url,
+                expectedBytes: game.sizeBytes,
+                originalFileName: game.fileName
+              },
+              target: {
+                kind: 'local-folder',
+                authorizationId: localFolder.authorizationId,
+                rootToken: localFolder.rootToken,
+                collisionPolicy
+              },
+              title: game.title,
+              legalReceiptId: confirmation
+            })
+          )
+        )
+        return []
+      }
+      if (!activeDevice) throw new Error('Selecione um dispositivo OPL.')
+      return oplApi.addCatalogGamesToQueue({
+        devicePath: activeDevice.path,
         games: selected,
         legalConfirmationText: confirmation
-      }),
+      })
+    },
     onSuccess: async (tasks) => {
+      notifyDownload(
+        `${selected.length} jogo(s) adicionado(s). Clique em Downloads para acompanhar.`,
+        'started'
+      )
       tasks.forEach(upsertTask)
       setSelected([])
       setLegalOpen(false)
@@ -81,6 +128,43 @@ export function EssentialsCatalogPage() {
     setPlanOpen(false)
   }
 
+  async function chooseLocalFolder(): Promise<LocalFolderAuthorization | undefined> {
+    setDestinationError('')
+    const [selectedPath] = await oplApi.openPathDialog({ mode: 'folder' })
+    if (!selectedPath) return undefined
+    const authorization = await oplApi.authorizeLocalFolder(selectedPath)
+    setLocalFolder(authorization)
+    return authorization
+  }
+
+  async function createDestinationSubfolder() {
+    setDestinationError('')
+    try {
+      const parent = localFolder ?? (await chooseLocalFolder())
+      if (!parent) return
+      const folder = await oplApi.createLocalFolder({
+        authorizationId: parent.authorizationId,
+        rootToken: parent.rootToken,
+        folderName: subfolderName
+      })
+      setLocalFolder(folder)
+      setSubfolderName('')
+      setShowSubfolder(false)
+    } catch (error) {
+      setDestinationError(
+        error instanceof Error ? error.message : 'Não foi possível criar a pasta.'
+      )
+    }
+  }
+
+  async function beginSelectedDownload() {
+    if (targetKind === 'local-folder' && !localFolder) {
+      const authorization = await chooseLocalFolder()
+      if (!authorization) return
+    }
+    setLegalOpen(true)
+  }
+
   return (
     <div className="space-y-6">
       <Card>
@@ -105,13 +189,91 @@ export function EssentialsCatalogPage() {
               onClick={() => smartFillMutation.mutate()}
             />
             <Button
-              disabled={!activeDevice || selected.length === 0}
-              onClick={() => setLegalOpen(true)}
+              disabled={selected.length === 0 || (targetKind === 'opl-device' && !activeDevice)}
+              onClick={() => void beginSelectedDownload()}
             >
               <Download className="size-4" /> Adicionar selecionados
             </Button>
           </div>
         </div>
+        <div className="mt-4 grid items-end gap-3 rounded-xl border border-white/10 bg-black/20 p-4 md:grid-cols-3">
+          <div className="space-y-2">
+            <Label>Baixar para</Label>
+            <Select
+              value={targetKind}
+              onChange={(event) => setTargetKind(event.target.value as typeof targetKind)}
+            >
+              <option value="opl-device">Dispositivo OPL</option>
+              <option value="local-folder">Este computador</option>
+            </Select>
+          </div>
+          {targetKind === 'local-folder' && (
+            <>
+              <div className="min-w-0 space-y-2">
+                <Label>Pasta autorizada</Label>
+                <div className="flex gap-2">
+                  <Button
+                    variant="secondary"
+                    className="h-11 min-w-0 flex-1 justify-start px-3"
+                    title={localFolder?.displayLabel}
+                    onClick={() => void chooseLocalFolder()}
+                  >
+                    <FolderOpen className="size-4 shrink-0 text-violet-300" />
+                    <span className="truncate">
+                      {localFolder?.displayLabel || 'Selecionar pasta de destino'}
+                    </span>
+                  </Button>
+                  <Button
+                    variant="secondary"
+                    className="size-11 shrink-0 px-0"
+                    title="Criar subpasta de destino"
+                    onClick={() => setShowSubfolder((value) => !value)}
+                  >
+                    <FolderPlus className="size-4 text-violet-300" />
+                  </Button>
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label>Se o arquivo existir</Label>
+                <Select
+                  value={collisionPolicy}
+                  onChange={(event) =>
+                    setCollisionPolicy(event.target.value as typeof collisionPolicy)
+                  }
+                >
+                  <option value="rename">Renomear com sufixo</option>
+                  <option value="fail">Não substituir</option>
+                </Select>
+              </div>
+            </>
+          )}
+        </div>
+        {targetKind === 'local-folder' && showSubfolder ? (
+          <div className="mt-3 flex items-end gap-2 rounded-xl border border-violet-400/20 bg-violet-500/5 p-3">
+            <div className="min-w-0 flex-1 space-y-2">
+              <Label>
+                Nova subpasta dentro de {localFolder?.displayLabel || 'um local a escolher'}
+              </Label>
+              <Input
+                value={subfolderName}
+                onChange={(event) => setSubfolderName(event.target.value)}
+                placeholder="Ex.: RPG, Pendentes ou PS2"
+              />
+            </div>
+            <Button
+              disabled={!subfolderName.trim()}
+              onClick={() => void createDestinationSubfolder()}
+            >
+              Criar e usar
+            </Button>
+          </div>
+        ) : null}
+        {targetKind === 'local-folder' && localFolder ? (
+          <p className="mt-2 text-xs text-emerald-300">
+            Os arquivos deste lote serão salvos diretamente em “{localFolder.displayLabel}”.
+          </p>
+        ) : null}
+        {destinationError ? <p className="mt-2 text-xs text-red-300">{destinationError}</p> : null}
         <div className="mt-5 grid gap-3 md:grid-cols-[1fr_150px_170px_180px_auto]">
           <div className="space-y-2">
             <Label>Busca</Label>
@@ -185,9 +347,12 @@ export function EssentialsCatalogPage() {
             ? ` - links acessíveis: ${refreshLinksMutation.data.links.filter((link) => link.accessible).length}/${refreshLinksMutation.data.links.length}`
             : ''}
         </div>
+        {addMutation.isError ? (
+          <p className="mt-3 text-sm text-red-300">{(addMutation.error as Error).message}</p>
+        ) : null}
       </Card>
 
-      {!activeDevice ? (
+      {!activeDevice && targetKind === 'opl-device' ? (
         <EmptyState
           icon={Download}
           title="Selecione um dispositivo"

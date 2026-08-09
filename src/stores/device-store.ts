@@ -29,6 +29,15 @@ export const useDeviceStore = create<DeviceState>((set) => ({
   metrics: null,
   setActiveDevice: (device) =>
     set((state) => ({ activeDevice: device, selectionRevision: state.selectionRevision + 1 })),
-  setDevices: (devices) => set({ devices }),
+  setDevices: (devices) =>
+    set((state) => ({
+      devices: [
+        ...devices,
+        ...state.devices.filter(
+          (item) =>
+            item.sourceKind === 'local-folder' && !devices.some((next) => next.path === item.path)
+        )
+      ]
+    })),
   setMetrics: (metrics) => set({ metrics })
 }))

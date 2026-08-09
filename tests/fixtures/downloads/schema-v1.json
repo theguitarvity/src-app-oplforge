@@ -1,0 +1,8 @@
+{
+  "schemaVersion": 1,
+  "revision": 0,
+  "taskId": "legacy-task",
+  "targetDeviceId": "device-1",
+  "targetProfileId": "opl-default",
+  "phase": "queued"
+}

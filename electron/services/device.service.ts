@@ -33,7 +33,8 @@ async function statDevice(candidate: MountCandidate): Promise<DeviceInfo | null>
       free,
       used,
       fileSystem: candidate.fileSystem,
-      status: missingStructure ? 'ready' : 'missing-structure'
+      status: missingStructure ? 'ready' : 'missing-structure',
+      sourceKind: missingStructure ? 'opl-device' : 'local-folder'
     }
   } catch {
     return null
@@ -150,7 +151,12 @@ export async function inspectDevice(
 export async function getDeviceSummary(devicePath?: string): Promise<DeviceSummary> {
   const devices = await listDevices()
   const device = devicePath
-    ? (devices.find((item) => item.path === devicePath) ?? null)
+    ? (devices.find((item) => item.path === devicePath) ??
+      (await statDevice({
+        path: devicePath,
+        name: path.basename(devicePath),
+        fileSystem: 'local'
+      })))
     : (devices[0] ?? null)
 
   const count = async (dir: string, extensions?: string[]) => {
@@ -168,7 +174,10 @@ export async function getDeviceSummary(devicePath?: string): Promise<DeviceSumma
 
   return {
     device,
-    ps2Games: (await count('DVD', ['.iso'])) + (await count('CD', ['.iso'])),
+    ps2Games:
+      (await count('DVD', ['.iso', '.zso'])) +
+      (await count('CD', ['.iso', '.zso'])) +
+      (device?.sourceKind === 'local-folder' ? await count('.', ['.iso', '.zso']) : 0),
     ps1Games: await count('PS1', ['.bin', '.cue', '.iso']),
     apps: await count('APPS'),
     recentHistory: (await getHistory()).slice(0, 5)

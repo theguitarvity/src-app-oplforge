@@ -4,6 +4,7 @@ import { DeviceWorkspaceHeader } from '@/components/device/DeviceWorkspaceHeader
 import { DeviceOverviewTab } from '@/components/device/DeviceOverviewTab'
 import { oplApi } from '@/services/api'
 import { useDeviceStore } from '@/stores/device-store'
+import { LocalLibraryChooser } from '@/components/library/LocalLibraryChooser'
 
 export function DashboardPage() {
   const queryClient = useQueryClient()
@@ -36,7 +37,12 @@ export function DashboardPage() {
   const device = summary?.device ?? activeDevice
 
   if (!device) {
-    return <DisconnectedEmptyState onRefreshDevices={refreshDevices} isScanning={isScanning} />
+    return (
+      <div className="space-y-5">
+        <DisconnectedEmptyState onRefreshDevices={refreshDevices} isScanning={isScanning} />
+        <LocalLibraryChooser />
+      </div>
+    )
   }
 
   const ps2Count = summary?.ps2Games ?? 0

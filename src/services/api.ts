@@ -5,6 +5,17 @@ const unsupported = async () => {
 }
 
 const fallbackApi: OplApi = {
+  createImportJob: unsupported,
+  getImportJob: async () => undefined,
+  listImportJobs: async () => [],
+  cancelImportJob: unsupported,
+  getUpdateSession: unsupported,
+  getUpdatePolicy: unsupported,
+  setUpdatePolicy: unsupported,
+  checkForUpdates: unsupported,
+  downloadUpdate: unsupported,
+  installUpdate: unsupported,
+  onUpdateEvent: () => () => undefined,
   enqueueDownload: unsupported,
   listDownloads: async () => ({ items: [], revision: 0 }),
   getDurableDownload: async () => undefined,
@@ -129,6 +140,9 @@ const fallbackApi: OplApi = {
   getHistory: async () => [],
   clearHistory: async () => undefined,
   openPathDialog: async () => [],
+  authorizeLocalFolder: unsupported,
+  createLocalFolder: unsupported,
+  listActiveOperations: async () => [],
   onLog: () => () => undefined,
   onProgress: () => () => undefined,
   onOperationEvent: () => () => undefined,

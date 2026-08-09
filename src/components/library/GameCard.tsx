@@ -28,10 +28,11 @@ export function GameCard({ item, onSelect }: GameCardProps) {
     >
       {/* Cover / Media Area */}
       <div className="relative aspect-[3/4] w-full overflow-hidden bg-black/50">
-        {item.hasCoverArt ? (
+        {item.coverUrl ? (
           <img
-            src={`file://${item.filePath}`}
+            src={item.coverUrl}
             alt={item.title}
+            loading="lazy"
             className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
             onError={(e) => {
               ;(e.target as HTMLElement).style.display = 'none'

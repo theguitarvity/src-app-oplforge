@@ -17,7 +17,7 @@ export function ArtManagerPage() {
   const device = useDeviceStore((state) => state.activeDevice)
   const client = useQueryClient()
   const [plan, setPlan] = useState<ArtSyncPlanSummary>()
-  const [selectedTypes, setSelectedTypes] = useState<OplArtType[]>(['COV', 'COV2'])
+  const [selectedTypes, setSelectedTypes] = useState<OplArtType[]>(artTypes)
   const assets = useQuery({
     queryKey: ['art-index'],
     queryFn: () => oplApi.queryArtIndex({ limit: 500 })

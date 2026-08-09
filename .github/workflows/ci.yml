@@ -35,3 +35,10 @@ jobs:
 
       - name: Build
         run: pnpm build
+
+      - name: Package unsigned smoke artifact
+        if: github.event_name == 'push'
+        env:
+          CSC_IDENTITY_AUTO_DISCOVERY: false
+          OPL_PUBLIC_VERSION: smoke
+        run: pnpm exec electron-builder --linux --publish never

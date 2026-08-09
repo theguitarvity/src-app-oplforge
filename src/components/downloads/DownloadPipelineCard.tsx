@@ -12,6 +12,7 @@ const phaseLabel: Record<string, string> = {
   validating: 'Validando imagem',
   planning: 'Preparando instalação',
   installing: 'Instalando no dispositivo',
+  promoting: 'Movendo para a pasta local',
   verifying: 'Verificando',
   cataloging: 'Atualizando catálogo',
   'queueing-art': 'Preparando artes',
@@ -20,6 +21,36 @@ const phaseLabel: Record<string, string> = {
   failed: 'Falhou',
   cancelled: 'Cancelado',
   'waiting-device': 'Aguardando dispositivo'
+}
+
+function friendlyError(code: string, phase?: string) {
+  if (code === 'INVALID_PHASE_TRANSITION' && phase === 'verifying')
+    return {
+      title: 'O arquivo foi baixado e verificado',
+      message:
+        'O Forge encontrou um problema antigo ao atualizar o status. Clique em “Tentar novamente” para concluir sem baixar o arquivo outra vez.'
+    }
+  if (code === 'LOCAL_COLLISION')
+    return {
+      title: 'Já existe um arquivo com esse nome',
+      message: 'Escolha outra pasta ou use a opção de renomear com sufixo.'
+    }
+  if (code === 'LOCAL_ROOT_CHANGED' || code === 'LOCAL_ROOT_UNAUTHORIZED')
+    return {
+      title: 'A pasta de destino não está disponível',
+      message: 'Selecione novamente a pasta onde o jogo deve ser salvo.'
+    }
+  if (code === 'DEVICE_NOT_FOUND')
+    return {
+      title: 'Dispositivo desconectado',
+      message: 'Reconecte o dispositivo para continuar este download.'
+    }
+  if (code === 'ENOSPC')
+    return { title: 'Espaço insuficiente', message: 'Libere espaço no destino e tente novamente.' }
+  return {
+    title: 'Não foi possível concluir o download',
+    message: 'Tente novamente. Se o problema continuar, consulte os detalhes de atividade.'
+  }
 }
 
 export function DownloadPipelineCard({
@@ -71,6 +102,9 @@ export function DownloadPipelineCard({
           <p className="mt-0.5 text-xs text-muted-foreground">
             {phaseLabel[task.phase] ?? task.phase}
           </p>
+          <p className="mt-0.5 text-[11px] text-muted-foreground">
+            {task.target?.kind === 'local-folder' ? 'Este computador' : 'Dispositivo OPL'}
+          </p>
         </div>
         <span className="rounded-full border border-white/10 bg-white/5 px-2.5 py-1 text-xs font-medium text-violet-100">
           {Math.round(progress)}%
@@ -110,8 +144,13 @@ export function DownloadPipelineCard({
           role="alert"
           className="mt-4 rounded-xl border border-red-400/20 bg-red-500/5 p-3 text-sm"
         >
-          <p className="font-medium text-red-200">{task.lastError.code}</p>
-          <p className="mt-1 text-red-200/80">{task.lastError.action ?? task.lastError.message}</p>
+          <p className="font-medium text-red-200">
+            {friendlyError(task.lastError.code, task.lastError.phase).title}
+          </p>
+          <p className="mt-1 text-red-200/80">
+            {task.lastError.action ??
+              friendlyError(task.lastError.code, task.lastError.phase).message}
+          </p>
         </div>
       ) : null}
       <div className="mt-4 flex flex-wrap justify-end gap-2">

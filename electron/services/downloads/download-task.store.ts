@@ -26,14 +26,28 @@ export class DownloadTaskStore {
   }
   async get(taskId: string): Promise<DurableDownloadTask | undefined> {
     const task = await this.entities.get(taskId)
-    return task ? structuredClone(task) : undefined
+    return task ? structuredClone(this.migrate(task)) : undefined
   }
 
   async list(): Promise<Page<DurableDownloadTask>> {
     const document = await this.entities.document()
     return {
-      items: Object.values(document.data).map((task) => structuredClone(task)),
+      items: Object.values(document.data).map((task) => structuredClone(this.migrate(task))),
       revision: document.revision
+    }
+  }
+
+  private migrate(task: DurableDownloadTask): DurableDownloadTask {
+    if (task.schemaVersion >= 2 && task.target) return task
+    return {
+      ...task,
+      schemaVersion: 2,
+      target: {
+        kind: 'opl-device',
+        deviceId: task.targetDeviceId,
+        profileId: task.targetProfileId || 'opl-default',
+        mediaHint: task.requestedMedia
+      }
     }
   }
 

@@ -14,10 +14,23 @@ extraResources:
     to: icon.png
 win:
   icon: build/icon.ico
+  executableName: OPL Forge
+  artifactName: OPL-Forge-${env.OPL_PUBLIC_VERSION}-${arch}-Setup.${ext}
   target:
     - target: nsis
       arch:
         - x64
+nsis:
+  installerIcon: build/icon.ico
+  uninstallerIcon: build/icon.ico
+  installerHeaderIcon: build/icon.ico
+  oneClick: false
+  allowToChangeInstallationDirectory: true
+publish:
+  provider: github
+  owner: theguitarvity
+  repo: src-app-oplforge
+  releaseType: release
 mac:
   target:
     - target: dmg

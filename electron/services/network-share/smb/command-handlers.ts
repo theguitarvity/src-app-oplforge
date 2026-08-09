@@ -60,18 +60,19 @@ interface SearchState {
   nextIndex: number
 }
 
-let nextFid = 1
-let nextSid = 1
+let nextSessionId = 1
 
 /** Per-connection SMB session state: authentication, tree, open handles, active searches. */
 export class SmbSession {
   authenticated = false
   treeConnected = false
-  uid = 1
-  tid = 1
+  uid = 0
+  tid = 0
   libraryRootPath = ''
   readonly handles = new Map<number, OpenHandle>()
   readonly searches = new Map<number, SearchState>()
+  private nextFid = 1
+  private nextSid = 1
 
   constructor(
     private readonly auth: SmbAuthContext,
@@ -81,6 +82,26 @@ export class SmbSession {
   checkCredentials(username: string, password: string): boolean {
     // FR-015: single generic pass/fail, no per-field detail leaked to callers.
     return username === this.auth.username && password === this.auth.password
+  }
+
+  establishSession(): void {
+    this.authenticated = true
+    this.uid = nextSessionId++ & 0xffff || 1
+  }
+
+  connectTree(password: string): boolean {
+    if (password !== this.auth.password) return false
+    this.treeConnected = true
+    this.tid = nextSessionId++ & 0xffff || 1
+    return true
+  }
+
+  allocateFid(): number {
+    return this.nextFid++ & 0xffff
+  }
+
+  allocateSid(): number {
+    return this.nextSid++ & 0xffff
   }
 
   markActivity(activity: NetworkShareClientActivity): void {
@@ -181,19 +202,10 @@ function handleSessionSetup(request: SmbMessage, session: SmbSession): SmbMessag
   // Words: AndXCommand(1)+AndXReserved(1)+AndXOffset(2)+MaxBufferSize(2)+
   // MaxMpxCount(2)+VcNumber(2)+SessionKey(4) = 14 bytes before the password
   // lengths — confirmed against MS-CIFS 2.2.4.53.1 (WordCount=13, 26 bytes).
-  const ansiPasswordLength = request.params.readUInt16LE(14)
-  let offset = 0
-  const ansiPassword = request.data.subarray(offset, offset + ansiPasswordLength)
-  offset += ansiPasswordLength
-  const unicodePasswordLength = request.params.readUInt16LE(16)
-  offset += unicodePasswordLength // Unicode not negotiated; ignored if a client sends it anyway.
-  const account = readOemString(request.data, offset)
-
-  const password = ansiPassword.toString('latin1').replace(/\0+$/, '')
-  if (!session.checkCredentials(account.value, password)) {
-    return errorResponse(request, NT_STATUS.LOGON_FAILURE)
-  }
-  session.authenticated = true
+  if (request.params.length < 18) return errorResponse(request, NT_STATUS.LOGON_FAILURE)
+  // Share-level security intentionally does not authenticate here. OPL sends
+  // the share password with TREE_CONNECT_ANDX after establishing this session.
+  session.establishSession()
 
   const params = Buffer.alloc(6)
   params.writeUInt8(0xff, 0) // AndXCommand: no chained response
@@ -219,13 +231,17 @@ function handleTreeConnect(
 ): SmbMessage {
   if (!session.authenticated) return errorResponse(request, NT_STATUS.ACCESS_DENIED)
 
+  if (request.params.length < 8) return errorResponse(request, NT_STATUS.LOGON_FAILURE)
+
   const passwordLength = request.params.readUInt16LE(6)
+  if (passwordLength > request.data.length) return errorResponse(request, NT_STATUS.LOGON_FAILURE)
+  const password = request.data.subarray(0, passwordLength).toString('latin1').replace(/\0+$/, '')
   let offset = passwordLength
   const pathResult = readOemString(request.data, offset)
   offset = pathResult.nextOffset
   readOemString(request.data, offset) // Service — accepted, not further validated
 
-  session.treeConnected = true
+  if (!session.connectTree(password)) return errorResponse(request, NT_STATUS.LOGON_FAILURE)
   session.libraryRootPath = libraryRootPath
 
   const params = Buffer.alloc(4)
@@ -292,7 +308,7 @@ async function handleNtCreate(request: SmbMessage, session: SmbSession): Promise
     stats = await fs.stat(absolutePath)
   }
 
-  const fid = nextFid++
+  const fid = session.allocateFid()
   const relativePath = toRelativeKey(session.libraryRootPath, absolutePath)
   session.handles.set(fid, {
     absolutePath,
@@ -323,6 +339,52 @@ async function handleNtCreate(request: SmbMessage, session: SmbSession): Promise
   return { header: { ...successHeader(request), tid: session.tid }, params, data: Buffer.alloc(0) }
 }
 
+// --- SMB_COM_OPEN_ANDX (0x2D) ---------------------------------------------
+
+async function handleOpenAndx(request: SmbMessage, session: SmbSession): Promise<SmbMessage> {
+  if (!session.treeConnected) return errorResponse(request, NT_STATUS.ACCESS_DENIED)
+  const nameData = request.data[0] === 0x04 ? request.data.subarray(1) : request.data
+  const rawName = readOemString(nameData, 0).value
+  let absolutePath: string
+  try {
+    absolutePath = resolveSharePath(session.libraryRootPath, rawName)
+  } catch {
+    return errorResponse(request, NT_STATUS.OBJECT_NAME_NOT_FOUND)
+  }
+  const stats = await fs.stat(absolutePath).catch(() => undefined)
+  if (!stats || !stats.isFile()) return errorResponse(request, NT_STATUS.OBJECT_NAME_NOT_FOUND)
+  const fid = session.allocateFid()
+  session.handles.set(fid, {
+    absolutePath,
+    relativePath: toRelativeKey(session.libraryRootPath, absolutePath),
+    isDirectory: false,
+    writeLocked: false
+  })
+  session.markActivity('browsing')
+  const params = Buffer.alloc(30)
+  params.writeUInt8(0xff, 0)
+  params.writeUInt16LE(fid, 4)
+  params.writeUInt16LE(FILE_ATTRIBUTE.NORMAL, 6)
+  params.writeUInt32LE(Math.floor(stats.mtimeMs / 1000), 8)
+  params.writeUInt32LE(Math.min(stats.size, 0xffffffff), 12)
+  params.writeUInt16LE(0x0040, 16) // read-only open mode
+  return {
+    header: { ...successHeader(request), uid: session.uid, tid: session.tid },
+    params,
+    data: Buffer.alloc(0)
+  }
+}
+
+function handleEcho(request: SmbMessage, session: SmbSession): SmbMessage {
+  const params = Buffer.alloc(2)
+  params.writeUInt16LE(request.params.length >= 2 ? request.params.readUInt16LE(0) : 1, 0)
+  return {
+    header: { ...successHeader(request), uid: session.uid, tid: session.tid },
+    params,
+    data: Buffer.from(request.data)
+  }
+}
+
 // --- SMB_COM_CLOSE (0x04) --------------------------------------------------
 
 function handleClose(request: SmbMessage, session: SmbSession): SmbMessage {
@@ -341,14 +403,19 @@ async function handleReadAndx(request: SmbMessage, session: SmbSession): Promise
   const fid = request.params.readUInt16LE(4)
   const offsetLow = request.params.readUInt32LE(6)
   const maxCountLow = request.params.readUInt16LE(10)
+  const maxCountHigh = request.params.length >= 18 ? request.params.readUInt32LE(14) : 0
+  const offsetHigh = request.params.length >= 24 ? request.params.readUInt32LE(20) : 0
   const handle = session.handles.get(fid)
   if (!handle) return errorResponse(request, NT_STATUS.INVALID_HANDLE)
 
   session.markActivity('transferring')
-  const buffer = Buffer.alloc(maxCountLow)
+  const requestedCount = Math.min(0xffff, maxCountLow + maxCountHigh * 0x10000)
+  const offset = Number((BigInt(offsetHigh) << 32n) | BigInt(offsetLow))
+  if (!Number.isSafeInteger(offset)) return errorResponse(request, NT_STATUS.UNSUCCESSFUL)
+  const buffer = Buffer.alloc(requestedCount)
   const fileHandle = await fs.open(handle.absolutePath, 'r')
   const { bytesRead } = await fileHandle
-    .read(buffer, 0, maxCountLow, offsetLow)
+    .read(buffer, 0, requestedCount, offset)
     .finally(() => fileHandle.close())
 
   const params = Buffer.alloc(24)
@@ -377,6 +444,7 @@ async function handleWriteAndx(request: SmbMessage, session: SmbSession): Promis
   const offsetLow = request.params.readUInt32LE(6)
   const dataLength = request.params.readUInt16LE(20)
   const dataOffsetInPacket = request.params.readUInt16LE(22)
+  const offsetHigh = request.params.length >= 28 ? request.params.readUInt32LE(24) : 0
   const handle = session.handles.get(fid)
   if (!handle) return errorResponse(request, NT_STATUS.INVALID_HANDLE)
 
@@ -395,9 +463,11 @@ async function handleWriteAndx(request: SmbMessage, session: SmbSession): Promis
   // packet isn't available here, so the caller (dispatch) passes the
   // pre-sliced write payload as request.data instead of re-deriving offsets.
   const payload = request.data.subarray(0, dataLength)
+  const offset = Number((BigInt(offsetHigh) << 32n) | BigInt(offsetLow))
+  if (!Number.isSafeInteger(offset)) return errorResponse(request, NT_STATUS.UNSUCCESSFUL)
   const fileHandle = await fs.open(handle.absolutePath, 'r+')
   try {
-    await fileHandle.write(payload, 0, payload.length, offsetLow)
+    await fileHandle.write(payload, 0, payload.length, offset)
   } finally {
     await fileHandle.close()
   }
@@ -518,7 +588,7 @@ async function handleFindFirst2(
 
   session.markActivity('browsing')
   const allEntries = await listDirectoryEntries(absoluteDir)
-  const sid = nextSid++
+  const sid = session.allocateSid()
   const state: SearchState = { entries: allEntries, nextIndex: 0 }
   session.searches.set(sid, state)
 
@@ -613,6 +683,21 @@ export async function dispatchSmbCommand(
   session: SmbSession,
   libraryRootPath: string
 ): Promise<SmbMessage> {
+  const command = request.header.command
+  if (
+    session.authenticated &&
+    command !== SMB_COMMAND.NEGOTIATE &&
+    command !== SMB_COMMAND.SESSION_SETUP_ANDX &&
+    request.header.uid !== session.uid
+  )
+    return errorResponse(request, NT_STATUS.ACCESS_DENIED)
+  if (
+    session.treeConnected &&
+    command !== SMB_COMMAND.TREE_CONNECT_ANDX &&
+    command !== SMB_COMMAND.LOGOFF_ANDX &&
+    request.header.tid !== session.tid
+  )
+    return errorResponse(request, NT_STATUS.BAD_NETWORK_NAME)
   switch (request.header.command) {
     case SMB_COMMAND.NEGOTIATE:
       return handleNegotiate(request)
@@ -626,6 +711,10 @@ export async function dispatchSmbCommand(
       return handleLogoff(request, session)
     case SMB_COMMAND.NT_CREATE_ANDX:
       return handleNtCreate(request, session)
+    case SMB_COMMAND.OPEN_ANDX:
+      return handleOpenAndx(request, session)
+    case SMB_COMMAND.ECHO:
+      return handleEcho(request, session)
     case SMB_COMMAND.CLOSE:
       return handleClose(request, session)
     case SMB_COMMAND.READ_ANDX:

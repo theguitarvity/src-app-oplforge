@@ -11,13 +11,32 @@ interface DownloadProjectionState {
   updateProgress(progress: unknown): void
 }
 
+function normalizeTask(task: DurableDownloadTaskSummary): DurableDownloadTaskSummary {
+  const completedByLegacyLocalBug =
+    task.target?.kind === 'local-folder' &&
+    task.phase === 'failed' &&
+    task.lastError?.code === 'INVALID_PHASE_TRANSITION' &&
+    task.lastError.phase === 'verifying' &&
+    task.transfer.totalBytes !== undefined &&
+    task.transfer.bytesConfirmed >= task.transfer.totalBytes
+  return completedByLegacyLocalBug
+    ? {
+        ...task,
+        phase: 'ready',
+        phaseProgress: 100,
+        overallProgress: 100,
+        lastError: undefined
+      }
+    : task
+}
+
 export const useDownloadStore = create<DownloadProjectionState>((set, get) => ({
   tasks: {},
   queueRevision: 0,
   lastSequenceByOperation: {},
   setSnapshot: (page) =>
     set({
-      tasks: Object.fromEntries(page.items.map((task) => [task.taskId, task])),
+      tasks: Object.fromEntries(page.items.map((task) => [task.taskId, normalizeTask(task)])),
       queueRevision: page.revision
     }),
   applyEvent: (event) => {
@@ -56,7 +75,7 @@ export const useDownloadStore = create<DownloadProjectionState>((set, get) => ({
   },
   upsertTask: (candidate) => {
     if (!candidate || typeof candidate !== 'object' || !('taskId' in candidate)) return
-    const task = candidate as DurableDownloadTaskSummary
+    const task = normalizeTask(candidate as DurableDownloadTaskSummary)
     set((state) => ({ tasks: { ...state.tasks, [task.taskId]: task } }))
   },
   updateProgress: () => undefined

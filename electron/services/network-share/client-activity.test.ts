@@ -102,8 +102,8 @@ describe('SMB1 command-handler activity classification', () => {
         onWriteConflict: vi.fn()
       }
     )
-    session.authenticated = true
-    session.treeConnected = true
+    session.establishSession()
+    session.connectTree('secret')
     session.libraryRootPath = libraryRoot
   })
 
@@ -112,27 +112,31 @@ describe('SMB1 command-handler activity classification', () => {
   })
 
   it('marks NT_CREATE_ANDX as browsing, READ_ANDX as transferring, and CLOSE as idle', async () => {
-    const createResponse = await dispatchSmbCommand(
-      ntCreateRequest('game.iso'),
-      session,
-      libraryRoot
-    )
+    const create = ntCreateRequest('game.iso')
+    create.header.uid = session.uid
+    create.header.tid = session.tid
+    const createResponse = await dispatchSmbCommand(create, session, libraryRoot)
     const fid = createResponse.params.readUInt16LE(5)
     expect(activities).toEqual(['browsing'])
 
-    await dispatchSmbCommand(readAndxRequest(fid, 4), session, libraryRoot)
+    const read = readAndxRequest(fid, 4)
+    read.header.uid = session.uid
+    read.header.tid = session.tid
+    await dispatchSmbCommand(read, session, libraryRoot)
     expect(activities).toEqual(['browsing', 'transferring'])
 
-    await dispatchSmbCommand(closeRequest(fid), session, libraryRoot)
+    const close = closeRequest(fid)
+    close.header.uid = session.uid
+    close.header.tid = session.tid
+    await dispatchSmbCommand(close, session, libraryRoot)
     expect(activities).toEqual(['browsing', 'transferring', 'idle'])
   })
 
   it('lists directory entries via TRANSACTION2/FIND_FIRST2 (directory browsing)', async () => {
-    const response = await dispatchSmbCommand(
-      findFirst2Request('\\*', 100),
-      session,
-      libraryRoot
-    )
+    const request = findFirst2Request('\\*', 100)
+    request.header.uid = session.uid
+    request.header.tid = session.tid
+    const response = await dispatchSmbCommand(request, session, libraryRoot)
 
     expect(response.header.status).toBe(0)
     // response.params is the fixed TRANSACTION2 response envelope (10 words);

@@ -102,6 +102,31 @@ function sessionSetupRequest(username: string, password: string) {
   })
 }
 
+function treeConnectRequest(uid: number, password: string) {
+  const params = Buffer.alloc(8)
+  params.writeUInt8(0xff, 0)
+  params.writeUInt16LE(password.length, 6)
+  return encodeSmbMessage({
+    header: {
+      command: SMB_COMMAND.TREE_CONNECT_ANDX,
+      status: 0,
+      flags: 0x18,
+      flags2: 0,
+      pidHigh: 0,
+      securityFeatures: defaultSecurityFeatures(),
+      tid: 0,
+      pidLow: 1,
+      uid,
+      mid: 3
+    },
+    params,
+    data: Buffer.concat([
+      Buffer.from(password, 'latin1'),
+      Buffer.from('\\\\127.0.0.1\\OPL Forge Test\0A:\0', 'latin1')
+    ])
+  })
+}
+
 async function sendAndReceive(
   socket: net.Socket,
   reader: NbssFrameReader,
@@ -141,8 +166,11 @@ describe('Authentication failure handling (FR-015)', () => {
     await fs.rm(libraryRoot, { recursive: true, force: true })
   })
 
-  it('SMB rejects an invalid password with LOGON_FAILURE and creates no connected client', async () => {
-    const socket = net.connect({ port: SMB_TEST_PORT, host: service.getStatus().smb.boundAddresses[0] })
+  it('accepts share-level session setup but rejects an invalid tree password generically', async () => {
+    const socket = net.connect({
+      port: SMB_TEST_PORT,
+      host: service.getStatus().smb.boundAddresses[0]
+    })
     const reader = new NbssFrameReader()
     await new Promise((resolve) => socket.once('connect', resolve))
 
@@ -153,14 +181,23 @@ describe('Authentication failure handling (FR-015)', () => {
       sessionSetupRequest('tester', 'totally-wrong-password')
     )
     const decoded = decodeSmbMessage(sessionSetupResponse)
-    expect(decoded.header.status >>> 0).toBe(NT_STATUS.LOGON_FAILURE)
+    expect(decoded.header.status >>> 0).toBe(NT_STATUS.SUCCESS)
+    const treeResponse = await sendAndReceive(
+      socket,
+      reader,
+      treeConnectRequest(decoded.header.uid, 'totally-wrong-password')
+    )
+    expect(decodeSmbMessage(treeResponse).header.status >>> 0).toBe(NT_STATUS.LOGON_FAILURE)
 
     expect(service.getStatus().connectedClients).toHaveLength(0)
     socket.destroy()
   })
 
   it('completes the classic NBT SESSION_REQUEST handshake before SMB traffic (real PS2/OPL clients send this unconditionally)', async () => {
-    const socket = net.connect({ port: SMB_TEST_PORT, host: service.getStatus().smb.boundAddresses[0] })
+    const socket = net.connect({
+      port: SMB_TEST_PORT,
+      host: service.getStatus().smb.boundAddresses[0]
+    })
     const reader = new NbssFrameReader()
     await new Promise((resolve) => socket.once('connect', resolve))
 
@@ -185,17 +222,24 @@ describe('Authentication failure handling (FR-015)', () => {
     // The rest of the exchange proceeds exactly as the no-handshake path.
     const negotiateResponse = await sendAndReceive(socket, reader, negotiateRequest())
     expect(decodeSmbMessage(negotiateResponse).header.status).toBe(NT_STATUS.SUCCESS)
-    const sessionSetupResponse = await sendAndReceive(
+    const sessionSetupResponse = decodeSmbMessage(
+      await sendAndReceive(socket, reader, sessionSetupRequest('tester', ''))
+    )
+    expect(sessionSetupResponse.header.status >>> 0).toBe(NT_STATUS.SUCCESS)
+    const treeResponse = await sendAndReceive(
       socket,
       reader,
-      sessionSetupRequest('tester', CORRECT_PASSWORD)
+      treeConnectRequest(sessionSetupResponse.header.uid, CORRECT_PASSWORD)
     )
-    expect(decodeSmbMessage(sessionSetupResponse).header.status >>> 0).toBe(NT_STATUS.SUCCESS)
+    expect(decodeSmbMessage(treeResponse).header.status >>> 0).toBe(NT_STATUS.SUCCESS)
     socket.destroy()
   })
 
-  it('SMB accepts the correct password with SUCCESS status', async () => {
-    const socket = net.connect({ port: SMB_TEST_PORT, host: service.getStatus().smb.boundAddresses[0] })
+  it('SMB authenticates the correct password at TREE_CONNECT_ANDX', async () => {
+    const socket = net.connect({
+      port: SMB_TEST_PORT,
+      host: service.getStatus().smb.boundAddresses[0]
+    })
     const reader = new NbssFrameReader()
     await new Promise((resolve) => socket.once('connect', resolve))
 
@@ -207,11 +251,20 @@ describe('Authentication failure handling (FR-015)', () => {
     )
     const decoded = decodeSmbMessage(sessionSetupResponse)
     expect(decoded.header.status >>> 0).toBe(NT_STATUS.SUCCESS)
+    const treeResponse = await sendAndReceive(
+      socket,
+      reader,
+      treeConnectRequest(decoded.header.uid, CORRECT_PASSWORD)
+    )
+    expect(decodeSmbMessage(treeResponse).header.status >>> 0).toBe(NT_STATUS.SUCCESS)
     socket.destroy()
   })
 
   it('FTP rejects an invalid password without revealing which field was wrong, creating no connected client', async () => {
-    const socket = net.connect({ port: FTP_TEST_PORT, host: service.getStatus().ftp.boundAddresses[0] })
+    const socket = net.connect({
+      port: FTP_TEST_PORT,
+      host: service.getStatus().ftp.boundAddresses[0]
+    })
     const lines: string[] = []
     socket.on('data', (chunk) => lines.push(chunk.toString('utf-8')))
     await new Promise((resolve) => socket.once('connect', resolve))

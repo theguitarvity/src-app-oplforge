@@ -35,12 +35,28 @@ export class DownloadCoordinatorService {
       const snapshot = await this.store.list()
       this.queueRevision = snapshot.revision
       for (const persisted of snapshot.items) {
+        const completedLocalBeforeStateFix =
+          persisted.target?.kind === 'local-folder' &&
+          persisted.phase === 'failed' &&
+          persisted.lastError?.code === 'INVALID_PHASE_TRANSITION' &&
+          persisted.lastError.phase === 'verifying' &&
+          persisted.transfer.totalBytes !== undefined &&
+          persisted.transfer.bytesConfirmed >= persisted.transfer.totalBytes
         const obsoleteProfileFailure = persisted.lastError?.code === 'PROFILE_NOT_FOUND'
         const obsoletePartExtensionFailure =
           persisted.lastError?.code === 'UNSUPPORTED_FORMAT' &&
           /\.(?:iso|zso)$/i.test(persisted.source.originalFileName ?? '')
-        const task =
-          persisted.phase === 'failed' && (obsoleteProfileFailure || obsoletePartExtensionFailure)
+        const task = completedLocalBeforeStateFix
+          ? {
+              ...persisted,
+              phase: 'ready' as const,
+              phaseProgress: 100,
+              overallProgress: 100,
+              lastError: undefined,
+              revision: persisted.revision + 1,
+              updatedAt: new Date().toISOString()
+            }
+          : persisted.phase === 'failed' && (obsoleteProfileFailure || obsoletePartExtensionFailure)
             ? {
                 ...persisted,
                 phase: 'queued' as const,
@@ -70,11 +86,12 @@ export class DownloadCoordinatorService {
     const duplicate = [...this.tasks.values()].find(
       (task) =>
         task.transfer.sourceFingerprint === sourceFingerprint &&
+        JSON.stringify(task.target) === JSON.stringify(input.target) &&
         !['failed', 'cancelled', 'ready'].includes(task.phase)
     )
     if (duplicate) return structuredClone(duplicate)
     const task: DurableDownloadTask = {
-      schemaVersion: 1,
+      schemaVersion: 2,
       revision: 0,
       taskId,
       source: {
@@ -88,8 +105,20 @@ export class DownloadCoordinatorService {
           'originalFileName' in input.source ? input.source.originalFileName : undefined
       },
       legalReceiptId: input.legalReceiptId,
-      targetDeviceId: input.deviceId,
-      targetProfileId: input.profileId,
+      target: input.target ?? {
+        kind: 'opl-device',
+        deviceId: input.deviceId!,
+        profileId: input.profileId ?? 'opl-default',
+        mediaHint: input.mediaHint
+      },
+      targetDeviceId:
+        input.target?.kind === 'opl-device'
+          ? input.target.deviceId
+          : input.target?.kind === 'local-folder'
+            ? `local:${input.target.authorizationId}`
+            : input.deviceId!,
+      targetProfileId:
+        input.target?.kind === 'opl-device' ? input.target.profileId : (input.profileId ?? 'local'),
       requestedTitle:
         input.title ??
         (input.source.kind === 'http' ? (input.source.originalFileName ?? 'Download') : 'Torrent'),
@@ -157,6 +186,27 @@ export class DownloadCoordinatorService {
     return this.mutate(input, 'queued')
   }
   async retry(input: RevisionedTaskRef): Promise<DurableDownloadTask> {
+    const task = this.require(input.taskId)
+    if (
+      task.revision === input.expectedRevision &&
+      task.target?.kind === 'local-folder' &&
+      task.phase === 'failed' &&
+      task.lastError?.code === 'INVALID_PHASE_TRANSITION' &&
+      task.lastError.phase === 'verifying'
+    ) {
+      const recovered: DurableDownloadTask = {
+        ...task,
+        phase: 'ready',
+        phaseProgress: 100,
+        overallProgress: 100,
+        lastError: undefined,
+        revision: task.revision + 1,
+        updatedAt: new Date().toISOString()
+      }
+      this.update(task.taskId, recovered)
+      await this.flush()
+      return structuredClone(recovered)
+    }
     return this.mutate(input, 'queued')
   }
 

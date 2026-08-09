@@ -9,6 +9,7 @@ import type {
   OperationState
 } from '../../src/types/opl'
 import { redact, redactOperationalText } from './persistence/audit-log.service'
+import { redactSensitiveText } from './errors/controlled-error'
 
 const createId = () => `${Date.now()}-${Math.random().toString(16).slice(2)}`
 const persist = async (kind: string, value: unknown) => {
@@ -25,7 +26,7 @@ export const sendLog = (level: LogLevel, message: string) => {
     id: createId(),
     timestamp: new Date().toISOString(),
     level,
-    message: redactOperationalText(message)
+    message: redactSensitiveText(redactOperationalText(message))
   }
 
   for (const window of BrowserWindow.getAllWindows()) {

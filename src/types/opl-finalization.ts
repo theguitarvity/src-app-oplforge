@@ -8,6 +8,7 @@ export type PipelinePhase =
   | 'planning'
   | 'awaiting-confirmation'
   | 'installing'
+  | 'promoting'
   | 'verifying'
   | 'cataloging'
   | 'queueing-art'
@@ -16,6 +17,116 @@ export type PipelinePhase =
   | 'failed'
   | 'cancelled'
   | 'recovery-pending'
+
+export interface ReleaseIdentity {
+  schemaVersion: number
+  publicVersion: string
+  internalVersion: string
+  channel: 'stable' | 'prerelease'
+  tag: string
+  artifactVersion: string
+}
+
+export type UpdatePolicyMode =
+  'check-automatic' | 'ask-before-download' | 'download-automatic' | 'manual-only'
+export interface UpdatePolicy {
+  revision: number
+  mode: UpdatePolicyMode
+  channel: 'stable'
+  updatedAt: string
+}
+export type UpdateState =
+  | 'IDLE'
+  | 'CHECKING'
+  | 'UPDATE_AVAILABLE'
+  | 'NO_UPDATE'
+  | 'DOWNLOADING'
+  | 'READY_TO_INSTALL'
+  | 'INSTALLING'
+  | 'ERROR'
+export interface UpdateSession {
+  sessionId: string
+  revision: number
+  state: UpdateState
+  currentPublicVersion: string
+  currentInternalVersion: string
+  candidatePublicVersion?: string
+  candidateInternalVersion?: string
+  releaseName?: string
+  releaseNotes?: string
+  sizeBytes?: number
+  downloadedBytes?: number
+  progress?: number
+  lastError?: SerializableTaskError
+  installBlockedByOperations: string[]
+  updatedAt: string
+}
+
+export type DownloadTarget =
+  | { kind: 'opl-device'; deviceId: string; profileId: string; mediaHint?: 'CD' | 'DVD' }
+  | {
+      kind: 'local-folder'
+      authorizationId: string
+      rootToken: string
+      collisionPolicy: 'fail' | 'rename'
+    }
+
+export type ImportItemPhase =
+  | 'queued'
+  | 'probing'
+  | 'copying'
+  | 'validating'
+  | 'planning'
+  | 'awaiting-confirmation'
+  | 'installing'
+  | 'promoting'
+  | 'verifying'
+  | 'completed'
+  | 'failed'
+  | 'cancelled'
+  | 'recovery-pending'
+export interface ImportItem {
+  itemId: string
+  displayName: string
+  sourcePath?: string
+  phase: ImportItemPhase
+  bytesDone: number
+  totalBytes?: number
+  throughputBytesPerSecond?: number
+  etaSeconds?: number
+  canCancel: boolean
+  error?: SerializableTaskError
+}
+export interface ImportJob {
+  schemaVersion: number
+  revision: number
+  jobId: string
+  devicePath?: string
+  mediaType?: 'DVD' | 'CD'
+  state:
+    'queued' | 'running' | 'completed' | 'partial' | 'failed' | 'cancelled' | 'recovery-pending'
+  items: ImportItem[]
+  currentItemId?: string
+  progress: number
+  lastSequence: number
+  createdAt: string
+  updatedAt: string
+}
+
+export interface OperationSummary {
+  operationId: string
+  kind: 'import' | 'download' | 'update' | 'finalization' | 'art' | 'naming'
+  revision: number
+  state: string
+  phase: string
+  progress: number
+  currentItem?: string
+  counts?: { completed: number; failed: number; remaining: number; total: number }
+  bytes?: { done: number; total?: number }
+  canCancel: boolean
+  recoveryActions?: string[]
+  message: string
+}
 
 export type TransferKind = 'http' | 'torrent'
 export type ResumeCapability = 'unknown' | 'supported' | 'unsupported' | 'invalidated'
@@ -91,6 +202,7 @@ export interface DurableDownloadTask {
   taskId: string
   source: TransferSource
   legalReceiptId?: string
+  target?: DownloadTarget
   targetDeviceId: string
   targetProfileId: string
   requestedTitle: string
@@ -217,8 +329,11 @@ export interface EnqueueDownloadInput {
   source:
     | { kind: 'http'; url: string; expectedBytes?: number; originalFileName?: string }
     | { kind: 'torrent'; magnet?: string; torrentToken?: string; selectedFiles?: string[] }
-  deviceId: string
-  profileId: string
+  target?: DownloadTarget
+  /** @deprecated compatibility input; persisted tasks are migrated to target */
+  deviceId?: string
+  /** @deprecated compatibility input; persisted tasks are migrated to target */
+  profileId?: string
   title?: string
   mediaHint?: 'CD' | 'DVD'
   legalReceiptId?: string

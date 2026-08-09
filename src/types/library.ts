@@ -16,5 +16,6 @@ export interface UnifiedGameItem {
   fragmentCount?: number
   hasCoverArt?: boolean
   hasBackgroundArt?: boolean
+  coverUrl?: string
   crcHash?: string
 }

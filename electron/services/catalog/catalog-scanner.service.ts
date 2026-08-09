@@ -8,6 +8,7 @@ import { inspectIso } from '../images/iso9660.service'
 import { readZsoHeader } from '../images/zso.service'
 import { captureSafeRoot, resolveInside } from '../persistence/safe-path.service'
 import { decodeUlCfg, validateUlParts } from '../usbextreme/ul-cfg.service'
+import { localArtIndex, type LocalArtIndexSnapshot } from './local-art-index.service'
 
 export class CatalogScannerService {
   constructor(private readonly fragmentation: FragmentationAdapter) {}
@@ -20,10 +21,18 @@ export class CatalogScannerService {
     const root = await captureSafeRoot(devicePath)
     const items: CatalogItem[] = []
     const findings: Finding[] = []
+    const artIndex = await localArtIndex.scan(devicePath, deviceId).catch((error) => {
+      const previous = localArtIndex.get(deviceId)
+      if (previous) return previous
+      throw error
+    })
+    let foundOplMediaDirectory = false
     for (const media of ['DVD', 'CD'] as const) {
       try {
+        const mediaDirectory = await resolveInside(root, media)
+        foundOplMediaDirectory = true
         await this.walk(
-          await resolveInside(root, media),
+          mediaDirectory,
           root.real,
           media,
           deviceId,
@@ -31,7 +40,8 @@ export class CatalogScannerService {
           items,
           findings,
           signal,
-          new Set()
+          new Set(),
+          artIndex
         )
       } catch (error) {
         findings.push({
@@ -41,6 +51,20 @@ export class CatalogScannerService {
           message: `${media}: ${(error as Error).message}`
         })
       }
+    }
+    if (!foundOplMediaDirectory) {
+      await this.walk(
+        root.real,
+        root.real,
+        'DVD',
+        deviceId,
+        profile,
+        items,
+        findings,
+        signal,
+        new Set(),
+        artIndex
+      )
     }
     try {
       const cfgPath = await resolveInside(root, 'ul.cfg')
@@ -83,7 +107,8 @@ export class CatalogScannerService {
             : fragmentation.every((e) => e.state === 'contiguous')
               ? 'contiguous'
               : 'unknown',
-          artStatus: await this.artStatus(root.real, entry.gameId),
+          artStatus: this.artStatus(artIndex, entry.gameId),
+          artView: localArtIndex.view(artIndex, entry.gameId),
           compatibility:
             profile?.capabilities.usbExtreme === false
               ? 'failed'
@@ -124,7 +149,8 @@ export class CatalogScannerService {
     items: CatalogItem[],
     findings: Finding[],
     signal: AbortSignal | undefined,
-    visited: Set<string>
+    visited: Set<string>,
+    artIndex: LocalArtIndexSnapshot
   ): Promise<void> {
     const current = await stat(directory, { bigint: true })
     const identity = `${current.dev}:${current.ino}`
@@ -144,7 +170,18 @@ export class CatalogScannerService {
         continue
       }
       if (entry.isDirectory()) {
-        await this.walk(absolute, root, media, deviceId, profile, items, findings, signal, visited)
+        await this.walk(
+          absolute,
+          root,
+          media,
+          deviceId,
+          profile,
+          items,
+          findings,
+          signal,
+          visited,
+          artIndex
+        )
         continue
       }
       if (!entry.isFile()) continue
@@ -196,7 +233,8 @@ export class CatalogScannerService {
           structuralIntegrity: integrity,
           hashState: 'not-calculated',
           fragmentation: evidence.state,
-          artStatus: gameId ? await this.artStatus(root, gameId) : 'missing',
+          artStatus: gameId ? this.artStatus(artIndex, gameId) : 'missing',
+          artView: gameId ? localArtIndex.view(artIndex, gameId) : undefined,
           compatibility: compatible,
           classification: invalid ? 'invalid' : warning ? 'warning' : 'ready',
           findings: !gameId
@@ -264,22 +302,12 @@ export class CatalogScannerService {
       ]
     }
   }
-  private async artStatus(root: string, gameId: string) {
-    try {
-      const names = await readdir(path.join(root, 'ART'))
-      const types = names
-        .map(
-          (name) =>
-            name.match(new RegExp(`^${gameId}_(ICO|SCR|SCR2|BG|LGO|COV|LAB|COV2)\\.png$`, 'i'))?.[1]
-        )
-        .filter(Boolean)
-      return types.includes('COV') || types.includes('COV2')
-        ? types.length > 1
-          ? 'partial'
-          : 'cover-ready'
-        : 'missing'
-    } catch {
-      return 'missing' as const
-    }
+  private artStatus(index: LocalArtIndexSnapshot, gameId: string) {
+    const view = localArtIndex.view(index, gameId)
+    return view.primaryCoverAssetId
+      ? view.availableTypes.length > 1
+        ? ('partial' as const)
+        : ('cover-ready' as const)
+      : ('missing' as const)
   }
 }

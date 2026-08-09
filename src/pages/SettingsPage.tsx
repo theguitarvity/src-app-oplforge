@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label'
 import { Select } from '@/components/ui/select'
 import { SourceSettingsPage } from '@/pages/SourceSettingsPage'
 import { NetworkShareStatus } from '@/components/network/NetworkShareStatus'
+import { UpdateDialog } from '@/components/updates/UpdateDialog'
 
 function GeneralSettingsView() {
   return (
@@ -47,6 +48,9 @@ function GeneralSettingsView() {
               <option value="manual">Manual</option>
               <option value="notify">Notificar quando houver update</option>
             </Select>
+            <div className="mt-3 rounded-xl border border-white/10 bg-black/20 p-4">
+              <UpdateDialog />
+            </div>
           </div>
         </div>
       </Card>

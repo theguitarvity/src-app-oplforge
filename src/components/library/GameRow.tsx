@@ -20,8 +20,17 @@ export function GameRow({ item, onSelect }: GameRowProps) {
     >
       <td className="py-3 px-4">
         <div className="flex items-center gap-3">
-          <div className="grid size-8 shrink-0 place-items-center rounded-lg bg-black/40 text-violet-400 border border-white/10">
-            <Gamepad2 className="size-4" />
+          <div className="grid size-8 shrink-0 place-items-center overflow-hidden rounded-lg bg-black/40 text-violet-400 border border-white/10">
+            {item.coverUrl ? (
+              <img
+                src={item.coverUrl}
+                alt=""
+                loading="lazy"
+                className="h-full w-full object-cover"
+              />
+            ) : (
+              <Gamepad2 className="size-4" />
+            )}
           </div>
           <div>
             <p className="text-xs font-semibold text-white group-hover:text-violet-300 transition">

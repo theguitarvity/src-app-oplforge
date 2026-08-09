@@ -1,8 +1,23 @@
 import { useLogStore } from '@/stores/log-store'
 import { X, Trash2, Copy, Filter } from 'lucide-react'
+import { useEffect, useState } from 'react'
+import { oplApi } from '@/services/api'
+import type { OperationSummary } from '@/types/opl-finalization'
 
 export function ActivityDrawer() {
   const { logs, isDrawerOpen, logFilter, toggleDrawer, clearLogs, setLogFilter } = useLogStore()
+  const [operations, setOperations] = useState<OperationSummary[]>([])
+  useEffect(() => {
+    if (!isDrawerOpen) return
+    const refresh = () =>
+      void oplApi
+        .listActiveOperations()
+        .then(setOperations)
+        .catch(() => undefined)
+    refresh()
+    const timer = window.setInterval(refresh, 1000)
+    return () => window.clearInterval(timer)
+  }, [isDrawerOpen])
 
   if (!isDrawerOpen) return null
 
@@ -97,6 +112,28 @@ export function ActivityDrawer() {
 
       {/* Log Terminal List */}
       <div className="flex-1 overflow-y-auto py-2 font-mono text-xs space-y-1">
+        {operations.map((operation) => (
+          <div
+            key={operation.operationId}
+            className="mb-2 rounded-lg border border-violet-500/20 bg-violet-500/10 p-2"
+          >
+            <div className="flex justify-between text-white">
+              <span>
+                {operation.kind}: {operation.currentItem || operation.message}
+              </span>
+              <span>{Math.round(operation.progress)}%</span>
+            </div>
+            <div className="mt-1 h-1 overflow-hidden rounded bg-white/10">
+              <div className="h-full bg-violet-500" style={{ width: `${operation.progress}%` }} />
+            </div>
+            {operation.bytes && (
+              <p className="mt-1 text-muted-foreground">
+                {operation.bytes.done.toLocaleString()} /{' '}
+                {operation.bytes.total?.toLocaleString() || '?'} bytes · {operation.phase}
+              </p>
+            )}
+          </div>
+        ))}
         {filteredLogs.length === 0 ? (
           <div className="grid h-full place-items-center text-muted-foreground">
             Nenhum evento registrado no console.

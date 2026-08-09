@@ -14,15 +14,20 @@ export class DownloadRecoveryService {
     const reconciled: DurableDownloadTask[] = []
     for (const task of snapshot.items) {
       if (!this.isActive(task.phase)) continue
-      const devicePath = await this.resolveDevice(task.targetDeviceId)
-      const phase: PipelinePhase = devicePath ? this.safeRestartPhase(task.phase) : 'waiting-device'
+      const destinationAvailable =
+        task.target?.kind === 'local-folder'
+          ? true
+          : Boolean(await this.resolveDevice(task.targetDeviceId))
+      const phase: PipelinePhase = destinationAvailable
+        ? this.safeRestartPhase(task.phase)
+        : 'waiting-device'
       const updated: DurableDownloadTask = {
         ...task,
         phase,
         phaseProgress: 0,
         revision: task.revision + 1,
         updatedAt: new Date().toISOString(),
-        lastError: devicePath
+        lastError: destinationAvailable
           ? undefined
           : {
               code: 'DEVICE_NOT_FOUND',

@@ -1,5 +1,5 @@
 import { useSearchParams } from 'react-router-dom'
-import { HardDrive, ScanSearch, CheckCircle2, RefreshCw } from 'lucide-react'
+import { HardDrive, ScanSearch, CheckCircle2, FolderPlus, RefreshCw } from 'lucide-react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { DeviceCard } from '@/components/DeviceCard'
 import { DisconnectedEmptyState } from '@/components/device/DisconnectedEmptyState'
@@ -56,6 +56,25 @@ export function DevicesPage() {
   const refreshDevices = () => {
     void queryClient.invalidateQueries({ queryKey: ['devices'] })
   }
+  const addLocalLibrary = async () => {
+    const [selectedPath] = await oplApi.openPathDialog({ mode: 'folder' })
+    if (!selectedPath) return
+    await oplApi.authorizeLocalFolder(selectedPath)
+    const local = {
+      id: `local:${selectedPath}`,
+      name: selectedPath.split(/[\\/]/).filter(Boolean).at(-1) || 'Biblioteca local',
+      path: selectedPath,
+      total: 0,
+      free: 0,
+      used: 0,
+      fileSystem: 'Pasta local',
+      status: 'ready' as const,
+      sourceKind: 'local-folder' as const
+    }
+    setDevices([...devices, local])
+    setActiveDevice(local)
+    setSearchParams({ tab: 'manage' })
+  }
 
   if (action === 'prepare') {
     return (
@@ -69,9 +88,18 @@ export function DevicesPage() {
     )
   }
 
-  if (!isLoading && devices.length === 0) {
-    return <DisconnectedEmptyState onRefreshDevices={refreshDevices} isScanning={isFetching} />
-  }
+  if (!isLoading && devices.length === 0)
+    return (
+      <div className="space-y-5">
+        <DisconnectedEmptyState onRefreshDevices={refreshDevices} isScanning={isFetching} />
+        <button
+          onClick={() => void addLocalLibrary()}
+          className="flex w-full items-center justify-center gap-2 rounded-2xl border border-violet-400/20 bg-violet-500/10 p-4 text-sm font-semibold text-violet-100 hover:bg-violet-500/15"
+        >
+          <FolderPlus className="size-5" /> Adicionar pasta como biblioteca local
+        </button>
+      </div>
+    )
 
   const device = summary?.device ?? activeDevice ?? devices[0]
 
@@ -145,6 +173,12 @@ export function DevicesPage() {
             >
               <RefreshCw className={`size-3.5 ${isFetching ? 'animate-spin' : ''}`} />
               Atualizar Lista
+            </button>
+            <button
+              onClick={() => void addLocalLibrary()}
+              className="flex items-center gap-1.5 rounded-lg bg-violet-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-violet-500"
+            >
+              <FolderPlus className="size-3.5" /> Adicionar pasta local
             </button>
           </div>
           <div className="grid gap-3">

@@ -27,6 +27,23 @@ import type {
 import type { PipelineEvent } from '../src/types/opl-finalization'
 
 const api: OplApi = {
+  createImportJob: (input) => ipcRenderer.invoke('imports:create', input),
+  getImportJob: (jobId) => ipcRenderer.invoke('imports:get', { jobId }),
+  listImportJobs: () => ipcRenderer.invoke('imports:list', {}),
+  cancelImportJob: (input) => ipcRenderer.invoke('imports:cancel', input),
+  getUpdateSession: () => ipcRenderer.invoke('updates:get'),
+  getUpdatePolicy: () => ipcRenderer.invoke('updates:get-policy'),
+  setUpdatePolicy: (mode, expectedRevision) =>
+    ipcRenderer.invoke('updates:set-policy', { mode, expectedRevision }),
+  checkForUpdates: () => ipcRenderer.invoke('updates:check', {}),
+  downloadUpdate: (input) => ipcRenderer.invoke('updates:download', input),
+  installUpdate: (input) => ipcRenderer.invoke('updates:install', input),
+  onUpdateEvent: (callback) => {
+    const listener = (_event: Electron.IpcRendererEvent, session: Parameters<typeof callback>[0]) =>
+      callback(session)
+    ipcRenderer.on('updates:event', listener)
+    return () => ipcRenderer.removeListener('updates:event', listener)
+  },
   enqueueDownload: (input) => ipcRenderer.invoke('downloads:enqueue', input),
   listDownloads: (input = {}) => ipcRenderer.invoke('downloads:list', input),
   getDurableDownload: (taskId) => ipcRenderer.invoke('downloads:get', { taskId }),
@@ -178,6 +195,10 @@ const api: OplApi = {
   clearHistory: () => ipcRenderer.invoke('history:clear'),
   openPathDialog: (options?: OpenPathDialogOptions) =>
     ipcRenderer.invoke('dialog:open-path', options),
+  authorizeLocalFolder: (selectedPath: string) =>
+    ipcRenderer.invoke('dialog:authorize-local-folder', { selectedPath }),
+  createLocalFolder: (input) => ipcRenderer.invoke('dialog:create-local-folder', input),
+  listActiveOperations: () => ipcRenderer.invoke('operations:list', {}),
   onLog: (callback: (entry: LogEntry) => void) => {
     const listener = (_event: Electron.IpcRendererEvent, entry: LogEntry) => callback(entry)
     ipcRenderer.on('logs:entry', listener)

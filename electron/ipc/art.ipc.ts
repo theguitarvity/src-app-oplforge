@@ -14,6 +14,10 @@ import { finalArtName, validatePng } from '../services/art/art-validation.servic
 import { cacheRemoteArtEntry, indexRemoteOplmArchive } from '../services/art/remote-zip-art.service'
 
 const sync = new ArtSyncService()
+let automaticSync: ((devicePath: string) => Promise<string | undefined>) | undefined
+export function queueAutomaticArtSync(devicePath: string) {
+  return automaticSync?.(devicePath) ?? Promise.resolve(undefined)
+}
 export function registerArtIpc() {
   const userData = app.getPath('userData')
   const index = new ArtIndexService(path.join(userData, 'opl-finalization', 'art-index.json'))
@@ -60,6 +64,38 @@ export function registerArtIpc() {
     },
     3
   )
+  automaticSync = async (devicePath) => {
+    await index.refresh(() => indexRemoteOplmArchive(), false)
+    const snapshot = await getCatalogService().scan(devicePath)
+    const types = ['ICO', 'COV', 'COV2', 'LAB', 'LGO', 'SCR', 'SCR2', 'BG'] as const
+    const gameIds = [
+      ...new Set(snapshot.items.flatMap((item) => (item.gameId ? [item.gameId] : [])))
+    ]
+    const assets = []
+    let cursor: string | undefined
+    do {
+      const page = await index.query({ gameIds, types: [...types], limit: 500, cursor })
+      assets.push(...page.items)
+      cursor = page.nextCursor
+    } while (cursor)
+    const existing = new Set<string>()
+    for (const name of await readdir(path.join(devicePath, 'ART')).catch(() => []))
+      for (const gameId of gameIds)
+        for (const type of types)
+          if (name.toLowerCase() === finalArtName(gameId, type).toLowerCase())
+            existing.add(`${gameId}:${type}`)
+    const plan = new ArtSyncPlanService().create({
+      deviceId: snapshot.deviceId,
+      gameIds,
+      types: [...types],
+      replacePolicy: 'missing-only',
+      assets,
+      existing
+    })
+    plans.set(plan.summary.planId, plan)
+    const job = await jobs.start(plan.summary.planId, snapshot.deviceId, plan.items)
+    return job.jobId
+  }
   ipcMain.handle('art:index', () => indexOplmArt())
   ipcMain.handle('art:plan', async (_event, input: { deviceId: string; snapshotId: string }) => {
     const parsed = parseInput('artPlan', input)

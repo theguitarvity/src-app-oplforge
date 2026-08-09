@@ -6,57 +6,38 @@ import { EmptyState } from '@/components/EmptyState'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { ConfirmDialog } from '@/components/ConfirmDialog'
-import { Input } from '@/components/ui/input'
 import { oplApi } from '@/services/api'
-import { useDeviceStore } from '@/stores/device-store'
 import { useDownloadStore } from '@/stores/download-store'
+import { Select } from '@/components/ui/select'
 
 export function DownloadsPage() {
-  const activeDevice = useDeviceStore((state) => state.activeDevice)
   const queryClient = useQueryClient()
-  const [source, setSource] = useState('')
   const [clearConfirmOpen, setClearConfirmOpen] = useState(false)
+  const [targetFilter, setTargetFilter] = useState<'all' | 'opl-device' | 'local-folder'>('all')
   const taskMap = useDownloadStore((state) => state.tasks)
   const tasks = useMemo(
     () =>
       Object.values(taskMap).filter(
-        (task) =>
-          !activeDevice ||
-          task.targetDeviceId === activeDevice.id ||
-          task.targetDeviceId === activeDevice.path
+        (task) => targetFilter === 'all' || task.target?.kind === targetFilter
       ),
-    [activeDevice, taskMap]
+    [targetFilter, taskMap]
   )
   const setSnapshot = useDownloadStore((state) => state.setSnapshot)
   const applyEvent = useDownloadStore((state) => state.applyEvent)
   const queue = useQuery({
     queryKey: ['durable-downloads'],
     queryFn: () => oplApi.listDownloads({ limit: 500 }),
-    enabled: Boolean(activeDevice),
     refetchInterval: 1000
   })
   useEffect(() => {
-    if (queue.data) setSnapshot(queue.data)
+    if (!queue.data) return
+    setSnapshot(queue.data)
   }, [queue.data, setSnapshot])
   useEffect(() => {
     return oplApi.onOplPipelineEvent((event) => {
       if (applyEvent(event)) void queryClient.invalidateQueries({ queryKey: ['durable-downloads'] })
     })
   }, [applyEvent, queryClient])
-  const enqueue = useMutation({
-    mutationFn: () =>
-      oplApi.enqueueDownload({
-        source: source.startsWith('magnet:')
-          ? { kind: 'torrent', magnet: source }
-          : { kind: 'http', url: source },
-        deviceId: activeDevice!.id,
-        profileId: 'opl-default'
-      }),
-    onSuccess: async () => {
-      setSource('')
-      await queryClient.invalidateQueries({ queryKey: ['durable-downloads'] })
-    }
-  })
   const executeAction = async (
     action: 'pause' | 'resume' | 'retry' | 'cancel',
     taskId: string,
@@ -102,14 +83,6 @@ export function DownloadsPage() {
       await queryClient.invalidateQueries({ queryKey: ['durable-downloads'] })
     }
   })
-  if (!activeDevice)
-    return (
-      <EmptyState
-        icon={Download}
-        title="Selecione um dispositivo"
-        description="Escolha o dispositivo de destino da fila durável."
-      />
-    )
   const active = tasks.filter(
     (task) => !['ready', 'failed', 'cancelled'].includes(task.phase)
   ).length
@@ -142,32 +115,23 @@ export function DownloadsPage() {
             </div>
           </div>
         </div>
-        <form
-          className="mt-6 flex gap-2"
-          onSubmit={(event) => {
-            event.preventDefault()
-            enqueue.mutate()
-          }}
-        >
-          <Input
-            aria-label="URL ou magnet"
-            value={source}
-            onChange={(event) => setSource(event.target.value)}
-            placeholder="Cole uma URL HTTP do seu backup"
-          />
-          <Button disabled={!source || enqueue.isPending}>
-            {enqueue.isPending ? 'Adicionando…' : 'Adicionar à fila'}
-          </Button>
-        </form>
-        {enqueue.error ? (
-          <p className="mt-3 text-sm text-red-300" role="alert">
-            {enqueue.error.message}
-          </p>
-        ) : null}
+        <div className="mt-6 flex items-end gap-3">
+          <div className="w-56 space-y-2">
+            <label className="text-xs text-muted-foreground">Mostrar downloads</label>
+            <Select
+              value={targetFilter}
+              onChange={(event) => setTargetFilter(event.target.value as typeof targetFilter)}
+            >
+              <option value="all">Todos</option>
+              <option value="opl-device">Dispositivo OPL</option>
+              <option value="local-folder">Este computador</option>
+            </Select>
+          </div>
+        </div>
       </section>
       <div className="flex items-center gap-4 text-xs text-muted-foreground">
         <span className="flex items-center gap-1.5">
-          <HardDrive className="size-4 text-violet-300" /> {activeDevice.name}
+          <HardDrive className="size-4 text-violet-300" /> Todos os destinos
         </span>
         <span className="flex items-center gap-1.5">
           <Layers3 className="size-4 text-violet-300" /> {tasks.length} tarefa(s)

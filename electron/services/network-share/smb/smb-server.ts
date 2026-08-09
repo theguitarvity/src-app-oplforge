@@ -155,7 +155,7 @@ export class SmbProtocolServer implements ProtocolServer {
             // Only a session that actually authenticated counts as a
             // connected client (FR-015) — a NEGOTIATE or a failed
             // SESSION_SETUP_ANDX must never create a ConnectedClient record.
-            if (!announced && session.authenticated) {
+            if (!announced && session.authenticated && session.treeConnected) {
               announced = true
               context.onClientConnected({
                 id: clientId,

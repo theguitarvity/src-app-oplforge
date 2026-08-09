@@ -1,6 +1,6 @@
 {
   "name": "opl-forge",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "Prepare, organize e gerencie seu HD do PS2 com facilidade.",
   "author": {
     "name": "OPL Forge",
@@ -19,7 +19,7 @@
   "scripts": {
     "preinstall": "node scripts/check-node-version.js",
     "dev": "vite",
-    "electron:dev": "concurrently -k \"vite --host 127.0.0.1\" \"tsup electron/main.ts electron/preload.ts --format cjs --out-dir dist-electron --external electron --external webtorrent --watch\" \"wait-on tcp:5173 dist-electron/main.cjs dist-electron/preload.cjs && cross-env VITE_DEV_SERVER_URL=http://127.0.0.1:5173 electron .\"",
+    "electron:dev": "concurrently -k \"vite --host 127.0.0.1\" \"tsup electron/main.ts electron/preload.ts --format cjs --out-dir dist-electron --external electron --external webtorrent --watch\" \"wait-on tcp:5173 dist-electron/main.cjs dist-electron/preload.cjs && cross-env VITE_DEV_SERVER_URL=http://127.0.0.1:5173 node scripts/electron-watch.js\"",
     "electron:dev:linux": "concurrently -k \"vite --host 127.0.0.1\" \"tsup electron/main.ts electron/preload.ts --format cjs --out-dir dist-electron --external electron --external webtorrent --watch\" \"wait-on tcp:5173 dist-electron/main.cjs dist-electron/preload.cjs && cross-env VITE_DEV_SERVER_URL=http://127.0.0.1:5173 electron --no-sandbox --ozone-platform=x11 --disable-gpu .\"",
     "build": "tsc --noEmit && vite build && tsup electron/main.ts electron/preload.ts --format cjs --out-dir dist-electron --external electron --external webtorrent",
     "test": "vitest --pool=threads",

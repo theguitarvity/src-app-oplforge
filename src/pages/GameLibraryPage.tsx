@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
-import { LayoutGrid, List, Search, Gamepad2, Plus, X } from 'lucide-react'
+import { LayoutGrid, List, Search, Gamepad2, LoaderCircle, Plus, X } from 'lucide-react'
 import { GameCard } from '@/components/library/GameCard'
 import { GameRow } from '@/components/library/GameRow'
 import { GameDetailDrawer } from '@/components/library/GameDetailDrawer'
@@ -10,6 +10,7 @@ import { oplApi } from '@/services/api'
 import { useDeviceStore } from '@/stores/device-store'
 import type { UnifiedGameItem, GameContentType, GameStatusBadge } from '@/types/library'
 import type { CatalogItem } from '@/types/opl'
+import { LocalLibraryChooser } from '@/components/library/LocalLibraryChooser'
 
 function toUnifiedGameItem(item: CatalogItem): UnifiedGameItem {
   const status: GameStatusBadge =
@@ -17,7 +18,7 @@ function toUnifiedGameItem(item: CatalogItem): UnifiedGameItem {
       ? 'invalid_name'
       : item.fragmentation === 'fragmented'
         ? 'fragmented'
-        : item.classification === 'warning' || item.artStatus === 'missing'
+        : item.classification === 'warning'
           ? 'needs_attention'
           : item.compatibility === 'failed'
             ? 'validation_warning'
@@ -34,7 +35,8 @@ function toUnifiedGameItem(item: CatalogItem): UnifiedGameItem {
     status,
     isFragmented: item.fragmentation === 'fragmented',
     hasCoverArt: item.artStatus !== 'missing',
-    hasBackgroundArt: item.artStatus === 'complete'
+    hasBackgroundArt: item.artStatus === 'complete',
+    coverUrl: item.artView?.coverUrl
   }
 }
 
@@ -48,7 +50,13 @@ export function GameLibraryPage() {
   const [selectedGame, setSelectedGame] = useState<UnifiedGameItem | null>(null)
   const [showAddPanel, setShowAddPanel] = useState(() => searchParams.get('action') === 'add')
 
-  const { data: libraryItems = [], refetch } = useQuery({
+  const {
+    data: libraryItems = [],
+    refetch,
+    isLoading,
+    isFetching,
+    error
+  } = useQuery({
     queryKey: ['library-items', activeDevice?.path],
     queryFn: async () => {
       if (!activeDevice) return []
@@ -164,9 +172,49 @@ export function GameLibraryPage() {
       </div>
 
       {/* Content Rendering */}
+      {activeDevice && isFetching && libraryItems.length > 0 ? (
+        <div
+          className="flex items-center gap-2 rounded-xl border border-violet-400/20 bg-violet-500/10 px-4 py-2 text-xs text-violet-100"
+          role="status"
+        >
+          <LoaderCircle className="size-3.5 animate-spin" /> Atualizando catálogo em segundo plano…
+        </div>
+      ) : null}
       {!activeDevice ? (
-        <div className="grid min-h-[300px] place-items-center rounded-3xl border border-dashed border-white/10 bg-white/5 p-8 text-center text-muted-foreground">
-          Conecte e selecione um dispositivo na tela Dispositivos para visualizar a biblioteca.
+        <LocalLibraryChooser />
+      ) : isLoading || (isFetching && libraryItems.length === 0) ? (
+        <div className="min-h-[300px] overflow-hidden rounded-3xl border border-violet-400/20 bg-gradient-to-br from-violet-500/10 via-white/[0.04] to-fuchsia-500/5 p-8">
+          <div
+            className="mx-auto flex max-w-md flex-col items-center justify-center py-12 text-center"
+            role="status"
+            aria-live="polite"
+          >
+            <div className="relative grid size-16 place-items-center rounded-2xl border border-violet-400/20 bg-violet-500/10">
+              <span className="absolute inset-0 animate-ping rounded-2xl border border-violet-400/20" />
+              <LoaderCircle className="size-8 animate-spin text-violet-300" />
+            </div>
+            <h3 className="mt-5 font-semibold text-white">Lendo biblioteca do dispositivo</h3>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Verificando DVD, CD, USBExtreme, Game IDs, fragmentação e artes locais…
+            </p>
+            <div className="mt-6 h-1.5 w-full overflow-hidden rounded-full bg-black/30">
+              <div className="h-full w-1/3 animate-[library-scan_1.25s_ease-in-out_infinite] rounded-full bg-gradient-to-r from-violet-500 to-fuchsia-400" />
+            </div>
+            <p className="mt-3 truncate text-xs text-muted-foreground">
+              {activeDevice.name} · {activeDevice.path}
+            </p>
+          </div>
+        </div>
+      ) : error ? (
+        <div className="rounded-3xl border border-red-400/20 bg-red-500/5 p-8 text-center">
+          <p className="font-semibold text-red-200">Não foi possível ler a biblioteca</p>
+          <p className="mt-2 text-sm text-red-200/70">{error.message}</p>
+          <button
+            className="mt-4 rounded-xl bg-white/10 px-4 py-2 text-sm text-white"
+            onClick={() => void refetch()}
+          >
+            Tentar novamente
+          </button>
         </div>
       ) : filteredItems.length === 0 ? (
         <div className="grid min-h-[300px] place-items-center rounded-3xl border border-dashed border-white/10 bg-white/5 p-8 text-center">

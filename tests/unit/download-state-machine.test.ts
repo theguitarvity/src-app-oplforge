@@ -56,6 +56,12 @@ describe('download state machine', () => {
     expect(result.overallProgress).toBe(100)
   })
 
+  it('allows a verified local-folder download to become ready without OPL phases', () => {
+    const local = transitionDownloadTask(task('verifying'), 'ready')
+    expect(local.phase).toBe('ready')
+    expect(local.overallProgress).toBe(100)
+  })
+
   it('weights progress by phase instead of presenting transfer completion as readiness', () => {
     expect(summarizeTaskProgress('transferring', 100)).toBeLessThan(70)
     expect(summarizeTaskProgress('ready', 100)).toBe(100)
