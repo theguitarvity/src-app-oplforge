@@ -86,6 +86,32 @@ function findFirst2Request(searchPattern: string, searchCount: number): SmbMessa
   }
 }
 
+function queryPathInformationRequest(fileName: string, informationLevel: number): SmbMessage {
+  const fileNameBytes = Buffer.from(`${fileName}\0`, 'latin1')
+  const trans2Params = Buffer.alloc(6 + fileNameBytes.length)
+  trans2Params.writeUInt16LE(informationLevel, 0)
+  trans2Params.writeUInt32LE(0, 2)
+  fileNameBytes.copy(trans2Params, 6)
+
+  const params = Buffer.alloc(30)
+  params.writeUInt16LE(trans2Params.length, 0)
+  params.writeUInt16LE(0, 2)
+  params.writeUInt16LE(256, 4)
+  params.writeUInt16LE(8192, 6)
+  params.writeUInt16LE(trans2Params.length, 18)
+  const dataStart = SMB_HEADER_SIZE + 1 + params.length + 2
+  const pad = Buffer.alloc(3)
+  params.writeUInt16LE(dataStart + pad.length, 20)
+  params.writeUInt16LE(dataStart + pad.length + trans2Params.length, 24)
+  params.writeUInt8(1, 26)
+  params.writeUInt16LE(TRANS2_SUBCOMMAND.QUERY_PATH_INFORMATION, 28)
+  return {
+    header: baseHeader(SMB_COMMAND.TRANSACTION2),
+    params,
+    data: Buffer.concat([pad, trans2Params])
+  }
+}
+
 describe('SMB1 command-handler activity classification', () => {
   let libraryRoot: string
   let session: SmbSession
@@ -94,6 +120,8 @@ describe('SMB1 command-handler activity classification', () => {
   beforeEach(async () => {
     libraryRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'opl-forge-activity-'))
     await fs.writeFile(path.join(libraryRoot, 'game.iso'), Buffer.from('PS2ISO'))
+    await fs.mkdir(path.join(libraryRoot, 'CD'))
+    await fs.writeFile(path.join(libraryRoot, 'CD', 'SLUS_000.00.Test.iso'), Buffer.alloc(2048))
     activities = []
     session = new SmbSession(
       { username: 'tester', password: 'secret' },
@@ -146,7 +174,7 @@ describe('SMB1 command-handler activity classification', () => {
     const searchCount = response.data.readUInt16LE(3)
     const endOfSearch = response.data.readUInt16LE(5)
     expect(sid).toBeGreaterThan(0)
-    expect(searchCount).toBe(3) // '.', '..', 'game.iso'
+    expect(searchCount).toBe(4) // '.', '..', 'game.iso', 'CD'
     expect(endOfSearch).toBe(1)
     expect(activities).toEqual(['browsing'])
 
@@ -154,9 +182,52 @@ describe('SMB1 command-handler activity classification', () => {
     expect(entriesData.toString('latin1')).toContain('game.iso')
   })
 
+  it('answers the two QUERY_PATH_INFORMATION levels used by OPL before listing CD/DVD', async () => {
+    const basic = queryPathInformationRequest('\\CD', INFO_LEVEL.QUERY_FILE_BASIC_INFO)
+    basic.header.uid = session.uid
+    basic.header.tid = session.tid
+    const basicResponse = await dispatchSmbCommand(basic, session, libraryRoot)
+    expect(basicResponse.header.status).toBe(0)
+    expect(basicResponse.data.readUInt32LE(3 + 32)).toBe(0x10)
+
+    const standard = queryPathInformationRequest('\\CD', INFO_LEVEL.QUERY_FILE_STANDARD_INFO)
+    standard.header.uid = session.uid
+    standard.header.tid = session.tid
+    const standardResponse = await dispatchSmbCommand(standard, session, libraryRoot)
+    expect(standardResponse.header.status).toBe(0)
+    expect(standardResponse.data.readBigUInt64LE(3 + 8)).toBe(0n)
+    expect(standardResponse.data.readUInt8(3 + 21)).toBe(1)
+  })
+
   it('checkCredentials only accepts the exact configured username/password (FR-015)', () => {
     expect(session.checkCredentials('tester', 'secret')).toBe(true)
     expect(session.checkCredentials('tester', 'wrong')).toBe(false)
     expect(session.checkCredentials('wrong', 'secret')).toBe(false)
+  })
+
+  it('accepts the OPL alive ECHO with UID 0 before the tree is connected', async () => {
+    const echoData = Buffer.from('ALIVE ECHO TEST', 'latin1')
+    const params = Buffer.alloc(2)
+    params.writeUInt16LE(1, 0)
+    const request: SmbMessage = {
+      header: {
+        ...baseHeader(SMB_COMMAND.ECHO),
+        uid: 0,
+        tid: 0xffff
+      },
+      params,
+      data: echoData
+    }
+
+    // Match the point in OPL's startup sequence: session setup succeeded,
+    // but TREE_CONNECT_ANDX has not happened yet.
+    session.treeConnected = false
+    session.tid = 0
+
+    const response = await dispatchSmbCommand(request, session, libraryRoot)
+
+    expect(response.header.status).toBe(0)
+    expect(response.params.readUInt16LE(0)).toBe(1)
+    expect(response.data).toEqual(echoData)
   })
 })

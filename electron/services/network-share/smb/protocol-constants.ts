@@ -29,6 +29,8 @@ export const TRANS2_SUBCOMMAND = {
 } as const
 
 export const INFO_LEVEL = {
+  QUERY_FILE_BASIC_INFO: 0x0101,
+  QUERY_FILE_STANDARD_INFO: 0x0102,
   FIND_FILE_BOTH_DIRECTORY_INFO: 0x0104
 } as const
 

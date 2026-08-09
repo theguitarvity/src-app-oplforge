@@ -17,6 +17,7 @@
  */
 import { promises as fs } from 'node:fs'
 import type { Stats } from 'node:fs'
+import { randomBytes } from 'node:crypto'
 import path from 'node:path'
 import type { NetworkShareClientActivity } from '../../../../src/types/opl'
 import { releaseWriteLock, tryAcquireWriteLock } from '../write-lock'
@@ -37,6 +38,7 @@ import {
   writeFileTime,
   writeOemString
 } from './wire-helpers'
+import { verifyNtlmV1Response } from './ntlm'
 
 export interface SmbAuthContext {
   username: string
@@ -69,6 +71,7 @@ export class SmbSession {
   uid = 0
   tid = 0
   libraryRootPath = ''
+  readonly challenge = randomBytes(8)
   readonly handles = new Map<number, OpenHandle>()
   readonly searches = new Map<number, SearchState>()
   private nextFid = 1
@@ -89,8 +92,12 @@ export class SmbSession {
     this.uid = nextSessionId++ & 0xffff || 1
   }
 
-  connectTree(password: string): boolean {
-    if (password !== this.auth.password) return false
+  connectTree(password: string | Buffer): boolean {
+    const valid =
+      typeof password === 'string'
+        ? password === this.auth.password
+        : verifyNtlmV1Response(this.auth.password, this.challenge, password)
+    if (!valid) return false
     this.treeConnected = true
     this.tid = nextSessionId++ & 0xffff || 1
     return true
@@ -162,7 +169,7 @@ function parseOfferedDialects(data: Buffer): string[] {
   return dialects
 }
 
-function handleNegotiate(request: SmbMessage): SmbMessage {
+function handleNegotiate(request: SmbMessage, session: SmbSession): SmbMessage {
   const dialects = parseOfferedDialects(request.data)
   const dialectIndex = dialects.indexOf('NT LM 0.12')
   if (dialectIndex === -1) {
@@ -175,7 +182,7 @@ function handleNegotiate(request: SmbMessage): SmbMessage {
   // 17-word (34-byte) NT LM 0.12 negotiate response, MS-CIFS 2.2.4.52.2.
   const params = Buffer.alloc(34)
   params.writeUInt16LE(dialectIndex, 0) // DialectIndex
-  params.writeUInt8(0x00, 2) // SecurityMode: share-level, plaintext passwords (this is a minimal single-user share, no NTLM challenge/response)
+  params.writeUInt8(0x02, 2) // Share-level security with LM/NTLM challenge-response.
   params.writeUInt16LE(1, 3) // MaxMpxCount
   params.writeUInt16LE(1, 5) // MaxNumberVcs
   params.writeUInt32LE(0x00010000, 7) // MaxBufferSize (64KB — generous for a modern host, small for the wire format's own limits)
@@ -186,13 +193,13 @@ function handleNegotiate(request: SmbMessage): SmbMessage {
   params.writeUInt32LE(0x00000010 | 0x00000200 | 0x00000040, 19)
   writeFileTime(params, 23, new Date())
   params.writeInt16LE(0, 31) // ServerTimeZone (UTC)
-  params.writeUInt8(0, 33) // ChallengeLength: 0 (plaintext auth, no challenge)
+  params.writeUInt8(session.challenge.length, 33)
 
   const domain = writeOemString('WORKGROUP')
   return {
     header: successHeader(request),
     params,
-    data: domain
+    data: Buffer.concat([session.challenge, domain])
   }
 }
 
@@ -235,19 +242,22 @@ function handleTreeConnect(
 
   const passwordLength = request.params.readUInt16LE(6)
   if (passwordLength > request.data.length) return errorResponse(request, NT_STATUS.LOGON_FAILURE)
-  const password = request.data.subarray(0, passwordLength).toString('latin1').replace(/\0+$/, '')
+  const passwordBytes = request.data.subarray(0, passwordLength)
   let offset = passwordLength
   const pathResult = readOemString(request.data, offset)
   offset = pathResult.nextOffset
   readOemString(request.data, offset) // Service — accepted, not further validated
 
+  const password =
+    passwordLength === 24 ? passwordBytes : passwordBytes.toString('latin1').replace(/\0+$/, '')
   if (!session.connectTree(password)) return errorResponse(request, NT_STATUS.LOGON_FAILURE)
   session.libraryRootPath = libraryRootPath
 
-  const params = Buffer.alloc(4)
+  const params = Buffer.alloc(6)
   params.writeUInt8(0xff, 0)
   params.writeUInt8(0, 1)
   params.writeUInt16LE(0, 2)
+  params.writeUInt16LE(0, 4) // OptionalSupport
 
   const service = writeOemString('A:')
   const fileSystem = writeOemString('OPLFS')
@@ -559,6 +569,50 @@ function buildTrans2Response(
   return { header: { ...successHeader(request), tid: request.header.tid }, params, data: bytes }
 }
 
+async function handleQueryPathInformation(
+  request: SmbMessage,
+  session: SmbSession,
+  trans2Params: Buffer
+): Promise<SmbMessage> {
+  // LevelOfInterest(2)+Reserved(4) precede the OEM path.
+  if (trans2Params.length < 7) return errorResponse(request, NT_STATUS.UNSUCCESSFUL)
+  const informationLevel = trans2Params.readUInt16LE(0)
+  const fileName = readOemString(trans2Params, 6).value
+  let absolutePath: string
+  try {
+    absolutePath = resolveSharePath(session.libraryRootPath, fileName)
+  } catch {
+    return errorResponse(request, NT_STATUS.OBJECT_NAME_NOT_FOUND)
+  }
+  const stats = await fs.stat(absolutePath).catch(() => undefined)
+  if (!stats) return errorResponse(request, NT_STATUS.OBJECT_NAME_NOT_FOUND)
+
+  let data: Buffer
+  if (informationLevel === INFO_LEVEL.QUERY_FILE_BASIC_INFO) {
+    // SMB_QUERY_FILE_BASIC_INFO: four FILETIMEs followed by ExtFileAttributes.
+    data = Buffer.alloc(36)
+    writeFileTime(data, 0, stats.birthtime ?? stats.ctime)
+    writeFileTime(data, 8, stats.atime)
+    writeFileTime(data, 16, stats.mtime)
+    writeFileTime(data, 24, stats.ctime)
+    data.writeUInt32LE(statAttributes(stats), 32)
+  } else if (informationLevel === INFO_LEVEL.QUERY_FILE_STANDARD_INFO) {
+    // SMB_QUERY_FILE_STANDARD_INFO: allocation/end size, links and two flags.
+    data = Buffer.alloc(22)
+    const size = BigInt(stats.isDirectory() ? 0 : stats.size)
+    data.writeBigUInt64LE(((size + 511n) / 512n) * 512n, 0)
+    data.writeBigUInt64LE(size, 8)
+    data.writeUInt32LE(1, 16)
+    data.writeUInt8(0, 20) // DeletePending
+    data.writeUInt8(stats.isDirectory() ? 1 : 0, 21)
+  } else {
+    return errorResponse(request, NT_STATUS.NOT_IMPLEMENTED)
+  }
+
+  session.markActivity('browsing')
+  return buildTrans2Response(request, Buffer.alloc(2), data)
+}
+
 async function handleFindFirst2(
   request: SmbMessage,
   session: SmbSession,
@@ -671,6 +725,8 @@ async function handleTransaction2(request: SmbMessage, session: SmbSession): Pro
       return handleFindFirst2(request, session, trans2Params)
     case TRANS2_SUBCOMMAND.FIND_NEXT2:
       return handleFindNext2(request, session, trans2Params)
+    case TRANS2_SUBCOMMAND.QUERY_PATH_INFORMATION:
+      return handleQueryPathInformation(request, session, trans2Params)
     default:
       return errorResponse(request, NT_STATUS.NOT_IMPLEMENTED)
   }
@@ -688,6 +744,10 @@ export async function dispatchSmbCommand(
     session.authenticated &&
     command !== SMB_COMMAND.NEGOTIATE &&
     command !== SMB_COMMAND.SESSION_SETUP_ANDX &&
+    // SMB_COM_ECHO tests the transport connection and is not scoped to a
+    // user session.  OPL sends its alive probe with UID 0 before connecting
+    // to the share, even after SESSION_SETUP_ANDX returned a nonzero UID.
+    command !== SMB_COMMAND.ECHO &&
     request.header.uid !== session.uid
   )
     return errorResponse(request, NT_STATUS.ACCESS_DENIED)
@@ -700,7 +760,7 @@ export async function dispatchSmbCommand(
     return errorResponse(request, NT_STATUS.BAD_NETWORK_NAME)
   switch (request.header.command) {
     case SMB_COMMAND.NEGOTIATE:
-      return handleNegotiate(request)
+      return handleNegotiate(request, session)
     case SMB_COMMAND.SESSION_SETUP_ANDX:
       return handleSessionSetup(request, session)
     case SMB_COMMAND.TREE_CONNECT_ANDX:

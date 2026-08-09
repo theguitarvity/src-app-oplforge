@@ -172,7 +172,7 @@ export class SmbProtocolServer implements ProtocolServer {
             debugLog(
               'ERROR',
               `[SMB debug] ${remoteAddress}: failed to handle SMB message (${(error as Error).message}); ` +
-                `payload=${frame.payload.subarray(0, 48).toString('hex')}`
+                `frameLength=${frame.payload.length}`
             )
             socket.destroy()
             return

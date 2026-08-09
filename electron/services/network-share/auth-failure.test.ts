@@ -19,6 +19,7 @@ import {
   NbssFrameReader
 } from './smb/frame-codec'
 import { NT_STATUS, SMB_COMMAND } from './smb/protocol-constants'
+import { createNtlmV1Response } from './smb/ntlm'
 import type { NetworkShareConfig } from '../../../src/types/opl'
 
 const SMB_TEST_PORT = 14446
@@ -102,10 +103,11 @@ function sessionSetupRequest(username: string, password: string) {
   })
 }
 
-function treeConnectRequest(uid: number, password: string) {
+function treeConnectRequest(uid: number, password: string | Buffer) {
+  const passwordBytes = Buffer.isBuffer(password) ? password : Buffer.from(password, 'latin1')
   const params = Buffer.alloc(8)
   params.writeUInt8(0xff, 0)
-  params.writeUInt16LE(password.length, 6)
+  params.writeUInt16LE(passwordBytes.length, 6)
   return encodeSmbMessage({
     header: {
       command: SMB_COMMAND.TREE_CONNECT_ANDX,
@@ -121,7 +123,7 @@ function treeConnectRequest(uid: number, password: string) {
     },
     params,
     data: Buffer.concat([
-      Buffer.from(password, 'latin1'),
+      passwordBytes,
       Buffer.from('\\\\127.0.0.1\\OPL Forge Test\0A:\0', 'latin1')
     ])
   })
@@ -257,6 +259,31 @@ describe('Authentication failure handling (FR-015)', () => {
       treeConnectRequest(decoded.header.uid, CORRECT_PASSWORD)
     )
     expect(decodeSmbMessage(treeResponse).header.status >>> 0).toBe(NT_STATUS.SUCCESS)
+    socket.destroy()
+  })
+
+  it('SMB authenticates the NTLMv1 response emitted by OPL for share-level security', async () => {
+    const socket = net.connect({
+      port: SMB_TEST_PORT,
+      host: service.getStatus().smb.boundAddresses[0]
+    })
+    const reader = new NbssFrameReader()
+    await new Promise((resolve) => socket.once('connect', resolve))
+
+    const negotiate = decodeSmbMessage(await sendAndReceive(socket, reader, negotiateRequest()))
+    expect(negotiate.params.readUInt8(2)).toBe(0x02)
+    expect(negotiate.params.readUInt8(33)).toBe(8)
+    const challenge = negotiate.data.subarray(0, 8)
+    const sessionSetup = decodeSmbMessage(
+      await sendAndReceive(socket, reader, sessionSetupRequest('tester', ''))
+    )
+    const response = createNtlmV1Response(CORRECT_PASSWORD, challenge)
+    const tree = decodeSmbMessage(
+      await sendAndReceive(socket, reader, treeConnectRequest(sessionSetup.header.uid, response))
+    )
+
+    expect(tree.header.status >>> 0).toBe(NT_STATUS.SUCCESS)
+    expect(tree.params).toHaveLength(6)
     socket.destroy()
   })
 
