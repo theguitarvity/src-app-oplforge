@@ -18,7 +18,7 @@ Release maintainers should follow [docs/releasing.md](docs/releasing.md). Hardwa
 Uma aplicação desktop para importar jogos, estruturar dispositivos USB, gerenciar artes,
 validar a biblioteca e acompanhar cada operação com segurança.
 
-[![CI](https://github.com/theguitarvity/oplforge/actions/workflows/ci.yml/badge.svg)](https://github.com/theguitarvity/oplforge/actions/workflows/ci.yml)
+[![CI](https://github.com/theguitarvity/src-app-oplforge/actions/workflows/ci.yml/badge.svg)](https://github.com/theguitarvity/src-app-oplforge/actions/workflows/ci.yml)
 ![Node.js 22](https://img.shields.io/badge/Node.js-22-5FA04E?logo=nodedotjs&logoColor=white)
 ![Electron](https://img.shields.io/badge/Electron-42-47848F?logo=electron&logoColor=white)
 ![TypeScript](https://img.shields.io/badge/TypeScript-6-3178C6?logo=typescript&logoColor=white)
@@ -110,8 +110,8 @@ O Electron e as demais dependências são instalados pelo próprio projeto.
 ## Início rápido
 
 ```bash
-git clone https://github.com/theguitarvity/oplforge.git
-cd oplforge
+git clone https://github.com/theguitarvity/src-app-oplforge.git
+cd src-app-oplforge
 corepack enable
 pnpm install
 pnpm electron:dev
@@ -257,7 +257,7 @@ O `electron-builder` está configurado para gerar:
 | macOS   | Intel e Apple Silicon   |
 | Linux   | AppImage e DEB          |
 
-> O projeto ainda está em desenvolvimento. Consulte a página de [Releases](https://github.com/theguitarvity/oplforge/releases) para verificar se já existe um instalador publicado; caso contrário, execute-o a partir do código-fonte.
+> O projeto ainda está em desenvolvimento. Consulte a página de [Releases](https://github.com/theguitarvity/src-app-oplforge/releases) para verificar se já existe um instalador publicado; caso contrário, execute-o a partir do código-fonte.
 
 ## Contribuindo
 
@@ -269,7 +269,7 @@ Contribuições são bem-vindas. Para propor uma mudança:
 4. Execute `pnpm lint`, `pnpm test:run` e `pnpm build`.
 5. Envie um pull request explicando o problema e a solução.
 
-Para bugs e sugestões, abra uma [issue](https://github.com/theguitarvity/oplforge/issues) com passos para reprodução, sistema operacional e logs relevantes — sem incluir dados pessoais ou conteúdo protegido.
+Para bugs e sugestões, abra uma [issue](https://github.com/theguitarvity/src-app-oplforge/issues) com passos para reprodução, sistema operacional e logs relevantes — sem incluir dados pessoais ou conteúdo protegido.
 
 ## Licença
 

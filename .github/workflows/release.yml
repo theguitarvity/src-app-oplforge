@@ -10,9 +10,9 @@ jobs:
     outputs:
       public_version: ${{ steps.identity.outputs.opl_public_version }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: pnpm/action-setup@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with: { node-version: '22', cache: pnpm }
       - run: pnpm install --frozen-lockfile
       - id: identity
@@ -28,9 +28,9 @@ jobs:
       CSC_LINK: ${{ secrets.WINDOWS_CSC_LINK }}
       CSC_KEY_PASSWORD: ${{ secrets.WINDOWS_CSC_KEY_PASSWORD }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: pnpm/action-setup@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with: { node-version: '22', cache: pnpm }
       - run: pnpm install --frozen-lockfile
       - name: Require signing secrets
@@ -41,7 +41,7 @@ jobs:
       - run: pnpm exec tsx scripts/validate-artifacts.ts release
       - shell: pwsh
         run: pnpm exec tsx scripts/verify-signatures.ts public "release/OPL-Forge-$env:OPL_PUBLIC_VERSION-x64-Setup.exe"
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         with:
           name: public-windows
           if-no-files-found: error
@@ -55,7 +55,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions: { contents: write }
     steps:
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v6
         with: { name: public-windows, path: release }
       - uses: softprops/action-gh-release@v2
         with:
