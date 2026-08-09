@@ -6,6 +6,9 @@ on:
     branches: [master, main]
     tags: ['v*']
 
+permissions:
+  contents: write
+
 jobs:
   build-linux:
     name: Build Linux artifacts
@@ -111,3 +114,23 @@ jobs:
           name: macos-artifacts
           path: release/*
           if-no-files-found: error
+
+  publish-release:
+    name: Publish GitHub Release
+    needs: [build-linux, build-windows, build-macos]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: dist-artifacts
+
+      - name: Create release tag
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAG_NAME="v${GITHUB_RUN_NUMBER}"
+          gh release create "$TAG_NAME" dist-artifacts/**/* --title "Release $TAG_NAME" --generate-notes --prerelease || true
