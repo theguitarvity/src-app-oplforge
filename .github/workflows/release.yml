@@ -11,7 +11,7 @@ jobs:
       public_version: ${{ steps.identity.outputs.opl_public_version }}
     steps:
       - uses: actions/checkout@v6
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@v4.4.0
       - uses: actions/setup-node@v6
         with: { node-version: '22', cache: pnpm }
       - run: pnpm install --frozen-lockfile
@@ -29,7 +29,7 @@ jobs:
       CSC_KEY_PASSWORD: ${{ secrets.WINDOWS_CSC_KEY_PASSWORD }}
     steps:
       - uses: actions/checkout@v6
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@v4.4.0
       - uses: actions/setup-node@v6
         with: { node-version: '22', cache: pnpm }
       - run: pnpm install --frozen-lockfile
