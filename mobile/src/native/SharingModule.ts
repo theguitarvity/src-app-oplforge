@@ -78,9 +78,9 @@ export async function acknowledgeWriteAccess(): Promise<SharingSession> {
   }
 }
 
-export async function startSharing(): Promise<SharingSession> {
+export async function startSharing(shareName: string): Promise<SharingSession> {
   try {
-    const raw = (await NativeSharingModule.startSharing()) as RawSession
+    const raw = (await NativeSharingModule.startSharing(shareName)) as RawSession
     return toSession(raw)
   } catch (error) {
     throw toSharingModuleError(error)

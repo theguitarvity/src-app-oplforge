@@ -7,10 +7,12 @@ import { HomeScreen } from '../screens/Home/HomeScreen'
 import { LibraryScreen } from '../screens/Library/LibraryScreen'
 import { SharingScreen } from '../screens/Sharing/SharingScreen'
 import { LibrarySelectScreen } from '../screens/LibrarySelect/LibrarySelectScreen'
+import { EssentialsScreen } from '../screens/Essentials/EssentialsScreen'
 
 export type TabParamList = {
   Home: undefined
   Library: undefined
+  Essentials: undefined
   Sharing: undefined
   Settings: undefined
 }
@@ -20,6 +22,7 @@ const Tab = createBottomTabNavigator<TabParamList>()
 const TAB_ICON: Record<keyof TabParamList, keyof typeof MaterialIcons.glyphMap> = {
   Home: 'home',
   Library: 'videogame-asset',
+  Essentials: 'travel-explore',
   Sharing: 'wifi-tethering',
   Settings: 'settings'
 }
@@ -84,6 +87,7 @@ export function RootNavigator() {
     >
       <Tab.Screen name="Home" component={HomeScreen} options={{ title: 'OPL Forge', tabBarLabel: 'Início' }} />
       <Tab.Screen name="Library" component={LibraryScreen} options={{ title: 'Biblioteca' }} />
+      <Tab.Screen name="Essentials" component={EssentialsScreen} options={{ title: 'Catálogo Essentials', tabBarLabel: 'Essentials' }} />
       <Tab.Screen name="Sharing" component={SharingScreen} options={{ title: 'Compartilhar' }} />
       <Tab.Screen name="Settings" component={LibrarySelectScreen} options={{ title: 'Configurações' }} />
     </Tab.Navigator>

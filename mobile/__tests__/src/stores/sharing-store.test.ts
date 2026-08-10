@@ -65,7 +65,7 @@ describe('sharing-store', () => {
   it('startSharing transitions to running-idle on success', async () => {
     mockSharingModule.startSharing.mockResolvedValue(runningSession)
 
-    await useSharingStore.getState().startSharing()
+    await useSharingStore.getState().startSharing('oplforge')
 
     expect(useSharingStore.getState().session?.state).toBe('running-idle')
     expect(useSharingStore.getState().session?.boundAddress).toBe('192.168.1.42')
@@ -80,7 +80,7 @@ describe('sharing-store', () => {
       })
     )
 
-    await useSharingStore.getState().startSharing()
+    await useSharingStore.getState().startSharing('oplforge')
 
     expect(useSharingStore.getState().status).toBe('error')
     expect(useSharingStore.getState().errorMessage).toBe('Conecte-se a uma rede Wi-Fi para compartilhar.')

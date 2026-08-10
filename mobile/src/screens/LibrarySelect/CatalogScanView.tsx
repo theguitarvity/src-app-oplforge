@@ -5,12 +5,14 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack'
 import { colors, radius, semanticColor, spacing, typography } from '../../design-system/tokens'
 import { useCatalogStore } from '../../stores/catalog-store'
 import type { RootStackParamList } from '../../app/App'
+import { ActionRow } from '../../components/ActionRow'
 import { ImportGameButton } from './ImportGameButton'
 
 /**
  * US2 — Catalogar e Validar a Biblioteca Selecionada. Progress, cancel,
  * per-type counts, and non-destructive issue summary (spec Acceptance
- * Scenarios 1–4).
+ * Scenarios 1–4). Action list uses the same icon-row language as Home's
+ * quick access/suggestions, not plain outlined buttons.
  */
 export function CatalogScanView() {
   const { snapshot, status, errorMessage, startScan, cancelScan, loadLatest } = useCatalogStore()
@@ -53,66 +55,89 @@ export function CatalogScanView() {
     const { countsByType, issueCount } = snapshot
     const total = countsByType.dvd + countsByType.cd + countsByType.ps1 + countsByType.app
     return (
-      <View style={styles.card}>
-        {total === 0 ? (
-          <Text style={styles.body}>
-            Nenhum jogo reconhecido. Verifique se a pasta contém as pastas DVD, CD, PS1 ou APPS.
-          </Text>
-        ) : (
-          <>
-            <Text style={styles.label}>Biblioteca catalogada</Text>
+      <View style={styles.section}>
+        <View style={styles.card}>
+          {total === 0 ? (
             <Text style={styles.body}>
-              DVD: {countsByType.dvd} · CD: {countsByType.cd} · PS1: {countsByType.ps1} · Apps:{' '}
-              {countsByType.app}
+              Nenhum jogo reconhecido. Verifique se a pasta contém as pastas DVD, CD, PS1 ou APPS.
             </Text>
-            {issueCount > 0 ? (
-              <Text style={[styles.body, { color: semanticColor('warning') }]}>
-                {issueCount} item(ns) precisam de atenção
+          ) : (
+            <>
+              <Text style={styles.label}>Biblioteca catalogada</Text>
+              <Text style={styles.body}>
+                DVD: {countsByType.dvd} · CD: {countsByType.cd} · PS1: {countsByType.ps1} · Apps:{' '}
+                {countsByType.app}
               </Text>
-            ) : (
-              <Text style={[styles.body, { color: semanticColor('success') }]}>
-                Nenhum problema encontrado
-              </Text>
-            )}
-          </>
-        )}
+              {issueCount > 0 ? (
+                <Text style={[styles.body, { color: semanticColor('warning') }]}>
+                  {issueCount} item(ns) precisam de atenção
+                </Text>
+              ) : (
+                <Text style={[styles.body, { color: semanticColor('success') }]}>
+                  Nenhum problema encontrado
+                </Text>
+              )}
+            </>
+          )}
+        </View>
+
+        <Text style={styles.sectionTitle}>Ações</Text>
         {total > 0 ? (
-          <Pressable style={styles.primaryButton} onPress={() => navigation.navigate('Sharing')}>
-            <Text style={styles.primaryButtonText}>Compartilhar com o PS2</Text>
-          </Pressable>
+          <ActionRow
+            icon="wifi-tethering"
+            label="Compartilhar com o PS2"
+            tone="primary"
+            onPress={() => navigation.navigate('Sharing')}
+          />
         ) : null}
-        <Pressable style={styles.secondaryButton} onPress={() => navigation.navigate('Essentials')}>
-          <Text style={styles.secondaryButtonText}>Adicionar jogos (Catálogo Essentials)</Text>
-        </Pressable>
+        <ActionRow
+          icon="travel-explore"
+          label="Adicionar jogos"
+          subtitle="Catálogo Essentials"
+          onPress={() => navigation.navigate('Essentials')}
+        />
         <ImportGameButton />
-        <Pressable style={styles.secondaryButton} onPress={() => navigation.navigate('Diagnostics')}>
-          <Text style={styles.secondaryButtonText}>Diagnóstico do dispositivo</Text>
-        </Pressable>
-        <Pressable style={styles.secondaryButton} onPress={() => void startScan()}>
-          <Text style={styles.secondaryButtonText}>Catalogar novamente</Text>
-        </Pressable>
+        <ActionRow
+          icon="health-and-safety"
+          label="Diagnóstico do dispositivo"
+          onPress={() => navigation.navigate('Diagnostics')}
+        />
+        <ActionRow icon="refresh" label="Catalogar novamente" onPress={() => void startScan()} />
       </View>
     )
   }
 
   return (
-    <View style={styles.card}>
-      <Text style={styles.body}>A biblioteca ainda não foi catalogada.</Text>
-      <Pressable style={styles.primaryButton} onPress={() => void startScan()}>
-        <Text style={styles.primaryButtonText}>Catalogar biblioteca</Text>
-      </Pressable>
-      <Pressable style={styles.secondaryButton} onPress={() => navigation.navigate('Essentials')}>
-        <Text style={styles.secondaryButtonText}>Adicionar jogos (Catálogo Essentials)</Text>
-      </Pressable>
+    <View style={styles.section}>
+      <View style={styles.card}>
+        <Text style={styles.body}>A biblioteca ainda não foi catalogada.</Text>
+      </View>
+      <ActionRow icon="search" label="Catalogar biblioteca" tone="primary" onPress={() => void startScan()} />
+      <Text style={styles.sectionTitle}>Ações</Text>
+      <ActionRow
+        icon="travel-explore"
+        label="Adicionar jogos"
+        subtitle="Catálogo Essentials"
+        onPress={() => navigation.navigate('Essentials')}
+      />
       <ImportGameButton />
-      <Pressable style={styles.secondaryButton} onPress={() => navigation.navigate('Diagnostics')}>
-        <Text style={styles.secondaryButtonText}>Diagnóstico do dispositivo</Text>
-      </Pressable>
+      <ActionRow
+        icon="health-and-safety"
+        label="Diagnóstico do dispositivo"
+        onPress={() => navigation.navigate('Diagnostics')}
+      />
     </View>
   )
 }
 
 const styles = StyleSheet.create({
+  section: { gap: spacing.sm },
+  sectionTitle: {
+    color: colors.foreground,
+    fontSize: typography.subtitle.fontSize,
+    fontWeight: '600',
+    marginTop: spacing.xs
+  },
   card: {
     backgroundColor: colors.card,
     borderColor: colors.border,

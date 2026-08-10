@@ -1,9 +1,10 @@
 import { useState } from 'react'
-import { Pressable, StyleSheet, Text } from 'react-native'
+import { StyleSheet, Text } from 'react-native'
 import * as DocumentPicker from 'expo-document-picker'
-import { colors, radius, semanticColor, spacing, typography } from '../../design-system/tokens'
+import { semanticColor, spacing, typography } from '../../design-system/tokens'
 import { useTransferStore } from '../../stores/transfer-store'
 import { TransferModuleError } from '../../native/TransferModule'
+import { ActionRow } from '../../components/ActionRow'
 
 /**
  * US2 — Adicionar Jogos (import local). Opens the system document picker,
@@ -33,22 +34,12 @@ export function ImportGameButton() {
 
   return (
     <>
-      <Pressable style={styles.button} onPress={() => void handlePress()}>
-        <Text style={styles.buttonText}>Adicionar jogos (arquivo local)</Text>
-      </Pressable>
+      <ActionRow icon="upload-file" label="Adicionar jogos" subtitle="Arquivo local" onPress={() => void handlePress()} />
       {duplicateWarning ? <Text style={styles.warning}>{duplicateWarning}</Text> : null}
     </>
   )
 }
 
 const styles = StyleSheet.create({
-  button: {
-    borderColor: colors.border,
-    borderWidth: 1,
-    borderRadius: radius.md,
-    paddingVertical: spacing.sm,
-    alignItems: 'center'
-  },
-  buttonText: { color: colors.foreground, fontSize: typography.body.fontSize },
   warning: { color: semanticColor('warning'), fontSize: typography.caption.fontSize, marginTop: spacing.xs }
 })

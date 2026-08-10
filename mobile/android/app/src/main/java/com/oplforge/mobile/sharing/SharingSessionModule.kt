@@ -39,6 +39,7 @@ class SharingSessionModule(reactContext: ReactApplicationContext) :
     private var state = STATE_OFF
     private var lastError: Pair<String, String>? = null
     private var startedAt: String? = null
+    private var shareName = SharingForegroundService.SHARE_NAME_DEFAULT
     private val connectedClients = ConcurrentHashMap<String, WritableMap>()
 
     init {
@@ -73,11 +74,12 @@ class SharingSessionModule(reactContext: ReactApplicationContext) :
         promise.resolve(sessionToMap())
     }
 
-    override fun startSharing(promise: Promise) {
+    override fun startSharing(shareName: String, promise: Promise) {
         if (state == STATE_STARTING || state == STATE_RUNNING_IDLE || state == STATE_RUNNING_CONNECTED) {
             ErrorMapping.reject(promise, AppError("ALREADY_RUNNING", "O compartilhamento já está ativo."))
             return
         }
+        this.shareName = shareName.trim().ifBlank { SharingForegroundService.SHARE_NAME_DEFAULT }
 
         val stored = libraryPreferences.load()
         if (stored == null) {
@@ -105,7 +107,7 @@ class SharingSessionModule(reactContext: ReactApplicationContext) :
             }
 
             try {
-                val intent = SharingForegroundService.startIntent(reactApplicationContext, SHARE_NAME)
+                val intent = SharingForegroundService.startIntent(reactApplicationContext, this@SharingSessionModule.shareName)
                 reactApplicationContext.startForegroundService(intent)
                 startedAt = Instant.now().toString()
                 state = STATE_RUNNING_IDLE
@@ -161,7 +163,7 @@ class SharingSessionModule(reactContext: ReactApplicationContext) :
         }
         step("Endereço IP", SharingForegroundService.boundAddress ?: "")
         step("Porta", (SharingForegroundService.boundPort ?: SharingForegroundService.DEFAULT_PORT).toString())
-        step("Nome do compartilhamento", SHARE_NAME)
+        step("Nome do compartilhamento", shareName)
         step("Usuário", credentialStore.getUsername() ?: "")
         promise.resolve(steps)
     }
@@ -221,7 +223,7 @@ class SharingSessionModule(reactContext: ReactApplicationContext) :
         putString("state", state)
         SharingForegroundService.boundAddress?.let { putString("boundAddress", it) }
         SharingForegroundService.boundPort?.let { putInt("port", it) }
-        putString("shareName", SHARE_NAME)
+        putString("shareName", shareName)
         putBoolean("hasCredentials", credentialStore.hasCredentials())
         writeAccessAcknowledgedAt?.let { putString("writeAccessAcknowledgedAt", it) }
         startedAt?.let { putString("startedAt", it) }
@@ -235,7 +237,6 @@ class SharingSessionModule(reactContext: ReactApplicationContext) :
 
     companion object {
         const val NAME = "SharingModule"
-        private const val SHARE_NAME = SharingForegroundService.SHARE_NAME_DEFAULT
 
         private const val STATE_OFF = "off"
         private const val STATE_STARTING = "starting"

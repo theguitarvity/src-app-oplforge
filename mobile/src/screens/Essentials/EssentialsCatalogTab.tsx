@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, TextInput, View } from 'react-native'
+import MaterialIcons from '@expo/vector-icons/MaterialIcons'
 import { colors, radius, spacing, typography } from '../../design-system/tokens'
 import { useEssentialsStore } from '../../stores/essentials-store'
 import { EssentialsGameTile } from './EssentialsGameTile'
@@ -76,13 +77,21 @@ export function EssentialsCatalogTab() {
         </Text>
       </View>
 
-      <TextInput
-        style={styles.searchInput}
-        placeholder="Buscar jogos..."
-        placeholderTextColor={colors.mutedForeground}
-        value={search}
-        onChangeText={setSearch}
-      />
+      <View style={styles.searchWrap}>
+        <MaterialIcons name="search" size={20} color={colors.mutedForeground} />
+        <TextInput
+          style={styles.searchInput}
+          placeholder="Buscar jogos..."
+          placeholderTextColor={colors.mutedForeground}
+          value={search}
+          onChangeText={setSearch}
+        />
+        {search.length > 0 ? (
+          <Pressable onPress={() => setSearch('')} hitSlop={8}>
+            <MaterialIcons name="close" size={18} color={colors.mutedForeground} />
+          </Pressable>
+        ) : null}
+      </View>
 
       <View style={styles.filterRow}>
         {TIER_FILTERS.map((option) => (
@@ -125,9 +134,11 @@ export function EssentialsCatalogTab() {
           </Text>
           <View style={styles.selectionActions}>
             <Pressable style={styles.selectionClear} onPress={() => setSelectedIds(new Set())}>
+              <MaterialIcons name="close" size={16} color={colors.foreground} />
               <Text style={styles.selectionClearText}>Limpar</Text>
             </Pressable>
             <Pressable style={styles.selectionDownload} onPress={() => setConfirming(true)}>
+              <MaterialIcons name="download" size={16} color={colors.primaryForeground} />
               <Text style={styles.selectionDownloadText}>Baixar selecionados</Text>
             </Pressable>
           </View>
@@ -151,15 +162,24 @@ const styles = StyleSheet.create({
   header: { paddingHorizontal: spacing.md, paddingTop: spacing.md, marginBottom: spacing.sm, gap: spacing.xs },
   headerTitle: { color: colors.foreground, fontSize: typography.subtitle.fontSize, fontWeight: '700' },
   headerSubtitle: { color: colors.mutedForeground, fontSize: typography.caption.fontSize, lineHeight: 18 },
-  searchInput: {
+  searchWrap: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.xs,
     marginHorizontal: spacing.md,
     marginBottom: spacing.sm,
-    borderRadius: radius.md,
+    borderRadius: radius.lg,
     borderWidth: 1,
     borderColor: colors.border,
+    backgroundColor: colors.card,
     paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
-    color: colors.foreground
+    height: 44
+  },
+  searchInput: {
+    flex: 1,
+    color: colors.foreground,
+    fontSize: typography.body.fontSize,
+    padding: 0
   },
   filterRow: {
     flexDirection: 'row',
@@ -169,18 +189,19 @@ const styles = StyleSheet.create({
     marginBottom: spacing.sm
   },
   chip: {
-    borderRadius: radius.sm,
+    borderRadius: 999,
     borderWidth: 1,
     borderColor: colors.border,
+    backgroundColor: colors.card,
     paddingVertical: spacing.xs,
-    paddingHorizontal: spacing.sm,
-    minHeight: 36,
+    paddingHorizontal: spacing.md,
+    minHeight: 40,
     alignItems: 'center',
     justifyContent: 'center'
   },
   chipActive: { backgroundColor: colors.primary, borderColor: colors.primary },
-  chipText: { color: colors.mutedForeground, fontSize: typography.caption.fontSize },
-  chipTextActive: { color: colors.primaryForeground, fontWeight: '600' },
+  chipText: { color: colors.mutedForeground, fontSize: typography.caption.fontSize, fontWeight: '600' },
+  chipTextActive: { color: colors.primaryForeground, fontWeight: '700' },
   error: { color: colors.red, marginHorizontal: spacing.md, marginBottom: spacing.sm },
   row: { gap: spacing.sm },
   list: { paddingHorizontal: spacing.md, paddingBottom: spacing.lg, gap: spacing.sm },
@@ -207,20 +228,26 @@ const styles = StyleSheet.create({
   selectionText: { color: colors.foreground, fontSize: typography.body.fontSize, fontWeight: '600' },
   selectionActions: { flexDirection: 'row', gap: spacing.sm },
   selectionClear: {
+    flexDirection: 'row',
+    gap: spacing.xs,
     borderRadius: radius.md,
     borderWidth: 1,
     borderColor: colors.border,
     paddingVertical: spacing.sm,
     paddingHorizontal: spacing.md,
-    alignItems: 'center'
+    alignItems: 'center',
+    justifyContent: 'center'
   },
   selectionClearText: { color: colors.foreground, fontSize: typography.caption.fontSize },
   selectionDownload: {
     flex: 1,
+    flexDirection: 'row',
+    gap: spacing.xs,
     borderRadius: radius.md,
     backgroundColor: colors.primary,
     paddingVertical: spacing.sm,
-    alignItems: 'center'
+    alignItems: 'center',
+    justifyContent: 'center'
   },
   selectionDownloadText: { color: colors.primaryForeground, fontSize: typography.caption.fontSize, fontWeight: '700' }
 })

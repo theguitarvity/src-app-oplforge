@@ -1,6 +1,9 @@
+import { useEffect, useRef } from 'react'
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native'
 import { colors, radius, semanticColor, spacing, typography } from '../../design-system/tokens'
 import { useArtSyncStore } from '../../stores/art-sync-store'
+import { useCatalogStore } from '../../stores/catalog-store'
+import { navigationRef } from '../../app/navigationRef'
 
 /**
  * Art Sync — downloads box art for games already in the local library that
@@ -10,6 +13,19 @@ import { useArtSyncStore } from '../../stores/art-sync-store'
  */
 export function ArtSyncScreen() {
   const { state, totalGames, matchedInSource, installed, failed, errorMessage, plan, start } = useArtSyncStore()
+  const navigatedOnCompletion = useRef(false)
+
+  // Newly-synced covers only show once the catalog re-reads the ART folder —
+  // jump to Biblioteca with a fresh scan already running so the user sees
+  // the result immediately instead of a stale grid.
+  useEffect(() => {
+    if (state === 'completed' && !navigatedOnCompletion.current) {
+      navigatedOnCompletion.current = true
+      void useCatalogStore.getState().startScan()
+      if (navigationRef.isReady()) navigationRef.navigate('Tabs', { screen: 'Library' } as never)
+    }
+    if (state !== 'completed') navigatedOnCompletion.current = false
+  }, [state])
 
   const isPlanning = state === 'planning'
   const isRunning = state === 'running'

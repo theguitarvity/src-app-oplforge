@@ -398,6 +398,6 @@ const styles = StyleSheet.create({
   suggestionTitle: { color: colors.foreground, fontSize: typography.body.fontSize, fontWeight: '600' },
   suggestionSubtitle: { color: colors.mutedForeground, fontSize: typography.caption.fontSize, marginTop: 2 },
   gamesGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
-  gameCell: { width: GAME_CELL_WIDTH, gap: spacing.xs },
+  gameCell: { width: '30%', minWidth: GAME_CELL_WIDTH, gap: spacing.xs, alignItems: 'center' },
   gameTitle: { color: colors.mutedForeground, fontSize: typography.caption.fontSize }
 })

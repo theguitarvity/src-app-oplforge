@@ -11,7 +11,7 @@ export interface Spec extends TurboModule {
   getSession(): Promise<Object>
   saveCredentials(input: Object): Promise<Object>
   acknowledgeWriteAccess(): Promise<Object>
-  startSharing(): Promise<Object>
+  startSharing(shareName: string): Promise<Object>
   stopSharing(): Promise<Object>
   getConnectionInstructions(): Promise<Object>
   addListener(eventName: string): void
