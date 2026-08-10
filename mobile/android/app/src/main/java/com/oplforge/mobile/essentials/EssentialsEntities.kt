@@ -20,7 +20,16 @@ data class CatalogListingCacheEntity(
     val accessible: Boolean,
     val checkedAt: String,
     /** Best-match box art URL from libretro-thumbnails (research.md), resolved once per refresh cycle. */
-    val boxArtUrl: String? = null
+    val boxArtUrl: String? = null,
+    /**
+     * False for the fast, metadata-only rows written immediately by
+     * getListings() (accessible defaults to true, boxArtUrl is null) — true
+     * once the background accessibility/box-art pass has actually run for
+     * this row. Without this flag, the quick write's own checkedAt satisfies
+     * the 24h freshness check, so a later getListings() call takes the
+     * cache-hit path and never kicks off real enrichment at all.
+     */
+    val enriched: Boolean = false
 )
 
 @Dao
@@ -36,4 +45,7 @@ interface CatalogListingCacheDao {
 
     @Query("SELECT MIN(checkedAt) FROM catalog_listing_cache")
     suspend fun oldestCheckedAt(): String?
+
+    @Query("SELECT * FROM catalog_listing_cache WHERE enriched = 0")
+    suspend fun getUnenriched(): List<CatalogListingCacheEntity>
 }

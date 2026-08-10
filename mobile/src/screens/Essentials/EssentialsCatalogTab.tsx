@@ -37,6 +37,13 @@ export function EssentialsCatalogTab() {
 
   useEffect(() => {
     void loadCatalog()
+    // Accessibility/box art are enriched in the background on the native side
+    // (native/EssentialsModule's first fetch returns a fast metadata-only
+    // listing so this screen never sits on a blank spinner for however long
+    // ~325 HEAD checks take) — poll a few times to pick up that enrichment
+    // once it lands, without a manual pull-to-refresh.
+    const pollTimers = [4000, 9000, 16000, 25000].map((delay) => setTimeout(() => void loadCatalog(), delay))
+    return () => pollTimers.forEach(clearTimeout)
   }, [loadCatalog])
 
   const selectedItems = useMemo(() => items.filter((item) => selectedIds.has(item.id)), [items, selectedIds])
