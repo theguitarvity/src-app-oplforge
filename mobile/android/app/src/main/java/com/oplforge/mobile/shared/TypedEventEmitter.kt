@@ -21,5 +21,6 @@ class TypedEventEmitter(private val reactContext: ReactApplicationContext) {
         const val CATALOG_SCAN_EVENT = "onCatalogScanEvent"
         const val SHARING_SESSION_EVENT = "onSharingSessionEvent"
         const val TRANSFER_QUEUE_EVENT = "onTransferQueueEvent"
+        const val ART_SYNC_EVENT = "onArtSyncEvent"
     }
 }

@@ -4,6 +4,7 @@ import com.facebook.react.ReactPackage
 import com.facebook.react.bridge.NativeModule
 import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.uimanager.ViewManager
+import com.oplforge.mobile.art.ArtSyncModule
 import com.oplforge.mobile.catalog.CatalogScanModule
 import com.oplforge.mobile.diagnostics.DiagnosticsModule
 import com.oplforge.mobile.essentials.EssentialsModule
@@ -20,7 +21,8 @@ class OplForgePackage : ReactPackage {
             SharingSessionModule(reactContext),
             TransferQueueModule(reactContext),
             EssentialsModule(reactContext),
-            DiagnosticsModule(reactContext)
+            DiagnosticsModule(reactContext),
+            ArtSyncModule(reactContext)
         )
 
     override fun createViewManagers(reactContext: ReactApplicationContext): List<ViewManager<*, *>> = emptyList()

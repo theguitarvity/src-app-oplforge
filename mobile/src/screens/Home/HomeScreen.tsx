@@ -58,6 +58,12 @@ const QUICK_ACTIONS: QuickAction[] = [
     label: 'Diagnóstico',
     icon: 'health-and-safety',
     onPress: (navigation) => navigation.navigate('Diagnostics')
+  },
+  {
+    key: 'artSync',
+    label: 'Sincronizar Artes',
+    icon: 'image',
+    onPress: (navigation) => navigation.navigate('ArtSync')
   }
 ]
 

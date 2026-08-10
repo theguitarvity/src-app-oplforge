@@ -14,6 +14,7 @@ import { TutorialScreen } from '../screens/Tutorial/TutorialScreen'
 import { EssentialsScreen } from '../screens/Essentials/EssentialsScreen'
 import { DiagnosticsScreen } from '../screens/Diagnostics/DiagnosticsScreen'
 import { TransfersScreen } from '../screens/Transfers/TransfersScreen'
+import { ArtSyncScreen } from '../screens/ArtSync/ArtSyncScreen'
 import { DownloadsFab } from '../components/DownloadsFab'
 import { ConnectionToast } from '../components/ConnectionToast'
 import { navigationRef } from './navigationRef'
@@ -28,6 +29,7 @@ export type RootStackParamList = {
   Essentials: undefined
   Diagnostics: undefined
   Transfers: undefined
+  ArtSync: undefined
 }
 
 const Stack = createNativeStackNavigator<RootStackParamList>()
@@ -88,6 +90,7 @@ export default function App() {
           <Stack.Screen name="Essentials" component={EssentialsScreen} options={{ title: 'Catálogo Essentials' }} />
           <Stack.Screen name="Diagnostics" component={DiagnosticsScreen} options={{ title: 'Diagnóstico' }} />
           <Stack.Screen name="Transfers" component={TransfersScreen} options={{ title: 'Transferências' }} />
+          <Stack.Screen name="ArtSync" component={ArtSyncScreen} options={{ title: 'Sincronizar Artes' }} />
         </Stack.Navigator>
         <DownloadsFab />
         <ConnectionToast />

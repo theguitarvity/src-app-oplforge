@@ -54,4 +54,17 @@ interface CatalogEntryDao {
         """
     )
     suspend fun findByFileName(snapshotId: String, fileName: String): CatalogEntryEntity?
+
+    /** Every cataloged game missing box art (Art Sync candidates) — bounded like desktop's own plan (art-sync-plan.service.ts caps at 500). */
+    @Query(
+        """
+        SELECT * FROM catalog_entry
+        WHERE snapshotId = :snapshotId
+        AND hasArt = 0
+        AND gameId IS NOT NULL
+        ORDER BY title ASC
+        LIMIT 500
+        """
+    )
+    suspend fun getMissingArt(snapshotId: String): List<CatalogEntryEntity>
 }
