@@ -15,10 +15,11 @@ const PLATFORM_RULES: Record<
     allowed: RegExp[]
     feedFile: string
     requireInstaller: (files: string[]) => boolean
-    /** electron-updater's feed only lists the differential-update-capable
-     * installer(s) (plus blockmaps) — e.g. Linux's .deb is a plain package
-     * with no update-feed entry, so it's excluded from the "must be
-     * referenced by the feed" check even though it's still an allowed file. */
+    /** electron-updater's feed (latest.yml/latest-mac.yml/latest-linux.yml)
+     * only lists the primary installer's filename/sha512/size — .blockmap
+     * files sit alongside it by naming convention and are never listed as
+     * a separate feed entry, and formats like Linux's .deb have no feed
+     * entry at all. Only the primary installer needs to be checked. */
     isFeedTracked: (name: string) => boolean
   }
 > = {
@@ -30,7 +31,7 @@ const PLATFORM_RULES: Record<
     ],
     feedFile: 'latest.yml',
     requireInstaller: (files) => files.some((name) => name.endsWith('.exe')),
-    isFeedTracked: (name) => name.endsWith('.exe') || name.endsWith('.blockmap')
+    isFeedTracked: (name) => name.endsWith('.exe')
   },
   mac: {
     allowed: [
@@ -40,7 +41,7 @@ const PLATFORM_RULES: Record<
     ],
     feedFile: 'latest-mac.yml',
     requireInstaller: (files) => files.some((name) => name.endsWith('.dmg')),
-    isFeedTracked: (name) => name.endsWith('.dmg') || name.endsWith('.blockmap')
+    isFeedTracked: (name) => name.endsWith('.dmg')
   },
   linux: {
     // electron-builder names the architecture per package format, not
@@ -54,7 +55,7 @@ const PLATFORM_RULES: Record<
     ],
     feedFile: 'latest-linux.yml',
     requireInstaller: (files) => files.some((name) => name.endsWith('.AppImage')),
-    isFeedTracked: (name) => name.endsWith('.AppImage') || name.endsWith('.blockmap')
+    isFeedTracked: (name) => name.endsWith('.AppImage')
   }
 }
 
