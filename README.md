@@ -97,6 +97,44 @@ Com ele, você pode preparar a estrutura esperada pelo OPL, importar jogos de PS
 
 > As capturas foram feitas com um dispositivo real chamado `PS2`. A estrutura OPL foi criada sem formatação ou remoção de arquivos e o fluxo do Essentials foi exercitado com um backup autorizado de Pac-Man World 2.
 
+## App Mobile (Android)
+
+Um app companion para Android usa a mesma biblioteca (via SAF — Storage Access Framework, sem exigir acesso root ao dispositivo de bloco) para catalogar, compartilhar via SMB com o PS2, rodar diagnóstico e baixar jogos do Catálogo Essentials direto do celular. O visual segue a mesma identidade "Forge Dark" do app desktop.
+
+<table>
+  <tr>
+    <td width="50%">
+      <img src="docs/screenshots/mobile-home.png" alt="Home do app mobile com biblioteca catalogada e sugestões" />
+      <p align="center"><strong>Home com atalhos, contadores e sugestões</strong></p>
+    </td>
+    <td width="50%">
+      <img src="docs/screenshots/mobile-library.png" alt="Biblioteca em grade no app mobile" />
+      <p align="center"><strong>Biblioteca em grade com filtros</strong></p>
+    </td>
+  </tr>
+  <tr>
+    <td width="50%">
+      <img src="docs/screenshots/mobile-diagnostics.png" alt="Diagnóstico do dispositivo no app mobile" />
+      <p align="center"><strong>Diagnóstico de prontidão da biblioteca</strong></p>
+    </td>
+    <td width="50%">
+      <img src="docs/screenshots/mobile-sharing.png" alt="Compartilhamento SMB com o PS2 no app mobile" />
+      <p align="center"><strong>Compartilhamento SMB com o PS2</strong></p>
+    </td>
+  </tr>
+  <tr>
+    <td width="50%">
+      <img src="docs/screenshots/mobile-essentials.png" alt="Catálogo Essentials no app mobile, com abas e filtros por tier" />
+      <p align="center"><strong>Catálogo Essentials — abas Catálogo/Smart Fill/Downloads, filtros por tier</strong></p>
+    </td>
+    <td width="50%"></td>
+  </tr>
+</table>
+
+> As capturas foram feitas em um emulador Android usando os nomes reais de um HD USB de backup do PS2 (Ratchet & Clank, Resident Evil 4, Tekken 5, Driv3r, Monster Hunter e outros) — apenas os nomes dos arquivos foram usados para popular a biblioteca de teste, sem copiar o conteúdo das mídias.
+
+Baixe o APK mais recente (build contínua, debug-signed) em [Releases → continuous](https://github.com/theguitarvity/src-app-oplforge/releases/tag/continuous) ou no [portal de downloads](https://theguitarvity.github.io/src-app-oplforge/).
+
 ## Requisitos
 
 Antes de começar, instale:

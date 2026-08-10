@@ -96,7 +96,7 @@
     "wait-on": "latest"
   },
   "lint-staged": {
-    "*.{ts,tsx}": [
+    "(electron|src|tests|scripts)/**/*.{ts,tsx}": [
       "eslint --fix",
       "prettier --write"
     ],

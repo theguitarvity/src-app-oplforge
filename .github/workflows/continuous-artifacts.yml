@@ -72,12 +72,59 @@ jobs:
           if-no-files-found: error
           path: ${{ matrix.artifact_glob }}
 
+  android:
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.head_branch == 'master')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout successful revision
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: '22'
+
+      - name: Install mobile dependencies
+        working-directory: mobile
+        run: npm ci
+
+      - name: Setup JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Build debug APK
+        working-directory: mobile/android
+        run: ./gradlew assembleDebug
+
+      - name: Rename APK
+        run: mv mobile/android/app/build/outputs/apk/debug/app-debug.apk mobile/android/app/build/outputs/apk/debug/OPL-Forge-Mobile-continuous.apk
+
+      - name: Upload android
+        uses: actions/upload-artifact@v6
+        with:
+          name: continuous-android
+          if-no-files-found: error
+          path: mobile/android/app/build/outputs/apk/debug/OPL-Forge-Mobile-continuous.apk
+
   publish:
     if: >-
       github.event_name == 'workflow_dispatch' ||
       (github.event.workflow_run.conclusion == 'success' &&
       github.event.workflow_run.head_branch == 'master')
-    needs: build
+    needs: [build, android]
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -102,10 +149,11 @@ jobs:
           prerelease: true
           make_latest: false
           body: |
-            Automated installers from the latest successful CI run on `master`.
+            Automated installers and the Android APK from the latest successful CI run on `master`.
 
-            These builds are provided for testing and are not code-signed. Stable public
-            releases continue to use versioned tags and mandatory signature verification.
+            These builds are provided for testing and are not code-signed (the Android APK is
+            debug-signed only). Stable public releases continue to use versioned tags and
+            mandatory signature verification.
           files: continuous-release/*
           fail_on_unmatched_files: true
           overwrite_files: true

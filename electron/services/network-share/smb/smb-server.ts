@@ -33,9 +33,18 @@ function debugLog(level: Parameters<typeof sendLog>[0], message: string): void {
   }
 }
 
+// No TCP FIN/RST arrives when a PS2 drops off the network mid-session (power
+// loss, Wi-Fi association drop) — without an idle timeout the socket (and
+// the "connected" UI state) would linger forever. OPL's own browsing/read
+// pattern never goes this long without a request while genuinely still
+// connected, so this bounds detection latency without cutting a slow-but-alive session.
+const DEFAULT_IDLE_TIMEOUT_MS = 45_000
+
 export class SmbProtocolServer implements ProtocolServer {
   private server: net.Server | undefined
   private readonly sockets = new Set<net.Socket>()
+
+  constructor(private readonly idleTimeoutMs: number = DEFAULT_IDLE_TIMEOUT_MS) {}
 
   async start(context: ProtocolServerContext): Promise<void> {
     const server = net.createServer((socket) => this.handleConnection(socket, context))
@@ -91,6 +100,7 @@ export class SmbProtocolServer implements ProtocolServer {
     debugLog('INFO', `[SMB debug] connection accepted from ${remoteAddress}`)
 
     this.sockets.add(socket)
+    socket.setTimeout(this.idleTimeoutMs)
     const clientId = randomUUID()
     const reader = new NbssFrameReader()
     const session = new SmbSession(
@@ -190,6 +200,15 @@ export class SmbProtocolServer implements ProtocolServer {
 
     socket.on('error', (error) => {
       debugLog('ERROR', `[SMB debug] ${remoteAddress}: socket error (${error.message})`)
+      socket.destroy()
+    })
+
+    // Node only emits this after `idleTimeoutMs` of inactivity — it does not
+    // destroy the socket itself, so a silent peer (no FIN, e.g. the PS2 just
+    // dropped off the network) would otherwise sit "connected" forever.
+    // Destroying here routes through the existing 'close' handler for cleanup.
+    socket.on('timeout', () => {
+      debugLog('INFO', `[SMB debug] ${remoteAddress}: idle timeout, closing connection`)
       socket.destroy()
     })
   }
