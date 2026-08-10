@@ -105,19 +105,19 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
 
-      - name: Build debug APK
+      - name: Build release APK (debug-signed)
         working-directory: mobile/android
-        run: ./gradlew assembleDebug
+        run: ./gradlew assembleRelease
 
       - name: Rename APK
-        run: mv mobile/android/app/build/outputs/apk/debug/app-debug.apk mobile/android/app/build/outputs/apk/debug/OPL-Forge-Mobile-continuous.apk
+        run: mv mobile/android/app/build/outputs/apk/release/app-release.apk mobile/android/app/build/outputs/apk/release/OPL-Forge-Mobile-continuous.apk
 
       - name: Upload android
         uses: actions/upload-artifact@v6
         with:
           name: continuous-android
           if-no-files-found: error
-          path: mobile/android/app/build/outputs/apk/debug/OPL-Forge-Mobile-continuous.apk
+          path: mobile/android/app/build/outputs/apk/release/OPL-Forge-Mobile-continuous.apk
 
   publish:
     if: >-
