@@ -41,27 +41,35 @@ class EssentialsModule(reactContext: com.facebook.react.bridge.ReactApplicationC
 
     override fun listCatalog(query: ReadableMap, promise: Promise) {
         scope.launch {
-            val all = client.getListings()
-            val search = query.getString("search")?.lowercase()
-            val tier = query.getString("tier")
-            val mediaType = query.getString("mediaType")
-            val filtered = all.filter { item ->
-                (search.isNullOrBlank() || item.title.lowercase().contains(search) || item.fileName.lowercase().contains(search)) &&
-                    (tier.isNullOrBlank() || tier == "all" || item.scoreTier == tier) &&
-                    (mediaType.isNullOrBlank() || mediaType == "all" || item.mediaType == mediaType)
+            try {
+                val all = client.getListings()
+                val search = query.getString("search")?.lowercase()
+                val tier = query.getString("tier")
+                val mediaType = query.getString("mediaType")
+                val filtered = all.filter { item ->
+                    (search.isNullOrBlank() || item.title.lowercase().contains(search) || item.fileName.lowercase().contains(search)) &&
+                        (tier.isNullOrBlank() || tier == "all" || item.scoreTier == tier) &&
+                        (mediaType.isNullOrBlank() || mediaType == "all" || item.mediaType == mediaType)
+                }
+                val array = Arguments.createArray()
+                filtered.forEach { array.pushMap(listingToMap(it)) }
+                promise.resolve(array)
+            } catch (e: Exception) {
+                ErrorMapping.rejectUnexpected(promise, e)
             }
-            val array = Arguments.createArray()
-            filtered.forEach { array.pushMap(listingToMap(it)) }
-            promise.resolve(array)
         }
     }
 
     override fun refreshCatalog(promise: Promise) {
         scope.launch {
-            val refreshed = client.getListings(forceRefresh = true)
-            val array = Arguments.createArray()
-            refreshed.forEach { array.pushMap(listingToMap(it)) }
-            promise.resolve(array)
+            try {
+                val refreshed = client.getListings(forceRefresh = true)
+                val array = Arguments.createArray()
+                refreshed.forEach { array.pushMap(listingToMap(it)) }
+                promise.resolve(array)
+            } catch (e: Exception) {
+                ErrorMapping.rejectUnexpected(promise, e)
+            }
         }
     }
 
@@ -76,22 +84,26 @@ class EssentialsModule(reactContext: com.facebook.react.bridge.ReactApplicationC
             return
         }
         scope.launch {
-            val tree = SafDocumentTree(reactApplicationContext, android.net.Uri.parse(stored.treeUri))
-            val available = tree.availableBytes() ?: 0L
-            val candidates = client.getListings()
-            val plan = SmartFillPlanner.plan(candidates, available, targetBytes.toLong())
-            val map = Arguments.createMap().apply {
-                putDouble("availableBytes", plan.availableBytes.toDouble())
-                val items = Arguments.createArray()
-                plan.selectedItems.forEach { items.pushMap(listingToMap(it)) }
-                putArray("selectedItems", items)
-                putDouble("estimatedTotalBytes", plan.estimatedTotalBytes.toDouble())
-                putDouble("remainingBytes", plan.remainingBytes.toDouble())
-                val warnings = Arguments.createArray()
-                plan.warnings.forEach { warnings.pushString(it) }
-                putArray("warnings", warnings)
+            try {
+                val tree = SafDocumentTree(reactApplicationContext, android.net.Uri.parse(stored.treeUri))
+                val available = tree.availableBytes() ?: 0L
+                val candidates = client.getListings()
+                val plan = SmartFillPlanner.plan(candidates, available, targetBytes.toLong())
+                val map = Arguments.createMap().apply {
+                    putDouble("availableBytes", plan.availableBytes.toDouble())
+                    val items = Arguments.createArray()
+                    plan.selectedItems.forEach { items.pushMap(listingToMap(it)) }
+                    putArray("selectedItems", items)
+                    putDouble("estimatedTotalBytes", plan.estimatedTotalBytes.toDouble())
+                    putDouble("remainingBytes", plan.remainingBytes.toDouble())
+                    val warnings = Arguments.createArray()
+                    plan.warnings.forEach { warnings.pushString(it) }
+                    putArray("warnings", warnings)
+                }
+                promise.resolve(map)
+            } catch (e: Exception) {
+                ErrorMapping.rejectUnexpected(promise, e)
             }
-            promise.resolve(map)
         }
     }
 
@@ -111,39 +123,43 @@ class EssentialsModule(reactContext: com.facebook.react.bridge.ReactApplicationC
         }
 
         scope.launch {
-            val tree = SafDocumentTree(reactApplicationContext, android.net.Uri.parse(stored.treeUri))
-            val available = tree.availableBytes()
-            val selections = (0 until items.size()).mapNotNull { items.getMap(it) }
-            val totalBytes = selections.sumOf { it.getDouble("sizeBytes").toLong() }
-            if (available != null && totalBytes > available) {
-                ErrorMapping.reject(promise, AppError("INSUFFICIENT_SPACE", "Espaço insuficiente na biblioteca para os itens selecionados."))
-                return@launch
-            }
-
-            val created = Arguments.createArray()
-            for (selection in selections) {
-                val mediaType = selection.getString("mediaType") ?: "ps2-dvd"
-                val folder = when (mediaType) {
-                    "ps2-cd" -> "CD"
-                    "ps1" -> "PS1"
-                    else -> "DVD"
+            try {
+                val tree = SafDocumentTree(reactApplicationContext, android.net.Uri.parse(stored.treeUri))
+                val available = tree.availableBytes()
+                val selections = (0 until items.size()).mapNotNull { items.getMap(it) }
+                val totalBytes = selections.sumOf { it.getDouble("sizeBytes").toLong() }
+                if (available != null && totalBytes > available) {
+                    ErrorMapping.reject(promise, AppError("INSUFFICIENT_SPACE", "Espaço insuficiente na biblioteca para os itens selecionados."))
+                    return@launch
                 }
-                val fileName = selection.getString("fileName") ?: continue
-                val url = selection.getString("url") ?: continue
-                val title = selection.getString("title") ?: fileName
-                val sizeBytes = if (selection.hasKey("sizeBytes")) selection.getDouble("sizeBytes").toLong() else null
-                val legalReceiptId = "essentials:${selection.getString("id")}:${System.currentTimeMillis()}"
 
-                val item = scheduler.enqueueDownload(
-                    destinationLogicalPath = "$folder/$fileName",
-                    title = title,
-                    sourceUrl = url,
-                    expectedBytes = sizeBytes,
-                    legalReceiptId = legalReceiptId
-                )
-                created.pushMap(transferItemToMap(item))
+                val created = Arguments.createArray()
+                for (selection in selections) {
+                    val mediaType = selection.getString("mediaType") ?: "ps2-dvd"
+                    val folder = when (mediaType) {
+                        "ps2-cd" -> "CD"
+                        "ps1" -> "PS1"
+                        else -> "DVD"
+                    }
+                    val fileName = selection.getString("fileName") ?: continue
+                    val url = selection.getString("url") ?: continue
+                    val title = selection.getString("title") ?: fileName
+                    val sizeBytes = if (selection.hasKey("sizeBytes")) selection.getDouble("sizeBytes").toLong() else null
+                    val legalReceiptId = "essentials:${selection.getString("id")}:${System.currentTimeMillis()}"
+
+                    val item = scheduler.enqueueDownload(
+                        destinationLogicalPath = "$folder/$fileName",
+                        title = title,
+                        sourceUrl = url,
+                        expectedBytes = sizeBytes,
+                        legalReceiptId = legalReceiptId
+                    )
+                    created.pushMap(transferItemToMap(item))
+                }
+                promise.resolve(created)
+            } catch (e: Exception) {
+                ErrorMapping.rejectUnexpected(promise, e)
             }
-            promise.resolve(created)
         }
     }
 

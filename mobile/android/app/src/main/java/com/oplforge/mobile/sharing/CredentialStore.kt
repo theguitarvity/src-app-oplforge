@@ -33,6 +33,18 @@ class CredentialStore(context: Context) {
     fun verify(username: String, password: String): Boolean =
         prefs.getString(KEY_USERNAME, null) == username && prefs.getString(KEY_PASSWORD, null) == password
 
+    /**
+     * Verifies a 24-byte NTLMv1 challenge-response (real PS2 OPL clients
+     * never send a plaintext password) by hashing the stored plaintext
+     * password with [challenge] and comparing to [response] — the stored
+     * password itself is never exposed to the caller.
+     */
+    fun verifyNtlmV1(username: String, challenge: ByteArray, response: ByteArray): Boolean {
+        if (prefs.getString(KEY_USERNAME, null) != username) return false
+        val password = prefs.getString(KEY_PASSWORD, null) ?: return false
+        return com.oplforge.mobile.sharing.smb.NtlmV1.verifyResponse(password, challenge, response)
+    }
+
     fun clear() {
         prefs.edit().clear().apply()
     }

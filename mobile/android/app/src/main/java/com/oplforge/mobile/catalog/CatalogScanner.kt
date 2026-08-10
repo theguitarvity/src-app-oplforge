@@ -10,6 +10,25 @@ data class CatalogScanResult(
 )
 
 /**
+ * Normalizes a raw file/game-id base name to the `<GAMEID>_COV[2]` matching
+ * form (mirrors CatalogScanModule.getArtUri's normalization exactly, so
+ * scan-time `hasArt` and on-demand art lookup never disagree).
+ */
+internal fun normalizeArtBaseName(raw: String): String =
+    raw.replace('-', '_').replace('.', '_').uppercase()
+
+/**
+ * True when [artBaseNames] (normalized art-folder file base names) contains
+ * the `_COV`/`_COV2` cover file for [gameId] — OPL's convention is
+ * `<GAMEID>_COV[2].png`, never the bare game ID or ISO file name.
+ */
+internal fun hasMatchingArt(gameId: String?, artBaseNames: Set<String>): Boolean {
+    if (gameId == null) return false
+    val normalized = normalizeArtBaseName(gameId)
+    return artBaseNames.contains("${normalized}_COV") || artBaseNames.contains("${normalized}_COV2")
+}
+
+/**
  * Read-only scan of an OPL library folder (spec FR-006–FR-010). Never writes
  * to the tree — every result is a derived, in-memory record (data-model.md
  * CatalogEntry validation rules).
@@ -37,7 +56,10 @@ class CatalogScanner(private val tree: SafDocumentTree) {
         var scanned = 0
 
         val artFolder = tree.findFolder("ART")
-        val artNames = tree.filesIn(artFolder).mapNotNull { it.name?.substringBeforeLast('.') }.toSet()
+        val artBaseNames = tree.filesIn(artFolder)
+            .mapNotNull { file -> file.name?.substringBeforeLast('.') }
+            .map(::normalizeArtBaseName)
+            .toSet()
 
         for ((folderName, contentType) in folderToType) {
             if (isCancelled()) break
@@ -57,7 +79,7 @@ class CatalogScanner(private val tree: SafDocumentTree) {
                 val structuralIssues = mutableListOf<String>()
                 if (match == null) structuralIssues.add("missing-game-id")
 
-                val hasArt = artNames.any { it.equals(gameId, ignoreCase = true) || it.equals(baseName, ignoreCase = true) }
+                val hasArt = hasMatchingArt(gameId, artBaseNames)
 
                 entries.add(
                     CatalogEntryEntity(

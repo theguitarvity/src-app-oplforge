@@ -13,6 +13,12 @@ import java.nio.charset.Charset
 
 private val OEM = Charset.forName("ISO-8859-1")
 
+/** Windows FILETIME (100ns ticks since 1601-01-01T00:00:00Z) — MS-CIFS 2.2.4.52.2 SystemTime field. */
+private fun writeFileTime(buf: ByteBuffer, offset: Int, unixMillis: Long) {
+    val fileTimeUnixEpochOffsetMs = 11_644_473_600_000L
+    buf.putLong(offset, (unixMillis + fileTimeUnixEpochOffsetMs) * 10_000L)
+}
+
 /**
  * Some clients (confirmed: real PS2 OPL, found via a matching desktop SMB1
  * server bug — `electron/services/network-share/smb/command-handlers.ts`,
@@ -34,6 +40,10 @@ data class OpenFile(val documentFile: DocumentFile, val pfd: ParcelFileDescripto
 class SmbConnectionState {
     var authenticated = false
     var tid: Int = 0
+    // Per-connection NTLMv1 challenge, sent in the NEGOTIATE response and
+    // verified against in SESSION_SETUP_ANDX — a real PS2 OPL client always
+    // hashes this into its 24-byte password response, never plaintext.
+    val challenge: ByteArray = NtlmV1.randomChallenge()
     private var nextFid = 1
     private val fids = mutableMapOf<Int, OpenFile>()
 
@@ -72,7 +82,7 @@ class CommandHandlers(
 ) {
 
     fun handle(frame: SmbFrame, state: SmbConnectionState): SmbFrame = when (frame.command) {
-        SmbCommand.NEGOTIATE -> negotiate(frame)
+        SmbCommand.NEGOTIATE -> negotiate(frame, state)
         SmbCommand.SESSION_SETUP_ANDX -> sessionSetup(frame, state)
         SmbCommand.TREE_CONNECT_ANDX -> treeConnect(frame, state)
         SmbCommand.TREE_DISCONNECT -> FrameCodec.response(frame, NtStatus.SUCCESS)
@@ -86,47 +96,64 @@ class CommandHandlers(
         else -> FrameCodec.response(frame, NtStatus.NOT_SUPPORTED)
     }
 
-    private fun negotiate(frame: SmbFrame): SmbFrame {
-        // Dialect index 0 ("NT LM 0.12" — the only one this server advertises), no Unicode,
-        // no extended security: OEM 8-bit strings throughout (contracts/smb-protocol-scope.md).
-        val buf = ByteBuffer.allocate(2 + 1 + 2 + 4 + 4 + 4 + 4 + 2 + 2 + 2 + 2 + 8).order(ByteOrder.LITTLE_ENDIAN)
-        buf.putShort(0) // DialectIndex
-        buf.put(0x03) // SecurityMode: user-level, plaintext (no challenge/response for this scope)
-        buf.putShort(1) // MaxMpxCount
-        buf.putInt(0x00FFFF) // MaxBufferSize-adjacent capabilities placeholder kept minimal
-        buf.putInt(4096) // MaxRawSize (unused by this server, harmless if requested)
-        buf.putInt(0) // SessionKey
-        buf.putInt(0) // Capabilities (no unicode, no NT SMBs required for this scope)
-        buf.putShort(0) // ServerTimeZone
-        buf.putShort(0)
-        buf.putShort(0) // EncryptionKeyLength
-        buf.putShort(0)
-        buf.put(ByteArray(8))
-        return FrameCodec.response(frame, NtStatus.SUCCESS, params = buf.array())
+    /**
+     * 17-word (34-byte) NT LM 0.12 negotiate response, MS-CIFS 2.2.4.52.2 —
+     * mirrors desktop's `command-handlers.ts:handleNegotiate` layout exactly.
+     * SecurityMode advertises real NTLMv1 challenge/response (bit0 user-level
+     * + bit1 challenge/response): a real PS2 OPL client always hashes the
+     * challenge below into its SESSION_SETUP_ANDX password, never plaintext.
+     * Was previously cramming a placeholder challenge into `params` itself
+     * (wrong section — the wire format expects it in the trailing byte-count
+     * data, after the fixed 34-byte word block) with EncryptionKeyLength
+     * left at 0, so the client never got a real challenge to hash against.
+     */
+    private fun negotiate(frame: SmbFrame, state: SmbConnectionState): SmbFrame {
+        val params = ByteBuffer.allocate(34).order(ByteOrder.LITTLE_ENDIAN)
+        params.putShort(0, 0) // DialectIndex — "NT LM 0.12", the only dialect this server advertises
+        params.put(2, 0x03) // SecurityMode: user-level (bit0) + challenge/response (bit1)
+        params.putShort(3, 1) // MaxMpxCount
+        params.putShort(5, 1) // MaxNumberVcs
+        params.putInt(7, 0x00010000) // MaxBufferSize (64KB)
+        params.putInt(11, 0) // MaxRawSize (raw mode not supported)
+        params.putInt(15, 0) // SessionKey
+        params.putInt(19, 0x00000010 or 0x00000200 or 0x00000040) // Capabilities: NT SMBs + NT FIND + STATUS32
+        writeFileTime(params, 23, System.currentTimeMillis())
+        params.putShort(31, 0) // ServerTimeZone (UTC)
+        params.put(33, state.challenge.size.toByte()) // EncryptionKeyLength
+
+        val domain = OEM.encode("WORKGROUP\u0000")
+        val data = ByteArray(state.challenge.size + domain.remaining())
+        state.challenge.copyInto(data)
+        domain.get(data, state.challenge.size, domain.remaining())
+
+        return FrameCodec.response(frame, NtStatus.SUCCESS, params = params.array(), data = data)
     }
 
     private fun sessionSetup(frame: SmbFrame, state: SmbConnectionState): SmbFrame {
-        val data = OEM.decode(java.nio.ByteBuffer.wrap(frame.data)).toString()
-        val parts = data.split('\u0000').filter { it.isNotEmpty() }
-        // OEM password blob (opaque bytes) followed by account/domain OEM strings — the account
-        // name is the first readable OEM string after the password block in this simplified layout.
-        val username = parts.firstOrNull { it.isNotBlank() } ?: ""
-        val password = extractPassword(frame.params, frame.data)
+        val passwordLen = passwordLength(frame.params)
+        if (passwordLen < 0 || passwordLen > frame.data.size) return FrameCodec.response(frame, NtStatus.LOGON_FAILURE)
+        val passwordBytes = frame.data.copyOfRange(0, passwordLen)
+        // AccountName/PrimaryDomain/NativeOS/NativeLanMan OEM strings follow the password block —
+        // the account name is the first non-empty one (MS-CIFS 2.2.4.53.1). Previously this parsed
+        // the *entire* frame.data (including the opaque password bytes) as OEM text from offset 0,
+        // which could misread the username whenever those bytes happened to split oddly on NUL.
+        val rest = OEM.decode(ByteBuffer.wrap(frame.data, passwordLen, frame.data.size - passwordLen)).toString()
+        val username = rest.split('\u0000').firstOrNull { it.isNotBlank() } ?:  ""
 
-        val valid = credentialStore.verify(username, password)
+        val valid = if (passwordLen == 24) {
+            credentialStore.verifyNtlmV1(username, state.challenge, passwordBytes)
+        } else {
+            credentialStore.verify(username, OEM.decode(ByteBuffer.wrap(passwordBytes)).toString().stripTrailingNul())
+        }
         if (!valid) return FrameCodec.response(frame, NtStatus.LOGON_FAILURE)
 
         state.authenticated = true
         return FrameCodec.response(frame, NtStatus.SUCCESS)
     }
 
-    private fun extractPassword(params: ByteArray, data: ByteArray): String {
-        if (params.size < 30) return ""
-        val buf = ByteBuffer.wrap(params).order(ByteOrder.LITTLE_ENDIAN)
-        buf.position(14) // OEMPasswordLen offset within SESSION_SETUP_ANDX request words
-        val passwordLen = buf.short.toInt() and 0xFFFF
-        if (passwordLen <= 0 || passwordLen > data.size) return ""
-        return OEM.decode(ByteBuffer.wrap(data, 0, passwordLen)).toString()
+    private fun passwordLength(params: ByteArray): Int {
+        if (params.size < 30) return -1
+        return ByteBuffer.wrap(params).order(ByteOrder.LITTLE_ENDIAN).getShort(14).toInt() and 0xFFFF
     }
 
     private fun treeConnect(frame: SmbFrame, state: SmbConnectionState): SmbFrame {
