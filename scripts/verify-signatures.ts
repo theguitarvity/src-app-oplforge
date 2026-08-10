@@ -8,8 +8,13 @@ if (mode === 'smoke') {
 if (!files.length) throw new Error('No public artifacts supplied')
 for (const file of files) {
   if (process.platform === 'win32')
+    // Uses pwsh (PowerShell 7) rather than powershell.exe (Windows
+    // PowerShell 5.1): on some windows-latest GitHub Actions runners,
+    // 5.1's Get-AuthenticodeSignature fails to autoload its own
+    // Microsoft.PowerShell.Security module ("CouldNotAutoloadMatchingModule"),
+    // while pwsh — already used elsewhere in this pipeline — loads it fine.
     execFileSync(
-      'powershell',
+      'pwsh',
       [
         '-NoProfile',
         '-Command',
