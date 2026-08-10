@@ -43,8 +43,12 @@ const PLATFORM_RULES: Record<
     isFeedTracked: (name) => name.endsWith('.dmg') || name.endsWith('.blockmap')
   },
   linux: {
+    // electron-builder names the architecture per package format, not
+    // uniformly: Debian packages use dpkg's "amd64", AppImage uses uname's
+    // "x86_64" — both are the same x64 build, just labeled differently.
     allowed: [
-      new RegExp(`^OPL-Forge-${manifest.publicVersion}-linux-x64[.](AppImage|deb)$`),
+      new RegExp(`^OPL-Forge-${manifest.publicVersion}-linux-x86_64[.]AppImage$`),
+      new RegExp(`^OPL-Forge-${manifest.publicVersion}-linux-amd64[.]deb$`),
       /^latest-linux[.]yml$/,
       /[.]blockmap$/
     ],
@@ -57,9 +61,20 @@ const PLATFORM_RULES: Record<
 const rules = PLATFORM_RULES[platform]
 if (!rules) throw new Error(`Unknown platform: ${platform}`)
 
-const dirEntries = await readdir(root)
-const files = dirEntries.filter((name) => rules.allowed.some((rule) => rule.test(name)))
-const unexpected = dirEntries.filter((name) => !rules.allowed.some((rule) => rule.test(name)))
+// electron-builder always leaves build byproducts alongside the installers
+// (debug metadata, hidden icon caches, unpacked app directories per target,
+// e.g. win-unpacked/mac/mac-arm64/linux-unpacked) — none of these are ever
+// selected for upload/publish, so they're silently ignored rather than
+// treated as "unexpected public artifacts".
+const IGNORED = [/^builder-(debug|effective-config)[.]ya?ml$/, /^\./]
+
+const dirEntries = await readdir(root, { withFileTypes: true })
+const fileEntries = dirEntries.filter((entry) => entry.isFile()).map((entry) => entry.name)
+const files = fileEntries.filter((name) => rules.allowed.some((rule) => rule.test(name)))
+const unexpected = fileEntries.filter(
+  (name) =>
+    !rules.allowed.some((rule) => rule.test(name)) && !IGNORED.some((rule) => rule.test(name))
+)
 if (unexpected.length) throw new Error(`Unexpected public artifacts: ${unexpected.join(', ')}`)
 if (!rules.requireInstaller(files) || !files.includes(rules.feedFile))
   throw new Error(`${platform} installer or ${rules.feedFile} missing`)

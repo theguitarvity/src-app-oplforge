@@ -101,8 +101,8 @@ jobs:
           name: public-linux
           if-no-files-found: error
           path: |
-            release/OPL-Forge-${{ env.OPL_PUBLIC_VERSION }}-linux-x64.AppImage
-            release/OPL-Forge-${{ env.OPL_PUBLIC_VERSION }}-linux-x64.deb
+            release/OPL-Forge-${{ env.OPL_PUBLIC_VERSION }}-linux-x86_64.AppImage
+            release/OPL-Forge-${{ env.OPL_PUBLIC_VERSION }}-linux-amd64.deb
             release/latest-linux.yml
             release/artifact-inventory-linux.json
   publish:
@@ -133,7 +133,7 @@ jobs:
             release/*.dmg.blockmap
             release/latest-mac.yml
             release/artifact-inventory-macos.json
-            release/OPL-Forge-${{ needs.validate.outputs.public_version }}-linux-x64.AppImage
-            release/OPL-Forge-${{ needs.validate.outputs.public_version }}-linux-x64.deb
+            release/OPL-Forge-${{ needs.validate.outputs.public_version }}-linux-x86_64.AppImage
+            release/OPL-Forge-${{ needs.validate.outputs.public_version }}-linux-amd64.deb
             release/latest-linux.yml
             release/artifact-inventory-linux.json
