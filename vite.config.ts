@@ -23,6 +23,18 @@ export default defineConfig({
   test: {
     environment: 'node',
     setupFiles: './vitest.setup.ts',
-    css: true
+    css: true,
+    // mobile/ is a separate npm project with its own Jest-based test setup
+    // (jest-expo, @testing-library/react-native) — without this, vitest's
+    // default file discovery sweeps up mobile/__tests__/**, which fails
+    // since those tests expect Jest's runtime, not vitest's.
+    exclude: [
+      '**/node_modules/**',
+      '**/dist/**',
+      '**/dist-electron/**',
+      '**/release/**',
+      '**/.{idea,git,cache,output,temp}/**',
+      'mobile/**'
+    ]
   }
 })

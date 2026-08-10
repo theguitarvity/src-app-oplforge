@@ -15,7 +15,14 @@ export default tseslint.config(
       'coverage/**',
       'node_modules/**',
       '.corepack/**',
-      '**/*.min.js'
+      '**/*.min.js',
+      // mobile/ is an intentionally separate npm project (excluded from the
+      // pnpm workspace) with its own eslint.config.js and dependencies —
+      // without this, ESLint's nested-config discovery picks up
+      // mobile/eslint.config.js while running the root's `eslint .`, which
+      // fails because mobile's deps (eslint-config-expo) live only in
+      // mobile/node_modules, not the root's.
+      'mobile/**'
     ]
   },
   js.configs.recommended,
