@@ -112,7 +112,13 @@ class CommandHandlers(
     private fun negotiate(frame: SmbFrame, state: SmbConnectionState): SmbFrame {
         val params = ByteBuffer.allocate(34).order(ByteOrder.LITTLE_ENDIAN)
         params.putShort(0, 0) // DialectIndex — "NT LM 0.12", the only dialect this server advertises
-        params.put(2, 0x03) // SecurityMode: user-level (bit0) + challenge/response (bit1)
+        // SecurityMode: bit0=0 (share-level, matches how auth actually works —
+        // see treeConnect) + bit1=1 (challenge/response). Was 0x03 (bit0=1,
+        // user-level), internally inconsistent with a server that never
+        // checks credentials at SESSION_SETUP_ANDX — a strict client reading
+        // this bit could reasonably decide to send real creds there instead
+        // of TREE_CONNECT_ANDX. Matches desktop's handleNegotiate exactly.
+        params.put(2, 0x02)
         params.putShort(3, 1) // MaxMpxCount
         params.putShort(5, 1) // MaxNumberVcs
         params.putInt(7, 0x00010000) // MaxBufferSize (64KB)
@@ -236,8 +242,13 @@ class CommandHandlers(
 
     private fun ntCreate(frame: SmbFrame, state: SmbConnectionState): SmbFrame {
         requireTreeConnected(frame, state)?.let { return it }
-        val nameLen = if (frame.params.size >= 6) {
-            ByteBuffer.wrap(frame.params).order(ByteOrder.LITTLE_ENDIAN).getShort(4).toInt() and 0xFFFF
+        // NameLength (MS-CIFS 2.2.4.64.1): AndXCommand(1)+AndXReserved(1)+
+        // AndXOffset(2)+Reserved(1) = 5 bytes precede it — matches desktop's
+        // handleNtCreate (readUInt16LE(5)). Was reading byte 4 (the Reserved
+        // byte plus half of NameLength), corrupting the path length used to
+        // slice the requested name out of every NT_CREATE_ANDX request.
+        val nameLen = if (frame.params.size >= 7) {
+            ByteBuffer.wrap(frame.params).order(ByteOrder.LITTLE_ENDIAN).getShort(5).toInt() and 0xFFFF
         } else 0
         val rawPath = if (nameLen > 0 && nameLen <= frame.data.size) {
             OEM.decode(ByteBuffer.wrap(frame.data, 0, nameLen)).toString()
@@ -257,17 +268,31 @@ class CommandHandlers(
         } else null
 
         val fid = state.openFile(target, pfd, target.isDirectory)
-        val buf = ByteBuffer.allocate(2 + 1 + 8 + 8 + 8 + 8 + 4 + 8 + 2 + 1).order(ByteOrder.LITTLE_ENDIAN)
-        buf.putShort(fid.toShort()) // FID (params byte 0-1, simplified layout for this scope)
-        buf.put(0) // OplockLevel
-        buf.putLong(0) // Creation time
-        buf.putLong(0) // Last access
-        buf.putLong(0) // Last write
-        buf.putLong(0) // Change time
-        buf.putInt(if (target.isDirectory) 0x10 else 0x80) // ExtFileAttributes: DIRECTORY / NORMAL
-        buf.putLong(target.length()) // AllocationSize / EndOfFile shared for this scope
-        buf.putShort(0)
-        buf.put(if (target.isDirectory) 1 else 0)
+        val mtime = target.lastModified()
+        // 68-byte NT_CREATE_ANDX response, MS-CIFS 2.2.4.64.2 — byte-for-byte
+        // mirror of desktop's command-handlers.ts:handleNtCreate (including
+        // where desktop's own layout deviates from strict field naming, e.g.
+        // FileAttributes left 0 at offset 43 with the real value reported at
+        // offset 63 instead). The previous version here used a shorter,
+        // differently-laid-out response ("simplified layout for this scope")
+        // that a strict client parsing at spec-correct offsets would read as
+        // garbage FID/size/attributes — found by diffing against desktop
+        // while chasing a persistent real-PS2 SMB failure.
+        val buf = ByteBuffer.allocate(68).order(ByteOrder.LITTLE_ENDIAN)
+        buf.put(0, 0xFF.toByte()) // AndXCommand
+        buf.put(4, 0) // OplockLevel
+        buf.putShort(5, fid.toShort()) // FID
+        buf.putInt(7, 1) // CreateAction: FILE_OPENED
+        writeFileTime(buf, 11, mtime) // CreationTime — SAF only exposes lastModified(), reused for all four
+        writeFileTime(buf, 19, mtime) // LastAccessTime
+        writeFileTime(buf, 27, mtime) // LastWriteTime
+        writeFileTime(buf, 35, mtime) // LastChangeTime
+        buf.putInt(43, 0) // FileAttributes — left 0, matches desktop (real value is at offset 63)
+        buf.putLong(47, target.length()) // AllocationSize position — desktop writes the raw size here
+        val roundedSize = ((target.length() + 511) / 512) * 512
+        buf.putLong(55, roundedSize) // EndOfFile position — desktop writes the 512-rounded size here
+        buf.putShort(63, (if (target.isDirectory) 0x10 else 0x80).toShort()) // FileType/ExtFileAttributes
+        buf.put(65, if (target.isDirectory) 1 else 0) // Directory
         return FrameCodec.response(frame, NtStatus.SUCCESS, params = buf.array())
     }
 
@@ -308,15 +333,24 @@ class CommandHandlers(
         return FrameCodec.response(frame, NtStatus.SUCCESS, params = params)
     }
 
+    /**
+     * SMB_COM_READ_ANDX request (MS-CIFS 2.2.4.42.1): AndXCommand(1)+
+     * AndXReserved(1)+AndXOffset(2) = 4 bytes precede FID, so FID is at byte
+     * 4, Offset at 6, MaxCountOfBytesToReturn at 10 — byte-for-byte mirror
+     * of desktop's handleReadAndx. This previously read fid@2/offset@4/
+     * maxCount@8 (each 2 bytes too early), so every real read request was
+     * parsed against the wrong FID — found by diffing against desktop while
+     * chasing a persistent real-PS2 SMB failure.
+     */
     private fun readAndx(frame: SmbFrame, state: SmbConnectionState): SmbFrame {
         requireTreeConnected(frame, state)?.let { return it }
         if (frame.params.size < 12) return FrameCodec.response(frame, NtStatus.UNSUCCESSFUL)
         val buf = ByteBuffer.wrap(frame.params).order(ByteOrder.LITTLE_ENDIAN)
-        val fid = buf.getShort(2).toInt() and 0xFFFF
-        val offset = buf.getInt(4).toLong() and 0xFFFFFFFFL
-        val maxCount = buf.getShort(8).toInt() and 0xFFFF
+        val fid = buf.getShort(4).toInt() and 0xFFFF
+        val offset = buf.getInt(6).toLong() and 0xFFFFFFFFL
+        val maxCount = buf.getShort(10).toInt() and 0xFFFF
 
-        val open = state.get(fid) ?: return FrameCodec.response(frame, NtStatus.NO_SUCH_FILE)
+        val open = state.get(fid) ?: return FrameCodec.response(frame, NtStatus.INVALID_HANDLE)
         val pfd = open.pfd ?: return FrameCodec.response(frame, NtStatus.ACCESS_DENIED)
 
         // Never buffers a full file (FR-026/SC-008) — reads exactly the requested,
@@ -328,31 +362,40 @@ class CommandHandlers(
             if (n <= 0) ByteArray(0) else chunk.copyOf(n)
         }
 
-        val responseParams = ByteBuffer.allocate(20).order(ByteOrder.LITTLE_ENDIAN).apply {
-            putShort(0xFF.toShort()) // AndXCommand: none
-            put(0)
-            putShort(0) // AndXOffset
-            putShort(0) // Remaining
-            putShort(0) // DataCompactionMode
-            putShort(0) // Reserved
-            putShort(bytesRead.size.toShort()) // DataLength
-            putShort(0) // DataOffset (kept 0; data follows immediately in this simplified layout)
-            put(ByteArray(8))
+        // 24-byte READ_ANDX response, MS-CIFS 2.2.4.42.2 — byte-for-byte
+        // mirror of desktop's handleReadAndx, including a real (not
+        // hardcoded-0) DataOffset; a client that actually honors DataOffset
+        // (rather than assuming data immediately follows the words block,
+        // as this file's prior comment here assumed) would misread every file.
+        val responseParams = ByteBuffer.allocate(24).order(ByteOrder.LITTLE_ENDIAN).apply {
+            put(0, 0xFF.toByte()) // AndXCommand
+            putShort(4, 0xFFFF.toShort()) // Remaining (unknown/not tracked)
+            putShort(6, 0) // DataCompactionMode
+            putShort(8, 0) // Reserved1
+            putShort(10, bytesRead.size.toShort()) // DataLength (low)
+            putShort(12, (SmbFrame.HEADER_SIZE + 1 + 24 + 2).toShort()) // DataOffset from SMB header start
+            putShort(14, 0) // DataLength (high) — 0 for our sub-64KB reads
         }.array()
 
         return FrameCodec.response(frame, NtStatus.SUCCESS, params = responseParams, data = bytesRead)
     }
 
+    /**
+     * SMB_COM_WRITE_ANDX request (MS-CIFS 2.2.4.43.1): same 4-byte AndX
+     * preamble as READ_ANDX, so FID@4, Offset@6, DataLength@20, DataOffset@22
+     * — byte-for-byte mirror of desktop's handleWriteAndx. This previously
+     * read fid@2/offset@4/dataLength@10, all wrong.
+     */
     private fun writeAndx(frame: SmbFrame, state: SmbConnectionState): SmbFrame {
         requireTreeConnected(frame, state)?.let { return it }
         if (!isWriteAccessAcknowledged()) return FrameCodec.response(frame, NtStatus.ACCESS_DENIED)
-        if (frame.params.size < 14) return FrameCodec.response(frame, NtStatus.UNSUCCESSFUL)
+        if (frame.params.size < 22) return FrameCodec.response(frame, NtStatus.UNSUCCESSFUL)
         val buf = ByteBuffer.wrap(frame.params).order(ByteOrder.LITTLE_ENDIAN)
-        val fid = buf.getShort(2).toInt() and 0xFFFF
-        val offset = buf.getInt(4).toLong() and 0xFFFFFFFFL
-        val dataLength = buf.getShort(10).toInt() and 0xFFFF
+        val fid = buf.getShort(4).toInt() and 0xFFFF
+        val offset = buf.getInt(6).toLong() and 0xFFFFFFFFL
+        val dataLength = buf.getShort(20).toInt() and 0xFFFF
 
-        val open = state.get(fid) ?: return FrameCodec.response(frame, NtStatus.NO_SUCH_FILE)
+        val open = state.get(fid) ?: return FrameCodec.response(frame, NtStatus.INVALID_HANDLE)
         val writeData = frame.data.copyOf(minOf(dataLength, frame.data.size))
 
         val (written, wasConflict) = kotlinx.coroutines.runBlocking { writeLock.withWriteLock(open.documentFile.uri.toString()) {
@@ -371,11 +414,15 @@ class CommandHandlers(
         // wasConflict is surfaced to SharingSessionModule via its own write-observer, not here —
         // CommandHandlers stays protocol-focused, event emission is the module's responsibility.
 
-        val responseParams = ByteBuffer.allocate(6).order(ByteOrder.LITTLE_ENDIAN).apply {
-            putShort(0xFF.toShort())
-            put(0)
-            putShort(0)
-            putShort(written.toShort())
+        // 12-byte WRITE_ANDX response, MS-CIFS 2.2.4.43.2 — byte-for-byte
+        // mirror of desktop's handleWriteAndx (Count + Available + two
+        // reserved words); the previous 6-byte version here was missing
+        // Available entirely, which a strict client reading a fixed-size
+        // words block would misparse as whatever comes after in the frame.
+        val responseParams = ByteBuffer.allocate(12).order(ByteOrder.LITTLE_ENDIAN).apply {
+            put(0, 0xFF.toByte()) // AndXCommand
+            putShort(4, written.toShort()) // Count
+            putShort(6, 0xFFFF.toShort()) // Available
         }.array()
         return FrameCodec.response(frame, if (written > 0) NtStatus.SUCCESS else NtStatus.ACCESS_DENIED, params = responseParams)
     }
@@ -388,29 +435,158 @@ class CommandHandlers(
         return FrameCodec.response(frame, NtStatus.SUCCESS)
     }
 
-    /** FIND_FIRST2 only (contracts/smb-protocol-scope.md directory listing) — single-response, no continuation. */
+    /**
+     * SMB_COM_TRANSACTION2 request (MS-CIFS 2.2.4.46.1): TotalParameterCount(2)+
+     * TotalDataCount(2)+MaxParameterCount(2)+MaxDataCount(2)+MaxSetupCount(1)+
+     * Reserved1(1)+Flags(2)+Timeout(4)+Reserved2(2) = 18 bytes precede
+     * ParameterCount, then ParameterOffset@20, SetupCount@26, Setup[0]
+     * (the subcommand)@28 — byte-for-byte mirror of desktop's
+     * handleTransaction2. This previously read the subcommand from byte 0
+     * (TotalParameterCount's position), so FIND_FIRST2 was essentially never
+     * actually recognized for a real client's TotalParameterCount value —
+     * and even when it coincidentally matched, the "search path" was read
+     * from the raw top-level frame.data instead of the Trans2_Parameters
+     * sub-blob a real TRANSACTION2 request carries it in.
+     */
     private fun transaction2(frame: SmbFrame, state: SmbConnectionState): SmbFrame {
         requireTreeConnected(frame, state)?.let { return it }
-        if (frame.params.size < 2) return FrameCodec.response(frame, NtStatus.NOT_SUPPORTED)
-        val setup = ByteBuffer.wrap(frame.params).order(ByteOrder.LITTLE_ENDIAN).getShort(0).toInt() and 0xFFFF
-        if (setup != Trans2Subcommand.FIND_FIRST2) return FrameCodec.response(frame, NtStatus.NOT_SUPPORTED)
+        if (frame.params.size < 29) return FrameCodec.response(frame, NtStatus.NOT_SUPPORTED)
+        val reqBuf = ByteBuffer.wrap(frame.params).order(ByteOrder.LITTLE_ENDIAN)
+        val paramCount = reqBuf.getShort(18).toInt() and 0xFFFF
+        val paramOffset = reqBuf.getShort(20).toInt() and 0xFFFF
+        val setupCount = frame.params[26].toInt() and 0xFF
+        val subcommand = if (setupCount > 0) reqBuf.getShort(28).toInt() and 0xFFFF else 0
 
-        val searchPath = OEM.decode(ByteBuffer.wrap(frame.data)).toString()
-            .stripTrailingNul()
-            .substringBeforeLast('\\')
-        val entries = PathConfinement.listDirectory(tree, searchPath) ?: emptyList()
-
-        val listing = entries.joinToString(separator = " ") { entry ->
-            "${entry.name}|${if (entry.isDirectory) 1 else 0}|${entry.length()}"
+        // Offsets are absolute from the start of the SMB header; frame.data
+        // already excludes header+wordcount+params+bytecount, so translate back.
+        val dataStart = SmbFrame.HEADER_SIZE + 1 + frame.params.size + 2
+        val trans2ParamsStart = paramOffset - dataStart
+        if (trans2ParamsStart < 0 || trans2ParamsStart + paramCount > frame.data.size) {
+            return FrameCodec.response(frame, NtStatus.NOT_SUPPORTED)
         }
-        val data = OEM.encode(listing).array()
-        val params = ByteBuffer.allocate(10).order(ByteOrder.LITTLE_ENDIAN).apply {
-            putShort(0) // SID (search handle) — no continuation supported in this scope
-            putShort(entries.size.toShort())
-            putShort(1) // EndOfSearch
-            putShort(0) // EaErrorOffset
-            putShort(0) // LastNameOffset
+        val trans2Params = frame.data.copyOfRange(trans2ParamsStart, trans2ParamsStart + paramCount)
+
+        return when (subcommand) {
+            Trans2Subcommand.FIND_FIRST2 -> findFirst2(frame, trans2Params)
+            else -> FrameCodec.response(frame, NtStatus.NOT_SUPPORTED)
+        }
+    }
+
+    /**
+     * Wraps Trans2_Parameters/Trans2_Data in the real SMB_COM_TRANSACTION2
+     * response envelope (10-word header, absolute ParameterOffset/DataOffset
+     * from the SMB header start) — byte-for-byte mirror of desktop's
+     * buildTrans2Response. The previous version here sent FIND_FIRST2's
+     * inner Trans2_Parameters directly as the *outer* SMB response's params,
+     * skipping this envelope entirely — a real client parsing the real
+     * 20-byte TRANSACTION2 response header would read garbage offsets.
+     */
+    private fun buildTrans2Response(frame: SmbFrame, trans2Parameters: ByteArray, trans2Data: ByteArray): SmbFrame {
+        val pad = 1
+        val paramsStart = SmbFrame.HEADER_SIZE + 1 + 20 + 2 + pad
+        val dataStart = paramsStart + trans2Parameters.size
+
+        val params = ByteBuffer.allocate(20).order(ByteOrder.LITTLE_ENDIAN).apply {
+            putShort(0, trans2Parameters.size.toShort()) // TotalParameterCount
+            putShort(2, trans2Data.size.toShort()) // TotalDataCount
+            putShort(4, 0) // Reserved
+            putShort(6, trans2Parameters.size.toShort()) // ParameterCount
+            putShort(8, paramsStart.toShort()) // ParameterOffset
+            putShort(10, 0) // ParameterDisplacement
+            putShort(12, trans2Data.size.toShort()) // DataCount
+            putShort(14, dataStart.toShort()) // DataOffset
+            putShort(16, 0) // DataDisplacement
+            put(18, 0) // SetupCount
+            put(19, 0) // Reserved2
         }.array()
-        return FrameCodec.response(frame, NtStatus.SUCCESS, params = params, data = data)
+
+        val bytes = ByteArray(pad + trans2Parameters.size + trans2Data.size)
+        trans2Parameters.copyInto(bytes, pad)
+        trans2Data.copyInto(bytes, pad + trans2Parameters.size)
+        return FrameCodec.response(frame, NtStatus.SUCCESS, params = params, data = bytes)
+    }
+
+    /**
+     * SMB_FIND_FILE_BOTH_DIRECTORY_INFO entry (MS-CIFS 2.2.8.1.7) —
+     * byte-for-byte mirror of desktop's encodeBothDirectoryEntry, the real
+     * binary directory-entry format a strict client expects. The previous
+     * version here sent an ad-hoc "name|isDir|size" pipe-delimited string
+     * instead — meaningless to any real SMB1 client.
+     */
+    private fun encodeDirectoryEntry(name: String, isDirectory: Boolean, size: Long, lastModifiedMs: Long, isLast: Boolean): ByteArray {
+        val nameBytes = OEM.encode(name).array() // FileName is NOT null-terminated at this info level
+        val fixed = ByteArray(94)
+        val entryLength = fixed.size + nameBytes.size
+        val padding = (4 - (entryLength % 4)) % 4
+        val buf = ByteBuffer.wrap(fixed).order(ByteOrder.LITTLE_ENDIAN)
+        buf.putInt(0, if (isLast) 0 else entryLength + padding) // NextEntryOffset
+        buf.putInt(4, 0) // FileIndex
+        writeFileTime(buf, 8, lastModifiedMs) // CreationTime — SAF exposes only lastModified()
+        writeFileTime(buf, 16, lastModifiedMs) // LastAccessTime
+        writeFileTime(buf, 24, lastModifiedMs) // LastWriteTime
+        writeFileTime(buf, 32, lastModifiedMs) // LastChangeTime
+        val endOfFile = if (isDirectory) 0L else size
+        buf.putLong(40, endOfFile) // EndOfFile
+        buf.putLong(48, ((size + 511) / 512) * 512) // AllocationSize
+        buf.putInt(56, if (isDirectory) 0x10 else 0x80) // ExtFileAttributes
+        buf.putInt(60, nameBytes.size) // FileNameLength
+        buf.putInt(64, 0) // EaSize
+        buf.put(68, 0) // ShortNameLength
+        buf.put(69, 0) // Reserved
+        // ShortName[12 WCHARs] left zeroed (70..93) — no 8.3 short name provided.
+        val out = ByteArray(fixed.size + nameBytes.size + padding)
+        fixed.copyInto(out)
+        nameBytes.copyInto(out, fixed.size)
+        return out
+    }
+
+    /**
+     * fileName is a search pattern like "\DVD\*" — this server only supports
+     * "list everything in this directory" (the '*'/'*.*' wildcard case),
+     * matching OPL's directory-browsing use; arbitrary glob matching is out
+     * of scope. Single-response, no FIND_NEXT2 continuation (searchCount
+     * still caps the page and sets EndOfSearch correctly for a directory
+     * larger than one page, matching desktop's per-call behavior).
+     */
+    private fun findFirst2(frame: SmbFrame, trans2Params: ByteArray): SmbFrame {
+        if (trans2Params.size < 12) return FrameCodec.response(frame, NtStatus.NOT_SUPPORTED)
+        val buf = ByteBuffer.wrap(trans2Params).order(ByteOrder.LITTLE_ENDIAN)
+        val searchCount = buf.getShort(2).toInt() and 0xFFFF
+        val informationLevel = buf.getShort(6).toInt() and 0xFFFF
+        if (informationLevel != InfoLevel.FIND_FILE_BOTH_DIRECTORY_INFO) {
+            return FrameCodec.response(frame, NtStatus.NOT_SUPPORTED)
+        }
+
+        var nameEnd = 12
+        while (nameEnd < trans2Params.size && trans2Params[nameEnd] != 0.toByte()) nameEnd++
+        val fileName = OEM.decode(ByteBuffer.wrap(trans2Params, 12, nameEnd - 12)).toString()
+        val dirPath = fileName.substringBeforeLast('\\', "")
+
+        val listed = PathConfinement.listDirectory(tree, dirPath) ?: emptyList()
+        data class Entry(val name: String, val isDirectory: Boolean, val size: Long, val lastModified: Long)
+        val entries = listOf(
+            Entry(".", true, 0, System.currentTimeMillis()),
+            Entry("..", true, 0, System.currentTimeMillis())
+        ) + listed.map { Entry(it.name ?: "", it.isDirectory, it.length(), it.lastModified()) }
+
+        val page = entries.take(if (searchCount > 0) searchCount else entries.size)
+        val endOfSearch = page.size >= entries.size
+
+        val entryBuffers = page.mapIndexed { index, entry ->
+            encodeDirectoryEntry(entry.name, entry.isDirectory, entry.size, entry.lastModified, index == page.size - 1)
+        }
+        val dataBuffer = ByteArray(entryBuffers.sumOf { it.size })
+        var pos = 0
+        entryBuffers.forEach { it.copyInto(dataBuffer, pos); pos += it.size }
+
+        val trans2ResponseParams = ByteBuffer.allocate(10).order(ByteOrder.LITTLE_ENDIAN).apply {
+            putShort(0, 0) // SID — no continuation supported in this scope
+            putShort(2, page.size.toShort())
+            putShort(4, if (endOfSearch) 1 else 0)
+            putShort(6, 0) // EaErrorOffset
+            putShort(8, (if (entryBuffers.isEmpty()) 0 else dataBuffer.size - entryBuffers.last().size).toShort()) // LastNameOffset
+        }.array()
+
+        return buildTrans2Response(frame, trans2ResponseParams, dataBuffer)
     }
 }

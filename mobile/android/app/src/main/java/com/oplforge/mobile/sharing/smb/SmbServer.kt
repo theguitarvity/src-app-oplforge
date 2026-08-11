@@ -89,9 +89,20 @@ class SmbServer(
             val input = socket.getInputStream()
             val output = socket.getOutputStream()
             while (running && !socket.isClosed) {
-                val frame = FrameCodec.readFrame(input)
-                val response = handlers.handle(frame, state)
-                FrameCodec.writeFrame(output, response)
+                val nbss = FrameCodec.readNbssFrame(input)
+                when (nbss.type) {
+                    // Real PS2/OPL clients open with this regardless of port and
+                    // wait for the reply before sending any SMB traffic at all —
+                    // skipping it looks like an immediate connection failure to
+                    // the client. Mirrors desktop's smb-server.ts exactly.
+                    NbssType.SESSION_REQUEST -> FrameCodec.writePositiveSessionResponse(output)
+                    NbssType.SESSION_MESSAGE -> {
+                        val frame = FrameCodec.decodeSmb(nbss.payload)
+                        val response = handlers.handle(frame, state)
+                        FrameCodec.writeFrame(output, response)
+                    }
+                    else -> throw IllegalStateException("Unexpected NBSS frame type ${nbss.type}")
+                }
             }
         } catch (e: EOFException) {
             // Clean disconnect — expected when the client (or its cable) goes away.

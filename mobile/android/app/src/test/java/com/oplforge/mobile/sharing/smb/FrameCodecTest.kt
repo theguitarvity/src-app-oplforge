@@ -40,7 +40,9 @@ class FrameCodecTest {
 
         val out = ByteArrayOutputStream()
         FrameCodec.writeFrame(out, frame)
-        val decoded = FrameCodec.readFrame(ByteArrayInputStream(out.toByteArray()))
+        val nbss = FrameCodec.readNbssFrame(ByteArrayInputStream(out.toByteArray()))
+        assertEquals(NbssType.SESSION_MESSAGE, nbss.type)
+        val decoded = FrameCodec.decodeSmb(nbss.payload)
 
         assertEquals(frame.command, decoded.command)
         assertEquals(frame.tid, decoded.tid)
@@ -52,17 +54,48 @@ class FrameCodecTest {
     }
 
     @Test
-    fun `readFrame rejects a payload with the wrong protocol signature`() {
+    fun `decodeSmb rejects a payload with the wrong protocol signature`() {
         val out = ByteArrayOutputStream()
         out.write(byteArrayOf(0x00, 0x00, 0x00, 0x04))
         out.write("ping".toByteArray(Charsets.ISO_8859_1))
 
+        val nbss = FrameCodec.readNbssFrame(ByteArrayInputStream(out.toByteArray()))
         try {
-            FrameCodec.readFrame(ByteArrayInputStream(out.toByteArray()))
+            FrameCodec.decodeSmb(nbss.payload)
             throw AssertionError("Expected decode to reject a non-SMB payload")
         } catch (e: IllegalArgumentException) {
             // expected — a malformed frame must never be silently accepted
         }
+    }
+
+    @Test
+    fun `readNbssFrame surfaces a SESSION_REQUEST without trying to decode it as SMB`() {
+        val out = ByteArrayOutputStream()
+        out.write(byteArrayOf(NbssType.SESSION_REQUEST.toByte(), 0x00, 0x00, 0x05))
+        out.write("hello".toByteArray(Charsets.ISO_8859_1))
+
+        val nbss = FrameCodec.readNbssFrame(ByteArrayInputStream(out.toByteArray()))
+        assertEquals(NbssType.SESSION_REQUEST, nbss.type)
+        assertArrayEquals("hello".toByteArray(Charsets.ISO_8859_1), nbss.payload)
+    }
+
+    @Test
+    fun `response always forces the REPLY and NT_STATUS flag bits`() {
+        val request = SmbFrame(
+            command = SmbCommand.NEGOTIATE,
+            status = 0,
+            flags = 0x18, // some client-set bits that must be preserved
+            flags2 = 0x0001,
+            tid = 0,
+            pid = 0,
+            uid = 0,
+            mid = 0,
+            params = ByteArray(0),
+            data = ByteArray(0)
+        )
+        val response = FrameCodec.response(request, NtStatus.SUCCESS)
+        assertEquals(0x18 or 0x80, response.flags) // REPLY bit added, client bits preserved
+        assertEquals(0x0001 or 0x4000, response.flags2) // NT_STATUS bit added, client bits preserved
     }
 
     @Test
