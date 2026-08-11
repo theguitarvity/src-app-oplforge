@@ -88,13 +88,13 @@ class CommandHandlers(
         SmbCommand.TREE_DISCONNECT -> FrameCodec.response(frame, NtStatus.SUCCESS)
         SmbCommand.LOGOFF_ANDX -> { state.closeAll(); FrameCodec.response(frame, NtStatus.SUCCESS) }
         SmbCommand.ECHO -> echo(frame)
-        SmbCommand.CHECK_DIRECTORY -> checkDirectory(frame)
+        SmbCommand.CHECK_DIRECTORY -> checkDirectory(frame, state)
         SmbCommand.NT_CREATE_ANDX -> ntCreate(frame, state)
         SmbCommand.OPEN_ANDX -> openAndx(frame, state)
         SmbCommand.READ_ANDX -> readAndx(frame, state)
         SmbCommand.WRITE_ANDX -> writeAndx(frame, state)
         SmbCommand.CLOSE -> closeFile(frame, state)
-        SmbCommand.TRANSACTION2 -> transaction2(frame)
+        SmbCommand.TRANSACTION2 -> transaction2(frame, state)
         else -> FrameCodec.response(frame, NtStatus.NOT_SUPPORTED)
     }
 
@@ -215,13 +215,27 @@ class CommandHandlers(
         return FrameCodec.response(frame, NtStatus.SUCCESS, params = params, data = frame.data)
     }
 
-    private fun checkDirectory(frame: SmbFrame): SmbFrame {
+    /**
+     * SECURITY: every filesystem-touching handler below must gate on
+     * `state.tid != 0` — a real TREE_CONNECT_ANDX (which is the only place
+     * the share password is actually checked, see [treeConnect]) must have
+     * succeeded first. Without this, a client can skip straight from
+     * NEGOTIATE to NT_CREATE_ANDX/READ_ANDX/etc. and read or write the whole
+     * library without ever supplying the correct password. Found via
+     * security audit — none of these had the check.
+     */
+    private fun requireTreeConnected(frame: SmbFrame, state: SmbConnectionState): SmbFrame? =
+        if (state.tid == 0) FrameCodec.response(frame, NtStatus.ACCESS_DENIED) else null
+
+    private fun checkDirectory(frame: SmbFrame, state: SmbConnectionState): SmbFrame {
+        requireTreeConnected(frame, state)?.let { return it }
         val path = OEM.decode(ByteBuffer.wrap(frame.data)).toString().stripTrailingNul()
         val exists = PathConfinement.listDirectory(tree, path) != null
         return FrameCodec.response(frame, if (exists) NtStatus.SUCCESS else NtStatus.OBJECT_NAME_NOT_FOUND)
     }
 
     private fun ntCreate(frame: SmbFrame, state: SmbConnectionState): SmbFrame {
+        requireTreeConnected(frame, state)?.let { return it }
         val nameLen = if (frame.params.size >= 6) {
             ByteBuffer.wrap(frame.params).order(ByteOrder.LITTLE_ENDIAN).getShort(4).toInt() and 0xFFFF
         } else 0
@@ -265,7 +279,7 @@ class CommandHandlers(
      * that opens a game file this way would never get past that point.
      */
     private fun openAndx(frame: SmbFrame, state: SmbConnectionState): SmbFrame {
-        if (state.tid == 0) return FrameCodec.response(frame, NtStatus.ACCESS_DENIED)
+        requireTreeConnected(frame, state)?.let { return it }
         // Some clients prefix the OEM filename with an 0x04 SMB_STRING buffer-format byte.
         val nameData = if (frame.data.isNotEmpty() && frame.data[0] == 0x04.toByte()) {
             frame.data.copyOfRange(1, frame.data.size)
@@ -295,6 +309,7 @@ class CommandHandlers(
     }
 
     private fun readAndx(frame: SmbFrame, state: SmbConnectionState): SmbFrame {
+        requireTreeConnected(frame, state)?.let { return it }
         if (frame.params.size < 12) return FrameCodec.response(frame, NtStatus.UNSUCCESSFUL)
         val buf = ByteBuffer.wrap(frame.params).order(ByteOrder.LITTLE_ENDIAN)
         val fid = buf.getShort(2).toInt() and 0xFFFF
@@ -329,6 +344,7 @@ class CommandHandlers(
     }
 
     private fun writeAndx(frame: SmbFrame, state: SmbConnectionState): SmbFrame {
+        requireTreeConnected(frame, state)?.let { return it }
         if (!isWriteAccessAcknowledged()) return FrameCodec.response(frame, NtStatus.ACCESS_DENIED)
         if (frame.params.size < 14) return FrameCodec.response(frame, NtStatus.UNSUCCESSFUL)
         val buf = ByteBuffer.wrap(frame.params).order(ByteOrder.LITTLE_ENDIAN)
@@ -373,7 +389,8 @@ class CommandHandlers(
     }
 
     /** FIND_FIRST2 only (contracts/smb-protocol-scope.md directory listing) — single-response, no continuation. */
-    private fun transaction2(frame: SmbFrame): SmbFrame {
+    private fun transaction2(frame: SmbFrame, state: SmbConnectionState): SmbFrame {
+        requireTreeConnected(frame, state)?.let { return it }
         if (frame.params.size < 2) return FrameCodec.response(frame, NtStatus.NOT_SUPPORTED)
         val setup = ByteBuffer.wrap(frame.params).order(ByteOrder.LITTLE_ENDIAN).getShort(0).toInt() and 0xFFFF
         if (setup != Trans2Subcommand.FIND_FIRST2) return FrameCodec.response(frame, NtStatus.NOT_SUPPORTED)

@@ -41,8 +41,12 @@ class CredentialStore(context: Context) {
      * and puts the actual share password on TREE_CONNECT_ANDX instead (no
      * username involved at that layer, mirrors desktop's `connectTree`).
      */
-    fun verifySharePassword(password: String): Boolean =
-        prefs.getString(KEY_PASSWORD, null) == password
+    fun verifySharePassword(password: String): Boolean {
+        val stored = prefs.getString(KEY_PASSWORD, null) ?: return false
+        // Constant-time compare (matches verifyShareNtlmV1's MessageDigest.isEqual) —
+        // a short-circuiting == leaks how many leading bytes matched via timing.
+        return java.security.MessageDigest.isEqual(stored.toByteArray(Charsets.UTF_8), password.toByteArray(Charsets.UTF_8))
+    }
 
     /**
      * Verifies a 24-byte NTLMv1 challenge-response (real PS2 OPL clients

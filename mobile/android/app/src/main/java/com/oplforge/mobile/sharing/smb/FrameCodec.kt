@@ -68,6 +68,15 @@ object FrameCodec {
 
     private const val NETBIOS_SESSION_MESSAGE = 0x00
 
+    // The NetBIOS session-message length field is 24-bit (up to ~16MB) by wire
+    // format, but this server advertises a 64KB MaxBufferSize in NEGOTIATE
+    // (negotiate()'s params byte 7) — no legitimate frame should ever be
+    // anywhere near that. Capping well above it (rather than trusting an
+    // unauthenticated client's own length claim up to the wire format's full
+    // 16MB ceiling) bounds the per-frame allocation an unauthenticated
+    // connection can force.
+    private const val MAX_FRAME_LENGTH = 256 * 1024
+
     /** Reads one full NetBIOS-wrapped SMB1 frame, blocking until available. Throws EOFException on clean close. */
     fun readFrame(input: InputStream): SmbFrame {
         val nbHeader = input.readNBytesStrict(4)
@@ -76,6 +85,7 @@ object FrameCodec {
             ((nbHeader[2].toInt() and 0xFF) shl 8) or
             (nbHeader[3].toInt() and 0xFF)
         if (type != NETBIOS_SESSION_MESSAGE) throw IllegalStateException("Unsupported NetBIOS message type $type")
+        if (length > MAX_FRAME_LENGTH) throw IllegalStateException("NetBIOS frame length $length exceeds max $MAX_FRAME_LENGTH")
 
         val payload = input.readNBytesStrict(length)
         return decode(payload)
