@@ -17,7 +17,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.launch
-import java.util.concurrent.Semaphore
+import kotlinx.coroutines.sync.Semaphore
+import kotlinx.coroutines.sync.withPermit
 import java.util.concurrent.atomic.AtomicInteger
 
 /** One box-art candidate: a locally-cataloged game missing art, matched against the remote archive. */
@@ -119,23 +120,23 @@ class ArtSyncModule(reactContext: ReactApplicationContext) : NativeArtSyncModule
 
             plannedMatches.map { match ->
                 scope.async {
-                    semaphore.acquire()
-                    try {
-                        val bytes = remoteIndex.fetchEntryBytes(match.zipEntry)
-                        if (bytes == null) {
+                    semaphore.withPermit {
+                        try {
+                            val bytes = remoteIndex.fetchEntryBytes(match.zipEntry)
+                            if (bytes == null) {
+                                failed.incrementAndGet()
+                            } else {
+                                val gameId = match.entry.gameId!!
+                                val fileName = "${gameId}_${match.type}.png"
+                                val target = tree.createFile("ART", fileName, "image/png")
+                                val written = target != null && writeBytes(target.uri, bytes)
+                                if (written) installed.incrementAndGet() else failed.incrementAndGet()
+                            }
+                        } catch (e: Exception) {
                             failed.incrementAndGet()
-                        } else {
-                            val gameId = match.entry.gameId!!
-                            val fileName = "${gameId}_${match.type}.png"
-                            val target = tree.createFile("ART", fileName, "image/png")
-                            val written = target != null && writeBytes(target.uri, bytes)
-                            if (written) installed.incrementAndGet() else failed.incrementAndGet()
+                        } finally {
+                            emitProgress("running", totalGames = total, matchedInSource = total, installed = installed.get(), failed = failed.get())
                         }
-                    } catch (e: Exception) {
-                        failed.incrementAndGet()
-                    } finally {
-                        semaphore.release()
-                        emitProgress("running", totalGames = total, matchedInSource = total, installed = installed.get(), failed = failed.get())
                     }
                 }
             }.awaitAll()

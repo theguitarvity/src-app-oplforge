@@ -46,9 +46,20 @@ export async function refreshCatalog(): Promise<CatalogListing[]> {
   }
 }
 
-export async function createSmartFillPlan(targetBytes: number): Promise<SmartFillPlan> {
+export type SmartFillMode = 'rating' | 'random'
+
+export async function createSmartFillPlan(targetBytes: number, mode: SmartFillMode): Promise<SmartFillPlan> {
   try {
-    return (await NativeEssentialsModule.createSmartFillPlan(targetBytes)) as SmartFillPlan
+    return (await NativeEssentialsModule.createSmartFillPlan(targetBytes, mode)) as SmartFillPlan
+  } catch (error) {
+    throw toEssentialsModuleError(error)
+  }
+}
+
+export async function getAvailableSpace(): Promise<number> {
+  try {
+    const result = (await NativeEssentialsModule.getAvailableSpace()) as { availableBytes: number }
+    return result.availableBytes
   } catch (error) {
     throw toEssentialsModuleError(error)
   }

@@ -14,6 +14,8 @@ object SmbCommand {
     const val TREE_CONNECT_ANDX = 0x75
     const val TREE_DISCONNECT = 0x71
     const val NT_CREATE_ANDX = 0xA2
+    const val OPEN_ANDX = 0x2D
+    const val ECHO = 0x2B
     const val CLOSE = 0x04
     const val READ_ANDX = 0x2E
     const val WRITE_ANDX = 0x2F

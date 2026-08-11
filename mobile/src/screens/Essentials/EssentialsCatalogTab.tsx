@@ -30,7 +30,11 @@ function formatSize(bytes: number): string {
  * single-item downloads still go through the same confirmation gate. Lives
  * as the "Catálogo" tab of `EssentialsScreen`.
  */
-export function EssentialsCatalogTab() {
+interface EssentialsCatalogTabProps {
+  onDownloadStarted: () => void
+}
+
+export function EssentialsCatalogTab({ onDownloadStarted }: EssentialsCatalogTabProps) {
   const { items, search, tier, status, errorMessage, loadCatalog, setSearch, setTier, confirmAndDownload } =
     useEssentialsStore()
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
@@ -64,7 +68,7 @@ export function EssentialsCatalogTab() {
     setConfirming(false)
     const toDownload = selectedItems
     setSelectedIds(new Set())
-    void confirmAndDownload(toDownload)
+    void confirmAndDownload(toDownload).then(() => onDownloadStarted())
   }
 
   return (

@@ -1,10 +1,11 @@
-import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native'
+import { ActivityIndicator, Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native'
 import MaterialIcons from '@expo/vector-icons/MaterialIcons'
 import { colors, radius, semanticColor, spacing, typography } from '../../design-system/tokens'
 import { useLibraryStore } from '../../stores/library-store'
 import { useCatalogStore } from '../../stores/catalog-store'
 import { navigationRef } from '../../app/navigationRef'
 import { CatalogScanView } from './CatalogScanView'
+import * as LibraryModule from '../../native/LibraryModule'
 
 /** After picking a library, jump straight to Biblioteca with a real scan already running, rather than leaving the user to find "Catalogar biblioteca" themselves. */
 function goToLibraryWithFreshScan() {
@@ -27,6 +28,17 @@ export function LibrarySelectScreen() {
     void selectLibrary().then(() => {
       if (useLibraryStore.getState().status === 'ready') goToLibraryWithFreshScan()
     })
+  }
+
+  const handleClearAppData = () => {
+    Alert.alert(
+      'Limpar dados do app',
+      'Isso apaga a biblioteca selecionada, credenciais salvas, catálogo em cache e a fila de transferências. O app vai reiniciar. Esta ação não pode ser desfeita.',
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        { text: 'Limpar dados', style: 'destructive', onPress: () => void LibraryModule.clearAppData() }
+      ]
+    )
   }
 
   if (status === 'loading') {
@@ -110,6 +122,12 @@ export function LibrarySelectScreen() {
           </Pressable>
         </>
       ) : null}
+
+      <Text style={styles.dangerZoneLabel}>Zona de risco</Text>
+      <Pressable style={styles.dangerButton} onPress={handleClearAppData}>
+        <MaterialIcons name="delete-forever" size={18} color={semanticColor('error')} />
+        <Text style={styles.dangerButtonText}>Limpar dados do app</Text>
+      </Pressable>
     </ScrollView>
   )
 }
@@ -176,5 +194,22 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center'
   },
-  secondaryButtonText: { color: colors.foreground, fontSize: typography.body.fontSize }
+  secondaryButtonText: { color: colors.foreground, fontSize: typography.body.fontSize },
+  dangerZoneLabel: {
+    color: colors.mutedForeground,
+    fontSize: typography.caption.fontSize,
+    fontWeight: '700',
+    marginTop: spacing.lg
+  },
+  dangerButton: {
+    flexDirection: 'row',
+    gap: spacing.xs,
+    borderColor: semanticColor('error'),
+    borderWidth: 1,
+    borderRadius: radius.md,
+    paddingVertical: spacing.sm,
+    alignItems: 'center',
+    justifyContent: 'center'
+  },
+  dangerButtonText: { color: semanticColor('error'), fontSize: typography.body.fontSize, fontWeight: '600' }
 })

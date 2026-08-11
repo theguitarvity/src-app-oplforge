@@ -1,76 +1,201 @@
-import { useState } from 'react'
-import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native'
+import { useEffect, useState } from 'react'
+import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native'
+import MaterialIcons from '@expo/vector-icons/MaterialIcons'
 import { colors, radius, spacing, typography } from '../../design-system/tokens'
 import { useEssentialsStore } from '../../stores/essentials-store'
+import type { SmartFillMode } from '../../native/EssentialsModule'
 import type { CatalogListing } from '../../types'
 import { LegalConfirmationDialog } from './LegalConfirmationDialog'
+
+type WizardStep = 'space' | 'mode' | 'review'
 
 function formatGb(bytes: number): string {
   return `${(bytes / (1024 * 1024 * 1024)).toFixed(1)} GB`
 }
 
+const MODE_OPTIONS: { key: SmartFillMode; icon: keyof typeof MaterialIcons.glyphMap; title: string; description: string }[] = [
+  {
+    key: 'rating',
+    icon: 'star',
+    title: 'Melhor avaliados',
+    description: 'Preenche com os jogos de maior nota primeiro (S, depois A, B, C) até acabar o espaço.'
+  },
+  {
+    key: 'random',
+    icon: 'shuffle',
+    title: 'Aleatório',
+    description: 'Sorteia jogos do catálogo até preencher o espaço escolhido, sem priorizar nota.'
+  }
+]
+
+interface SmartFillSheetProps {
+  onDownloadStarted: () => void
+}
+
 /**
- * US1 — Smart Fill: automatic byte-budget selection of S/A-tier catalog
- * items. Selecting a plan still requires the same per-item legal
- * confirmation as a direct download (FR-003) — Smart Fill only selects, it
- * never bypasses consent.
+ * US1 — Smart Fill wizard: reads the selected device's free space, lets the
+ * user pick a max range within it, then choose a fill strategy (best-rated
+ * first vs random) before reviewing and confirming — three steps instead of
+ * one blind "type a GB number" field, mirroring desktop's equivalent wizard.
+ * Selecting a plan still requires the same per-item legal confirmation as a
+ * direct download (FR-003) — Smart Fill only selects, it never bypasses
+ * consent.
  */
-export function SmartFillSheet() {
-  const { smartFillPlan, status, buildSmartFillPlan, confirmAndDownload } = useEssentialsStore()
-  const [budgetGb, setBudgetGb] = useState('20')
+export function SmartFillSheet({ onDownloadStarted }: SmartFillSheetProps) {
+  const { smartFillPlan, availableBytes, status, loadAvailableSpace, buildSmartFillPlan, resetSmartFillPlan, confirmAndDownload } =
+    useEssentialsStore()
+  const [step, setStep] = useState<WizardStep>('space')
+  const [budgetGb, setBudgetGb] = useState('')
+  const [mode, setMode] = useState<SmartFillMode>('rating')
   const [confirmingAll, setConfirmingAll] = useState(false)
 
-  const handlePlan = () => {
-    const bytes = Number(budgetGb) * 1024 * 1024 * 1024
-    if (!Number.isFinite(bytes) || bytes <= 0) return
-    void buildSmartFillPlan(bytes)
+  useEffect(() => {
+    void loadAvailableSpace().then((bytes) => {
+      if (bytes !== undefined) setBudgetGb((bytes / (1024 * 1024 * 1024)).toFixed(1))
+    })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  const availableGb = availableBytes !== undefined ? availableBytes / (1024 * 1024 * 1024) : undefined
+  const budgetValue = Number(budgetGb)
+  const budgetValid = Number.isFinite(budgetValue) && budgetValue > 0 && (availableGb === undefined || budgetValue <= availableGb + 0.05)
+
+  const handleBuildPlan = () => {
+    const bytes = budgetValue * 1024 * 1024 * 1024
+    setStep('review')
+    void buildSmartFillPlan(bytes, mode)
   }
 
   const handleConfirmAll = () => {
     if (!smartFillPlan) return
     setConfirmingAll(false)
-    void confirmAndDownload(smartFillPlan.selectedItems)
+    void confirmAndDownload(smartFillPlan.selectedItems).then(() => {
+      resetSmartFillPlan()
+      setStep('space')
+      onDownloadStarted()
+    })
+  }
+
+  const handleRestart = () => {
+    resetSmartFillPlan()
+    setStep('space')
   }
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Preencher automaticamente</Text>
-      <Text style={styles.subtitle}>
-        Escolha um orçamento de espaço e o Smart Fill seleciona os melhores jogos (tiers S/A) que couberem.
-      </Text>
-      <View style={styles.budgetRow}>
-        <TextInput
-          style={styles.input}
-          keyboardType="numeric"
-          value={budgetGb}
-          onChangeText={setBudgetGb}
-        />
-        <Text style={styles.unit}>GB</Text>
+    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+      <View style={styles.stepper}>
+        {(['space', 'mode', 'review'] as WizardStep[]).map((key, index) => (
+          <View key={key} style={styles.stepDotRow}>
+            <View style={[styles.stepDot, step === key ? styles.stepDotActive : null]}>
+              <Text style={[styles.stepDotText, step === key ? styles.stepDotTextActive : null]}>{index + 1}</Text>
+            </View>
+            {index < 2 ? <View style={styles.stepLine} /> : null}
+          </View>
+        ))}
       </View>
-      <Pressable style={styles.planButton} onPress={handlePlan}>
-        <Text style={styles.planButtonText}>{status === 'loading' ? 'Calculando...' : 'Calcular plano'}</Text>
-      </Pressable>
 
-      {smartFillPlan ? (
-        <View style={styles.summary}>
-          <Text style={styles.summaryLine}>
-            {smartFillPlan.selectedItems.length} jogo(s) selecionado(s) · {formatGb(smartFillPlan.estimatedTotalBytes)} de{' '}
-            {formatGb(smartFillPlan.availableBytes)} disponíveis
+      {step === 'space' ? (
+        <View style={styles.card}>
+          <Text style={styles.title}>Espaço disponível</Text>
+          <Text style={styles.subtitle}>
+            {availableGb !== undefined
+              ? `O dispositivo selecionado tem ${formatGb(availableBytes ?? 0)} livres. Escolha até quanto o Smart Fill pode usar.`
+              : 'Lendo o espaço livre do dispositivo selecionado...'}
           </Text>
-          {smartFillPlan.warnings.map((warning: string) => (
-            <Text key={warning} style={styles.warning}>
-              {warning}
-            </Text>
-          ))}
-          {smartFillPlan.selectedItems.map((item: CatalogListing) => (
-            <Text key={item.id} style={styles.itemLine} numberOfLines={1}>
-              • {item.title}
-            </Text>
-          ))}
-          {smartFillPlan.selectedItems.length > 0 ? (
-            <Pressable style={styles.confirmButton} onPress={() => setConfirmingAll(true)}>
-              <Text style={styles.confirmButtonText}>Baixar todos os selecionados</Text>
+          <View style={styles.budgetRow}>
+            <TextInput
+              style={styles.input}
+              keyboardType="numeric"
+              value={budgetGb}
+              onChangeText={setBudgetGb}
+              placeholder="0"
+              placeholderTextColor={colors.mutedForeground}
+            />
+            <Text style={styles.unit}>GB</Text>
+          </View>
+          {availableGb !== undefined && !budgetValid ? (
+            <Text style={styles.warning}>Escolha um valor entre 0 e {availableGb.toFixed(1)} GB.</Text>
+          ) : null}
+          <Pressable
+            style={[styles.primaryButton, !budgetValid ? styles.disabled : null]}
+            disabled={!budgetValid}
+            onPress={() => setStep('mode')}
+          >
+            <Text style={styles.primaryButtonText}>Continuar</Text>
+            <MaterialIcons name="arrow-forward" size={18} color={colors.primaryForeground} />
+          </Pressable>
+        </View>
+      ) : null}
+
+      {step === 'mode' ? (
+        <View style={styles.card}>
+          <Text style={styles.title}>Como preencher?</Text>
+          <Text style={styles.subtitle}>Escolha o modo de seleção dos jogos para os {budgetGb} GB reservados.</Text>
+          {MODE_OPTIONS.map((option) => (
+            <Pressable
+              key={option.key}
+              style={[styles.modeCard, mode === option.key ? styles.modeCardActive : null]}
+              onPress={() => setMode(option.key)}
+            >
+              <View style={[styles.modeIcon, mode === option.key ? styles.modeIconActive : null]}>
+                <MaterialIcons name={option.icon} size={22} color={mode === option.key ? colors.primary : colors.mutedForeground} />
+              </View>
+              <View style={styles.modeTextWrap}>
+                <Text style={styles.modeTitle}>{option.title}</Text>
+                <Text style={styles.modeDescription}>{option.description}</Text>
+              </View>
+              {mode === option.key ? <MaterialIcons name="check-circle" size={20} color={colors.primary} /> : null}
             </Pressable>
+          ))}
+          <View style={styles.wizardActions}>
+            <Pressable style={styles.secondaryButton} onPress={() => setStep('space')}>
+              <MaterialIcons name="arrow-back" size={18} color={colors.foreground} />
+              <Text style={styles.secondaryButtonText}>Voltar</Text>
+            </Pressable>
+            <Pressable style={styles.primaryButton} onPress={handleBuildPlan}>
+              <Text style={styles.primaryButtonText}>Calcular plano</Text>
+              <MaterialIcons name="arrow-forward" size={18} color={colors.primaryForeground} />
+            </Pressable>
+          </View>
+        </View>
+      ) : null}
+
+      {step === 'review' ? (
+        <View style={styles.card}>
+          <Text style={styles.title}>Revisar plano</Text>
+          {status === 'loading' && !smartFillPlan ? (
+            <Text style={styles.subtitle}>Calculando...</Text>
+          ) : smartFillPlan ? (
+            <>
+              <Text style={styles.summaryLine}>
+                {smartFillPlan.selectedItems.length} jogo(s) selecionado(s) · {formatGb(smartFillPlan.estimatedTotalBytes)} de{' '}
+                {formatGb(smartFillPlan.availableBytes)} escolhidos
+              </Text>
+              {smartFillPlan.warnings.map((warning: string) => (
+                <Text key={warning} style={styles.warning}>
+                  {warning}
+                </Text>
+              ))}
+              <View style={styles.itemList}>
+                {smartFillPlan.selectedItems.map((item: CatalogListing) => (
+                  <Text key={item.id} style={styles.itemLine} numberOfLines={1}>
+                    • {item.title}
+                  </Text>
+                ))}
+              </View>
+              <View style={styles.wizardActions}>
+                <Pressable style={styles.secondaryButton} onPress={handleRestart}>
+                  <MaterialIcons name="restart-alt" size={18} color={colors.foreground} />
+                  <Text style={styles.secondaryButtonText}>Recomeçar</Text>
+                </Pressable>
+                {smartFillPlan.selectedItems.length > 0 ? (
+                  <Pressable style={styles.primaryButton} onPress={() => setConfirmingAll(true)}>
+                    <MaterialIcons name="download" size={18} color={colors.primaryForeground} />
+                    <Text style={styles.primaryButtonText}>Baixar selecionados</Text>
+                  </Pressable>
+                ) : null}
+              </View>
+            </>
           ) : null}
         </View>
       ) : null}
@@ -81,15 +206,40 @@ export function SmartFillSheet() {
         onCancel={() => setConfirmingAll(false)}
         onConfirm={handleConfirmAll}
       />
-    </View>
+    </ScrollView>
   )
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.background, padding: spacing.lg, gap: spacing.md },
+  container: { flex: 1, backgroundColor: colors.background },
+  content: { padding: spacing.lg, gap: spacing.md },
+  stepper: { flexDirection: 'row', alignItems: 'center', alignSelf: 'center', marginBottom: spacing.sm },
+  stepDotRow: { flexDirection: 'row', alignItems: 'center' },
+  stepDot: {
+    width: 28,
+    height: 28,
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: colors.border,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: colors.card
+  },
+  stepDotActive: { borderColor: colors.primary, backgroundColor: `${colors.primary}22` },
+  stepDotText: { color: colors.mutedForeground, fontSize: typography.caption.fontSize, fontWeight: '700' },
+  stepDotTextActive: { color: colors.primary },
+  stepLine: { width: 24, height: 1, backgroundColor: colors.border },
+  card: {
+    backgroundColor: colors.card,
+    borderColor: colors.border,
+    borderWidth: 1,
+    borderRadius: radius.lg,
+    padding: spacing.lg,
+    gap: spacing.sm
+  },
   title: { color: colors.foreground, fontSize: typography.subtitle.fontSize, fontWeight: '700' },
-  subtitle: { color: colors.mutedForeground, fontSize: typography.caption.fontSize, lineHeight: 18, marginTop: -spacing.sm },
-  budgetRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
+  subtitle: { color: colors.mutedForeground, fontSize: typography.caption.fontSize, lineHeight: 18 },
+  budgetRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, marginTop: spacing.xs },
   input: {
     flex: 1,
     borderRadius: radius.md,
@@ -100,12 +250,69 @@ const styles = StyleSheet.create({
     color: colors.foreground
   },
   unit: { color: colors.mutedForeground },
-  planButton: { borderRadius: radius.md, backgroundColor: colors.primary, paddingVertical: spacing.sm, alignItems: 'center' },
-  planButtonText: { color: colors.primaryForeground, fontWeight: '600' },
-  summary: { gap: spacing.xs, marginTop: spacing.md },
-  summaryLine: { color: colors.foreground, fontSize: typography.body.fontSize },
   warning: { color: colors.amber, fontSize: typography.caption.fontSize },
+  modeCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: radius.md,
+    padding: spacing.sm
+  },
+  modeCardActive: { borderColor: colors.primary, backgroundColor: `${colors.primary}11` },
+  modeIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: radius.md,
+    backgroundColor: colors.muted,
+    alignItems: 'center',
+    justifyContent: 'center'
+  },
+  modeIconActive: { backgroundColor: `${colors.primary}22` },
+  modeTextWrap: { flex: 1, gap: 2 },
+  modeTitle: { color: colors.foreground, fontSize: typography.body.fontSize, fontWeight: '600' },
+  modeDescription: { color: colors.mutedForeground, fontSize: typography.caption.fontSize, lineHeight: 16 },
+  summaryLine: { color: colors.foreground, fontSize: typography.body.fontSize },
+  itemList: { gap: 2, marginTop: spacing.xs },
   itemLine: { color: colors.mutedForeground, fontSize: typography.caption.fontSize },
-  confirmButton: { marginTop: spacing.md, borderRadius: radius.md, backgroundColor: colors.primary, paddingVertical: spacing.sm, alignItems: 'center' },
-  confirmButtonText: { color: colors.primaryForeground, fontWeight: '600' }
+  wizardActions: { flexDirection: 'row', gap: spacing.sm, marginTop: spacing.sm },
+  disabled: { opacity: 0.5 },
+  primaryButton: {
+    flex: 1,
+    flexDirection: 'row',
+    gap: spacing.xs,
+    borderRadius: radius.md,
+    backgroundColor: colors.primary,
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.xs,
+    alignItems: 'center',
+    justifyContent: 'center'
+  },
+  primaryButtonText: {
+    flexShrink: 1,
+    color: colors.primaryForeground,
+    fontSize: typography.caption.fontSize,
+    fontWeight: '600',
+    textAlign: 'center'
+  },
+  secondaryButton: {
+    flex: 1,
+    flexDirection: 'row',
+    gap: spacing.xs,
+    borderRadius: radius.md,
+    borderWidth: 1,
+    borderColor: colors.border,
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.xs,
+    alignItems: 'center',
+    justifyContent: 'center'
+  },
+  secondaryButtonText: {
+    flexShrink: 1,
+    color: colors.foreground,
+    fontSize: typography.caption.fontSize,
+    fontWeight: '600',
+    textAlign: 'center'
+  }
 })

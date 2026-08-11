@@ -9,6 +9,13 @@ import type { RootStackParamList } from '../../app/App'
 
 const DEFAULT_SHARE_NAME = 'oplforge'
 
+const LOG_KIND_ICON: Record<string, keyof typeof MaterialIcons.glyphMap> = {
+  'state-changed': 'sync',
+  'client-connected': 'link',
+  'client-disconnected': 'link-off',
+  'write-conflict': 'warning'
+}
+
 /** Centered network icon — a steady purple glow while sharing/idle, a pulsing green neon glow once the PS2 actually connects, muted gray when off. */
 function NetworkHero({ isRunning, isConnected }: { isRunning: boolean; isConnected: boolean }) {
   const [pulse] = useState(() => new Animated.Value(0))
@@ -53,7 +60,8 @@ function NetworkHero({ isRunning, isConnected }: { isRunning: boolean; isConnect
  * centered network hero that lights up green once the PS2 actually connects.
  */
 export function SharingScreen() {
-  const { session, status, errorMessage, loadSession, stopSharing, activate } = useSharingStore()
+  const { session, status, errorMessage, logs, clearLogs, recentConnections, loadRecentConnections, loadSession, stopSharing, activate } =
+    useSharingStore()
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>()
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
@@ -64,8 +72,15 @@ export function SharingScreen() {
 
   useEffect(() => {
     void loadSession()
+    void loadRecentConnections()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
+
+  function applyRecentConnection(entry: { username: string; shareName: string }) {
+    setUsername(entry.username)
+    setShareName(entry.shareName)
+    setShowValidation(false)
+  }
 
   const isRunning = session?.state === 'running-idle' || session?.state === 'running-connected'
   const isConnected = session?.state === 'running-connected'
@@ -123,6 +138,30 @@ export function SharingScreen() {
           <MaterialIcons name="stop-circle" size={18} color={colors.destructiveForeground} />
           <Text style={styles.dangerButtonText}>Parar compartilhamento</Text>
         </Pressable>
+
+        <View style={styles.logsHeader}>
+          <Text style={styles.logsTitle}>Log de conexão</Text>
+          {logs.length > 0 ? (
+            <Pressable onPress={clearLogs} hitSlop={8}>
+              <Text style={styles.logsClear}>Limpar</Text>
+            </Pressable>
+          ) : null}
+        </View>
+        <View style={styles.logsCard}>
+          {logs.length === 0 ? (
+            <Text style={styles.logsEmpty}>Nenhum evento ainda.</Text>
+          ) : (
+            logs.map((entry) => (
+              <View key={entry.id} style={styles.logRow}>
+                <MaterialIcons name={LOG_KIND_ICON[entry.kind] ?? 'info-outline'} size={14} color={colors.mutedForeground} />
+                <View style={styles.logTextWrap}>
+                  <Text style={styles.logMessage}>{entry.message}</Text>
+                  <Text style={styles.logTimestamp}>{new Date(entry.timestamp).toLocaleTimeString()}</Text>
+                </View>
+              </View>
+            ))
+          )}
+        </View>
       </ScrollView>
     )
   }
@@ -132,6 +171,26 @@ export function SharingScreen() {
       <NetworkHero isRunning={false} isConnected={false} />
       <Text style={styles.title}>Compartilhar biblioteca</Text>
       <Text style={styles.subtitle}>Defina as credenciais, confirme o acesso de escrita e comece — em um único passo.</Text>
+
+      {recentConnections.length > 0 ? (
+        <View style={styles.recentCard}>
+          <Text style={styles.label}>Últimas conexões</Text>
+          {recentConnections.map((entry) => (
+            <Pressable
+              key={`${entry.username}:${entry.shareName}`}
+              style={styles.recentRow}
+              onPress={() => applyRecentConnection(entry)}
+            >
+              <MaterialIcons name="history" size={18} color={colors.mutedForeground} />
+              <View style={styles.recentTextWrap}>
+                <Text style={styles.recentUsername}>{entry.username}</Text>
+                <Text style={styles.recentShareName}>{entry.shareName}</Text>
+              </View>
+              <MaterialIcons name="chevron-right" size={20} color={colors.mutedForeground} />
+            </Pressable>
+          ))}
+        </View>
+      ) : null}
 
       <Animated.View style={{ transform: [{ translateX: shakeTranslate }] }}>
         <View style={styles.card}>
@@ -303,5 +362,43 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center'
   },
-  dangerButtonText: { color: colors.destructiveForeground, fontSize: typography.body.fontSize, fontWeight: '600' }
+  dangerButtonText: { color: colors.destructiveForeground, fontSize: typography.body.fontSize, fontWeight: '600' },
+  logsHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: spacing.sm
+  },
+  logsTitle: { color: colors.foreground, fontSize: typography.body.fontSize, fontWeight: '700' },
+  logsClear: { color: colors.primary, fontSize: typography.caption.fontSize, fontWeight: '600' },
+  logsCard: {
+    backgroundColor: colors.card,
+    borderColor: colors.border,
+    borderWidth: 1,
+    borderRadius: radius.lg,
+    padding: spacing.md,
+    gap: spacing.sm
+  },
+  logsEmpty: { color: colors.mutedForeground, fontSize: typography.caption.fontSize },
+  logRow: { flexDirection: 'row', gap: spacing.xs, alignItems: 'flex-start' },
+  logTextWrap: { flex: 1 },
+  logMessage: { color: colors.foreground, fontSize: typography.caption.fontSize },
+  logTimestamp: { color: colors.mutedForeground, fontSize: 10, marginTop: 1 },
+  recentCard: {
+    backgroundColor: colors.card,
+    borderColor: colors.border,
+    borderWidth: 1,
+    borderRadius: radius.lg,
+    padding: spacing.md,
+    gap: spacing.xs
+  },
+  recentRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+    paddingVertical: spacing.xs
+  },
+  recentTextWrap: { flex: 1 },
+  recentUsername: { color: colors.foreground, fontSize: typography.body.fontSize, fontWeight: '600' },
+  recentShareName: { color: colors.mutedForeground, fontSize: typography.caption.fontSize }
 })

@@ -69,18 +69,42 @@ class LibretroArtIndex(private val client: OkHttpClient) {
             URLEncoder.encode("$match.png", "UTF-8").replace("+", "%20")
     }
 
+    /**
+     * These repos are multi-GB (the PS2 one alone is ~6GB across ~9k PNGs) —
+     * `git/trees/master?recursive=1` against the *whole repo* reliably
+     * returns HTTP 500 from GitHub's API at this size (verified: not rate
+     * limiting, not a branch-name issue — the endpoint itself fails on a
+     * tree this large). `Named_Boxarts/` itself is a flat directory, so a
+     * two-step fetch — the small root tree (non-recursive) to find that
+     * folder's own sha, then that subtree directly — sidesteps the limit
+     * entirely and returns cleanly (verified: 8503 entries, not truncated).
+     */
     private fun fetchCandidates(repo: String): List<Candidate> = try {
-        val request = Request.Builder()
-            .url("https://api.github.com/repos/libretro-thumbnails/$repo/git/trees/master?recursive=1")
+        val rootRequest = Request.Builder()
+            .url("https://api.github.com/repos/libretro-thumbnails/$repo/git/trees/master")
             .build()
-        client.newCall(request).execute().use { response ->
+        val boxArtsSha = client.newCall(rootRequest).execute().use { response ->
+            if (!response.isSuccessful) return emptyList()
+            val body = response.body?.string() ?: return emptyList()
+            val tree = JSONObject(body).optJSONArray("tree") ?: return emptyList()
+            (0 until tree.length()).asSequence()
+                .map { tree.getJSONObject(it) }
+                .firstOrNull { it.optString("path") == "Named_Boxarts" }
+                ?.optString("sha")
+        } ?: return emptyList()
+
+        val subtreeRequest = Request.Builder()
+            .url("https://api.github.com/repos/libretro-thumbnails/$repo/git/trees/$boxArtsSha?recursive=1")
+            .build()
+        client.newCall(subtreeRequest).execute().use { response ->
             if (!response.isSuccessful) return emptyList()
             val body = response.body?.string() ?: return emptyList()
             val tree = JSONObject(body).optJSONArray("tree") ?: return emptyList()
             (0 until tree.length()).mapNotNull { index ->
-                val path = tree.getJSONObject(index).optString("path")
-                if (path.startsWith("Named_Boxarts/") && path.endsWith(".png")) {
-                    val fileName = path.removePrefix("Named_Boxarts/").removeSuffix(".png")
+                val entry = tree.getJSONObject(index)
+                val path = entry.optString("path")
+                if (entry.optString("type") == "blob" && path.endsWith(".png")) {
+                    val fileName = path.removeSuffix(".png")
                     Candidate(fileName, normalize(stripRegionTags(fileName)))
                 } else {
                     null

@@ -124,6 +124,20 @@ class LibrarySelectionModule(reactContext: ReactApplicationContext) :
         promise.resolve(map)
     }
 
+    /**
+     * Full app-data reset (library selection, credentials, catalog cache,
+     * transfer queue, everything) — equivalent to Settings > Apps > Clear
+     * Data. `ActivityManager.clearApplicationUserData()` wipes it and
+     * restarts the app process itself; this call never actually returns to
+     * JS on success (the process is gone), so the promise only ever settles
+     * on failure.
+     */
+    override fun clearAppData(promise: Promise) {
+        val activityManager = reactApplicationContext.getSystemService(android.app.ActivityManager::class.java)
+        val cleared = activityManager?.clearApplicationUserData() ?: false
+        if (!cleared) promise.resolve(false)
+    }
+
     private fun classifySource(uri: Uri): String {
         val authority = uri.authority ?: return "unknown"
         val docId = uri.lastPathSegment ?: ""

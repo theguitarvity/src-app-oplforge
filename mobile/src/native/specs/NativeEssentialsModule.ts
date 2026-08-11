@@ -10,8 +10,9 @@ import { TurboModuleRegistry } from 'react-native'
 export interface Spec extends TurboModule {
   listCatalog(query: Object): Promise<Object>
   refreshCatalog(): Promise<Object>
-  createSmartFillPlan(targetBytes: number): Promise<Object>
+  createSmartFillPlan(targetBytes: number, mode: string): Promise<Object>
   confirmAndEnqueue(items: Object[], legalConfirmationText: string): Promise<Object>
+  getAvailableSpace(): Promise<Object>
 }
 /* eslint-enable @typescript-eslint/no-wrapper-object-types */
 

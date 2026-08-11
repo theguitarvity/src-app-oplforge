@@ -41,7 +41,7 @@ class SmbConnectionState {
     var authenticated = false
     var tid: Int = 0
     // Per-connection NTLMv1 challenge, sent in the NEGOTIATE response and
-    // verified against in SESSION_SETUP_ANDX — a real PS2 OPL client always
+    // verified against in TREE_CONNECT_ANDX — a real PS2 OPL client always
     // hashes this into its 24-byte password response, never plaintext.
     val challenge: ByteArray = NtlmV1.randomChallenge()
     private var nextFid = 1
@@ -87,8 +87,10 @@ class CommandHandlers(
         SmbCommand.TREE_CONNECT_ANDX -> treeConnect(frame, state)
         SmbCommand.TREE_DISCONNECT -> FrameCodec.response(frame, NtStatus.SUCCESS)
         SmbCommand.LOGOFF_ANDX -> { state.closeAll(); FrameCodec.response(frame, NtStatus.SUCCESS) }
+        SmbCommand.ECHO -> echo(frame)
         SmbCommand.CHECK_DIRECTORY -> checkDirectory(frame)
         SmbCommand.NT_CREATE_ANDX -> ntCreate(frame, state)
+        SmbCommand.OPEN_ANDX -> openAndx(frame, state)
         SmbCommand.READ_ANDX -> readAndx(frame, state)
         SmbCommand.WRITE_ANDX -> writeAndx(frame, state)
         SmbCommand.CLOSE -> closeFile(frame, state)
@@ -101,7 +103,7 @@ class CommandHandlers(
      * mirrors desktop's `command-handlers.ts:handleNegotiate` layout exactly.
      * SecurityMode advertises real NTLMv1 challenge/response (bit0 user-level
      * + bit1 challenge/response): a real PS2 OPL client always hashes the
-     * challenge below into its SESSION_SETUP_ANDX password, never plaintext.
+     * challenge below into its TREE_CONNECT_ANDX password, never plaintext.
      * Was previously cramming a placeholder challenge into `params` itself
      * (wrong section — the wire format expects it in the trailing byte-count
      * data, after the fixed 34-byte word block) with EncryptionKeyLength
@@ -129,43 +131,88 @@ class CommandHandlers(
         return FrameCodec.response(frame, NtStatus.SUCCESS, params = params.array(), data = data)
     }
 
+    /**
+     * Share-level security (MS-CIFS 3.1.1): a real PS2 OPL client never puts
+     * real credentials here — it sends a dummy/empty SESSION_SETUP_ANDX and
+     * puts the actual share password on TREE_CONNECT_ANDX instead. Trying to
+     * authenticate at this layer (as a prior version of this file did)
+     * rejects every real PS2 before it ever reaches TREE_CONNECT_ANDX —
+     * mirrors desktop's `command-handlers.ts:handleSessionSetup`, which
+     * learned this the same way (STATUS_LOGON_FAILURE on every real
+     * connection despite a correct NTLMv1 implementation).
+     */
     private fun sessionSetup(frame: SmbFrame, state: SmbConnectionState): SmbFrame {
-        val passwordLen = passwordLength(frame.params)
-        if (passwordLen < 0 || passwordLen > frame.data.size) return FrameCodec.response(frame, NtStatus.LOGON_FAILURE)
-        val passwordBytes = frame.data.copyOfRange(0, passwordLen)
-        // AccountName/PrimaryDomain/NativeOS/NativeLanMan OEM strings follow the password block —
-        // the account name is the first non-empty one (MS-CIFS 2.2.4.53.1). Previously this parsed
-        // the *entire* frame.data (including the opaque password bytes) as OEM text from offset 0,
-        // which could misread the username whenever those bytes happened to split oddly on NUL.
-        val rest = OEM.decode(ByteBuffer.wrap(frame.data, passwordLen, frame.data.size - passwordLen)).toString()
-        val username = rest.split('\u0000').firstOrNull { it.isNotBlank() } ?:  ""
-
-        val valid = if (passwordLen == 24) {
-            credentialStore.verifyNtlmV1(username, state.challenge, passwordBytes)
-        } else {
-            credentialStore.verify(username, OEM.decode(ByteBuffer.wrap(passwordBytes)).toString().stripTrailingNul())
-        }
-        if (!valid) return FrameCodec.response(frame, NtStatus.LOGON_FAILURE)
-
         state.authenticated = true
-        return FrameCodec.response(frame, NtStatus.SUCCESS)
+        val params = ByteBuffer.allocate(6).order(ByteOrder.LITTLE_ENDIAN).apply {
+            put(0, 0xFF.toByte()) // AndXCommand: no chained response
+            put(1, 0) // AndXReserved
+            putShort(2, 0) // AndXOffset
+            putShort(4, 0) // Action: not a guest login
+        }.array()
+        val nativeOs = OEM.encode("OPL Forge\u0000")
+        val nativeLanMan = OEM.encode("OPL Forge Network Share\u0000")
+        val data = ByteArray(nativeOs.remaining() + nativeLanMan.remaining())
+        val nativeOsLen = nativeOs.remaining()
+        nativeOs.get(data, 0, nativeOsLen)
+        nativeLanMan.get(data, nativeOsLen, nativeLanMan.remaining())
+        return FrameCodec.response(frame, NtStatus.SUCCESS, params = params, data = data)
     }
 
-    private fun passwordLength(params: ByteArray): Int {
-        if (params.size < 30) return -1
-        return ByteBuffer.wrap(params).order(ByteOrder.LITTLE_ENDIAN).getShort(14).toInt() and 0xFFFF
-    }
-
+    /**
+     * The real authentication point for share-level security: OPL puts the
+     * share password (plaintext or a 24-byte NTLMv1 response against the
+     * challenge issued in NEGOTIATE) here, not in SESSION_SETUP_ANDX. No
+     * username is involved at this layer (mirrors desktop's `connectTree`).
+     */
     private fun treeConnect(frame: SmbFrame, state: SmbConnectionState): SmbFrame {
         if (!state.authenticated) return FrameCodec.response(frame, NtStatus.ACCESS_DENIED)
-        val path = OEM.decode(ByteBuffer.wrap(frame.data)).toString().stripTrailingNul()
+        if (frame.params.size < 8) return FrameCodec.response(frame, NtStatus.LOGON_FAILURE)
+        val passwordLen = ByteBuffer.wrap(frame.params).order(ByteOrder.LITTLE_ENDIAN).getShort(6).toInt() and 0xFFFF
+        if (passwordLen > frame.data.size) return FrameCodec.response(frame, NtStatus.LOGON_FAILURE)
+        val passwordBytes = frame.data.copyOfRange(0, passwordLen)
+
+        // Path is NUL-terminated and is followed by a second OEM string, Service
+        // (real clients send "?????" here to mean "any resource type") — decoding
+        // the whole remainder as one string and only trimming the *trailing* NUL
+        // (as a prior version of this did) folds Service into the parsed share
+        // name whenever Service is non-empty, so it never matches. Stop at the
+        // first NUL instead.
+        var pathEnd = passwordLen
+        while (pathEnd < frame.data.size && frame.data[pathEnd] != 0.toByte()) pathEnd++
+        val path = OEM.decode(ByteBuffer.wrap(frame.data, passwordLen, pathEnd - passwordLen)).toString()
         val requestedShare = path.substringAfterLast('\\').trim()
         if (!requestedShare.equals(shareName, ignoreCase = true)) {
             return FrameCodec.response(frame, NtStatus.OBJECT_NAME_NOT_FOUND)
         }
+
+        val valid = if (passwordLen == 24) {
+            credentialStore.verifyShareNtlmV1(state.challenge, passwordBytes)
+        } else {
+            credentialStore.verifySharePassword(OEM.decode(ByteBuffer.wrap(passwordBytes)).toString().stripTrailingNul())
+        }
+        if (!valid) return FrameCodec.response(frame, NtStatus.LOGON_FAILURE)
+
         state.tid = (state.tid.takeIf { it != 0 } ?: 1)
         val response = FrameCodec.response(frame, NtStatus.SUCCESS)
         return response.copy(tid = state.tid)
+    }
+
+    /**
+     * SMB_COM_ECHO (0x2B) — a transport keepalive/probe, not scoped to any
+     * session. A real PS2 OPL client sends this with UID 0 right when
+     * entering the network menu, before SESSION_SETUP_ANDX/TREE_CONNECT_ANDX
+     * — before this handler existed it fell through to NOT_SUPPORTED, which
+     * OPL surfaced as "network startup error" (301/302-family). Desktop had
+     * the identical gap (`command-handlers.ts:handleEcho`); this mirrors it.
+     */
+    private fun echo(frame: SmbFrame): SmbFrame {
+        val sequence = if (frame.params.size >= 2) {
+            ByteBuffer.wrap(frame.params).order(ByteOrder.LITTLE_ENDIAN).getShort(0)
+        } else {
+            1.toShort()
+        }
+        val params = ByteBuffer.allocate(2).order(ByteOrder.LITTLE_ENDIAN).apply { putShort(0, sequence) }.array()
+        return FrameCodec.response(frame, NtStatus.SUCCESS, params = params, data = frame.data)
     }
 
     private fun checkDirectory(frame: SmbFrame): SmbFrame {
@@ -208,6 +255,43 @@ class CommandHandlers(
         buf.putShort(0)
         buf.put(if (target.isDirectory) 1 else 0)
         return FrameCodec.response(frame, NtStatus.SUCCESS, params = buf.array())
+    }
+
+    /**
+     * SMB_COM_OPEN_ANDX (0x2D) — an older, simpler open call some real PS2
+     * OPL clients use instead of (or alongside) NT_CREATE_ANDX. Mirrors
+     * desktop's `command-handlers.ts:handleOpenAndx`, which this file was
+     * missing entirely (falling through to NOT_SUPPORTED) — a real client
+     * that opens a game file this way would never get past that point.
+     */
+    private fun openAndx(frame: SmbFrame, state: SmbConnectionState): SmbFrame {
+        if (state.tid == 0) return FrameCodec.response(frame, NtStatus.ACCESS_DENIED)
+        // Some clients prefix the OEM filename with an 0x04 SMB_STRING buffer-format byte.
+        val nameData = if (frame.data.isNotEmpty() && frame.data[0] == 0x04.toByte()) {
+            frame.data.copyOfRange(1, frame.data.size)
+        } else {
+            frame.data
+        }
+        val rawPath = OEM.decode(ByteBuffer.wrap(nameData)).toString().stripTrailingNul()
+        val target = PathConfinement.resolve(tree, rawPath)
+        if (target == null || target.isDirectory) return FrameCodec.response(frame, NtStatus.OBJECT_NAME_NOT_FOUND)
+
+        val pfd = try {
+            context.contentResolver.openFileDescriptor(target.uri, "r")
+        } catch (e: Exception) {
+            null
+        }
+        val fid = state.openFile(target, pfd, false)
+
+        val params = ByteBuffer.allocate(30).order(ByteOrder.LITTLE_ENDIAN).apply {
+            put(0, 0xFF.toByte()) // AndXCommand: no chained response
+            putShort(4, fid.toShort()) // Fid
+            putShort(6, 0x0080) // FileAttributes: NORMAL
+            putInt(8, (target.lastModified() / 1000).toInt()) // LastWriteTime
+            putInt(12, target.length().toInt()) // FileSize (truncated to 32 bits, matches desktop)
+            putShort(16, 0x0040) // GrantedAccess: read-only open mode
+        }.array()
+        return FrameCodec.response(frame, NtStatus.SUCCESS, params = params)
     }
 
     private fun readAndx(frame: SmbFrame, state: SmbConnectionState): SmbFrame {

@@ -106,6 +106,21 @@ export async function getConnectionInstructions(): Promise<ConnectionTutorialSte
   }
 }
 
+export interface RecentConnection {
+  username: string
+  shareName: string
+  lastUsedAt: string
+}
+
+/** Up to 5 most-recently-used connections (username + share name only, never the password). */
+export async function getRecentConnections(): Promise<RecentConnection[]> {
+  try {
+    return (await NativeSharingModule.getRecentConnections()) as RecentConnection[]
+  } catch (error) {
+    throw toSharingModuleError(error)
+  }
+}
+
 export interface SharingSessionEventPayload {
   kind: string
   session: SharingSession

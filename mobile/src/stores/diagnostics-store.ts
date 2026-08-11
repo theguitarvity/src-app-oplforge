@@ -8,6 +8,7 @@ interface DiagnosticsStoreState {
   errorMessage: string | undefined
   loadLatest: () => Promise<void>
   runDiagnostics: () => Promise<void>
+  prepareDevice: () => Promise<void>
 }
 
 export const useDiagnosticsStore = create<DiagnosticsStoreState>((set) => ({
@@ -31,6 +32,19 @@ export const useDiagnosticsStore = create<DiagnosticsStoreState>((set) => ({
     set({ status: 'loading', errorMessage: undefined })
     try {
       const report = await DiagnosticsModule.runDiagnostics()
+      set({ report, status: 'idle' })
+    } catch (error) {
+      set({
+        status: 'error',
+        errorMessage: error instanceof DiagnosticsModule.DiagnosticsModuleError ? error.message : String(error)
+      })
+    }
+  },
+
+  prepareDevice: async () => {
+    set({ status: 'loading', errorMessage: undefined })
+    try {
+      const report = await DiagnosticsModule.prepareDeviceStructure()
       set({ report, status: 'idle' })
     } catch (error) {
       set({

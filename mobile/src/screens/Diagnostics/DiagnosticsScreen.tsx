@@ -34,7 +34,7 @@ function formatBytes(bytes?: number): string {
  * readiness with the same four-state model as desktop (research.md R8).
  */
 export function DiagnosticsScreen() {
-  const { report, status, errorMessage, loadLatest, runDiagnostics } = useDiagnosticsStore()
+  const { report, status, errorMessage, loadLatest, runDiagnostics, prepareDevice } = useDiagnosticsStore()
 
   useEffect(() => {
     void loadLatest()
@@ -59,9 +59,18 @@ export function DiagnosticsScreen() {
           {report.missingFolders.length === 0 ? (
             <Text style={[styles.body, { color: semanticColor('success') }]}>Todas as pastas presentes</Text>
           ) : (
-            <Text style={[styles.body, { color: semanticColor('warning') }]}>
-              Faltando: {report.missingFolders.join(', ')}
-            </Text>
+            <>
+              <Text style={[styles.body, { color: semanticColor('warning') }]}>
+                Faltando: {report.missingFolders.join(', ')}
+              </Text>
+              <Pressable style={styles.prepareButton} onPress={() => void prepareDevice()} disabled={status === 'loading'}>
+                {status === 'loading' ? (
+                  <ActivityIndicator color={colors.primaryForeground} />
+                ) : (
+                  <Text style={styles.prepareButtonText}>Preparar dispositivo</Text>
+                )}
+              </Pressable>
+            </>
           )}
 
           <Text style={styles.timestamp}>Última verificação: {new Date(report.checkedAt).toLocaleString()}</Text>
@@ -103,6 +112,15 @@ const styles = StyleSheet.create({
   label: { color: colors.mutedForeground, fontSize: typography.caption.fontSize, marginTop: spacing.xs },
   body: { color: colors.foreground, fontSize: typography.body.fontSize },
   timestamp: { color: colors.mutedForeground, fontSize: typography.caption.fontSize, marginTop: spacing.sm },
+  prepareButton: {
+    alignSelf: 'flex-start',
+    backgroundColor: colors.primary,
+    borderRadius: radius.md,
+    paddingVertical: spacing.xs,
+    paddingHorizontal: spacing.md,
+    marginTop: spacing.xs
+  },
+  prepareButtonText: { color: colors.primaryForeground, fontSize: typography.caption.fontSize, fontWeight: '600' },
   primaryButton: {
     backgroundColor: colors.primary,
     borderRadius: radius.md,

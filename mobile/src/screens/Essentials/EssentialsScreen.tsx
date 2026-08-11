@@ -27,8 +27,8 @@ export function EssentialsScreen() {
     <View style={styles.container}>
       <SegmentedTabs options={TABS} value={tab} onChange={setTab} />
       <View style={styles.content}>
-        {tab === 'catalog' ? <EssentialsCatalogTab /> : null}
-        {tab === 'smartfill' ? <SmartFillSheet /> : null}
+        {tab === 'catalog' ? <EssentialsCatalogTab onDownloadStarted={() => setTab('downloads')} /> : null}
+        {tab === 'smartfill' ? <SmartFillSheet onDownloadStarted={() => setTab('downloads')} /> : null}
         {tab === 'downloads' ? <TransfersScreen /> : null}
       </View>
     </View>

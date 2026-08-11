@@ -116,6 +116,7 @@ class SharingSessionModule(reactContext: ReactApplicationContext) :
                     HistoryStore.RESULT_SUCCESS,
                     "Compartilhamento iniciado."
                 )
+                credentialStore.getUsername()?.let { credentialStore.recordRecentConnection(it, this@SharingSessionModule.shareName) }
                 // boundAddress/boundPort aren't set yet here — startForegroundService()
                 // is async. onServerBound() emits the follow-up event once real.
                 promise.resolve(sessionToMap())
@@ -166,6 +167,18 @@ class SharingSessionModule(reactContext: ReactApplicationContext) :
         step("Nome do compartilhamento", shareName)
         step("Usuário", credentialStore.getUsername() ?: "")
         promise.resolve(steps)
+    }
+
+    override fun getRecentConnections(promise: Promise) {
+        val array = Arguments.createArray()
+        credentialStore.getRecentConnections().forEach { entry ->
+            array.pushMap(Arguments.createMap().apply {
+                putString("username", entry.username)
+                putString("shareName", entry.shareName)
+                putString("lastUsedAt", entry.lastUsedAt)
+            })
+        }
+        promise.resolve(array)
     }
 
     override fun addListener(eventName: String) = Unit

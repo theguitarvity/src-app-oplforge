@@ -15,8 +15,11 @@ import com.oplforge.mobile.shared.ErrorMapping
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeoutOrNull
 import java.time.Instant
 import java.util.UUID
+
+private const val DIAGNOSTICS_TIMEOUT_MS = 20_000L
 
 /**
  * TurboModule for the Diagnostics screen (spec 008 FR-010). See
@@ -41,40 +44,46 @@ class DiagnosticsModule(reactContext: ReactApplicationContext) :
             return
         }
         scope.launch {
-            val tree = SafDocumentTree(reactApplicationContext, android.net.Uri.parse(stored.treeUri))
-            val missingFolders = requiredFolders.filter { tree.findFolder(it) == null }
-            val freeBytes = tree.availableBytes()
+            val result = withTimeoutOrNull(DIAGNOSTICS_TIMEOUT_MS) {
+                val tree = SafDocumentTree(reactApplicationContext, android.net.Uri.parse(stored.treeUri))
+                val missingFolders = requiredFolders.filter { tree.findFolder(it) == null }
+                val freeBytes = tree.availableBytes()
 
-            var snapshot = catalogStore.getLatestCompleted()
-            if (snapshot == null) {
-                val started = catalogStore.startSnapshot()
-                val result = CatalogScanner(tree).scan(
-                    snapshotId = started.id,
-                    onProgress = {},
-                    isCancelled = { false }
+                var snapshot = catalogStore.getLatestCompleted()
+                if (snapshot == null) {
+                    val started = catalogStore.startSnapshot()
+                    val scanResult = CatalogScanner(tree).scan(
+                        snapshotId = started.id,
+                        onProgress = {},
+                        isCancelled = { false }
+                    )
+                    catalogStore.appendEntries(scanResult.entries)
+                    catalogStore.completeSnapshot(started, scanResult.countsByType, scanResult.issueCount)
+                    snapshot = catalogStore.getLatestCompleted()
+                }
+
+                val readiness = ReadinessClassifier.classify(
+                    missingFolders = missingFolders,
+                    freeBytes = freeBytes,
+                    catalogIssueCount = snapshot?.issueCount ?: 0,
+                    libraryAccessValid = stored.accessValid
                 )
-                catalogStore.appendEntries(result.entries)
-                catalogStore.completeSnapshot(started, result.countsByType, result.issueCount)
-                snapshot = catalogStore.getLatestCompleted()
+
+                DiagnosticsReportEntity(
+                    id = UUID.randomUUID().toString(),
+                    missingFolders = missingFolders,
+                    freeBytes = freeBytes,
+                    catalogSnapshotId = snapshot?.id ?: "",
+                    readiness = readiness,
+                    checkedAt = Instant.now().toString()
+                )
             }
-
-            val readiness = ReadinessClassifier.classify(
-                missingFolders = missingFolders,
-                freeBytes = freeBytes,
-                catalogIssueCount = snapshot?.issueCount ?: 0,
-                libraryAccessValid = stored.accessValid
-            )
-
-            val report = DiagnosticsReportEntity(
-                id = UUID.randomUUID().toString(),
-                missingFolders = missingFolders,
-                freeBytes = freeBytes,
-                catalogSnapshotId = snapshot?.id ?: "",
-                readiness = readiness,
-                checkedAt = Instant.now().toString()
-            )
-            db.diagnosticsReportDao().insert(report)
-            promise.resolve(reportToMap(report))
+            if (result == null) {
+                ErrorMapping.reject(promise, AppError("DIAGNOSTICS_TIMEOUT", "O diagnóstico demorou demais e foi cancelado. Tente novamente."))
+                return@launch
+            }
+            db.diagnosticsReportDao().insert(result)
+            promise.resolve(reportToMap(result))
         }
     }
 
@@ -82,6 +91,26 @@ class DiagnosticsModule(reactContext: ReactApplicationContext) :
         scope.launch {
             val report = db.diagnosticsReportDao().getLatest()
             promise.resolve(report?.let { reportToMap(it) })
+        }
+    }
+
+    /** Creates any of the 7 mandatory OPL folders that don't exist yet, then re-runs diagnostics. */
+    override fun prepareDeviceStructure(promise: Promise) {
+        val stored = libraryPreferences.load()
+        if (stored == null) {
+            ErrorMapping.reject(promise, AppError("NO_LIBRARY_SELECTED", "Nenhuma biblioteca foi selecionada."))
+            return
+        }
+        scope.launch {
+            try {
+                val tree = SafDocumentTree(reactApplicationContext, android.net.Uri.parse(stored.treeUri))
+                requiredFolders.forEach { name ->
+                    if (tree.findFolder(name) == null) tree.root?.createDirectory(name)
+                }
+                runDiagnostics(promise)
+            } catch (e: Exception) {
+                ErrorMapping.rejectUnexpected(promise, e)
+            }
         }
     }
 

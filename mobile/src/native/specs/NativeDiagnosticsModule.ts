@@ -10,6 +10,7 @@ import { TurboModuleRegistry } from 'react-native'
 export interface Spec extends TurboModule {
   runDiagnostics(): Promise<Object>
   getLatestDiagnosticsReport(): Promise<Object>
+  prepareDeviceStructure(): Promise<Object>
 }
 /* eslint-enable @typescript-eslint/no-wrapper-object-types */
 

@@ -11,6 +11,7 @@ export interface Spec extends TurboModule {
   selectLibrary(): Promise<Object>
   getActiveLibrary(): Promise<Object>
   revalidateAccess(): Promise<Object>
+  clearAppData(): Promise<boolean>
 }
 /* eslint-enable @typescript-eslint/no-wrapper-object-types */
 

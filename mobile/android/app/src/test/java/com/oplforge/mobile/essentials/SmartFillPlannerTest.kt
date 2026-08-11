@@ -10,15 +10,32 @@ class SmartFillPlannerTest {
         CatalogListingCacheEntity(id, title, "$title.iso", "https://example.test/$id", sizeBytes, "ps2-dvd", tier, accessible, "now")
 
     @Test
-    fun `selects S and A tier items that fit within the budget`() {
+    fun `rating mode orders selection by tier, best first`() {
         val candidates = listOf(
-            listing("1", "S", 4_000_000_000L),
-            listing("2", "A", 3_000_000_000L),
-            listing("3", "C", 1_000_000_000L) // excluded — below A tier
+            listing("1", "C", 1_000_000_000L),
+            listing("2", "S", 1_000_000_000L),
+            listing("3", "A", 1_000_000_000L)
         )
-        val plan = SmartFillPlanner.plan(candidates, availableBytes = 10_000_000_000L, targetBytes = 10_000_000_000L)
-        assertEquals(2, plan.selectedItems.size)
+        val plan = SmartFillPlanner.plan(candidates, availableBytes = 2_000_000_000L, targetBytes = 2_000_000_000L, mode = SmartFillMode.RATING)
+        assertEquals(listOf("2", "3"), plan.selectedItems.map { it.id })
         assertTrue(plan.warnings.isEmpty())
+    }
+
+    @Test
+    fun `rating mode still fills remaining budget with lower tiers`() {
+        val candidates = listOf(
+            listing("1", "S", 1_000_000_000L),
+            listing("2", "C", 1_000_000_000L)
+        )
+        val plan = SmartFillPlanner.plan(candidates, availableBytes = 5_000_000_000L, targetBytes = 5_000_000_000L, mode = SmartFillMode.RATING)
+        assertEquals(2, plan.selectedItems.size)
+    }
+
+    @Test
+    fun `random mode can select every eligible item regardless of tier`() {
+        val candidates = listOf(listing("1", "C", 1_000_000_000L))
+        val plan = SmartFillPlanner.plan(candidates, availableBytes = 10_000_000_000L, targetBytes = 10_000_000_000L, mode = SmartFillMode.RANDOM)
+        assertEquals(1, plan.selectedItems.size)
     }
 
     @Test

@@ -73,7 +73,25 @@ class EssentialsModule(reactContext: com.facebook.react.bridge.ReactApplicationC
         }
     }
 
-    override fun createSmartFillPlan(targetBytes: Double, promise: Promise) {
+    /** Available space on the selected device, ahead of building a plan — powers step 1 of the Smart Fill wizard. */
+    override fun getAvailableSpace(promise: Promise) {
+        val stored = libraryPreferences.load()
+        if (stored == null) {
+            ErrorMapping.reject(promise, AppError("NO_LIBRARY_SELECTED", "Nenhuma biblioteca foi selecionada."))
+            return
+        }
+        scope.launch {
+            try {
+                val tree = SafDocumentTree(reactApplicationContext, android.net.Uri.parse(stored.treeUri))
+                val available = tree.availableBytes() ?: 0L
+                promise.resolve(Arguments.createMap().apply { putDouble("availableBytes", available.toDouble()) })
+            } catch (e: Exception) {
+                ErrorMapping.rejectUnexpected(promise, e)
+            }
+        }
+    }
+
+    override fun createSmartFillPlan(targetBytes: Double, mode: String, promise: Promise) {
         val stored = libraryPreferences.load()
         if (stored == null) {
             ErrorMapping.reject(promise, AppError("NO_LIBRARY_SELECTED", "Nenhuma biblioteca foi selecionada."))
@@ -83,12 +101,13 @@ class EssentialsModule(reactContext: com.facebook.react.bridge.ReactApplicationC
             ErrorMapping.reject(promise, AppError("LIBRARY_ACCESS_INVALID", "O acesso à biblioteca não é mais válido."))
             return
         }
+        val fillMode = if (mode == "random") SmartFillMode.RANDOM else SmartFillMode.RATING
         scope.launch {
             try {
                 val tree = SafDocumentTree(reactApplicationContext, android.net.Uri.parse(stored.treeUri))
                 val available = tree.availableBytes() ?: 0L
                 val candidates = client.getListings()
-                val plan = SmartFillPlanner.plan(candidates, available, targetBytes.toLong())
+                val plan = SmartFillPlanner.plan(candidates, available, targetBytes.toLong(), fillMode)
                 val map = Arguments.createMap().apply {
                     putDouble("availableBytes", plan.availableBytes.toDouble())
                     val items = Arguments.createArray()

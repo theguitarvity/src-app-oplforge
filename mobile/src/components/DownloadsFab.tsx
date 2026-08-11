@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { Pressable, StyleSheet, Text, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import MaterialIcons from '@expo/vector-icons/MaterialIcons'
@@ -11,10 +12,17 @@ import { navigationRef } from '../app/navigationRef'
  * something to show (active or failed transfers), badge count + average
  * progress bar, one tap jumps straight to the Transfers queue. Mounted once
  * in App.tsx above the navigator so it persists across every screen.
+ *
+ * Dismissible: it sits over scrollable content (e.g. Home's quick-access
+ * grid) on some screens, so a minimize (X) button lets it get out of the
+ * way. Dismissal is keyed to the current set of item ids — it reappears the
+ * moment that set changes (a new download starts, one finishes/fails),
+ * rather than staying hidden forever after one dismissal.
  */
 export function DownloadsFab() {
   const items = useTransferStore((state) => state.items)
   const insets = useSafeAreaInsets()
+  const [dismissedKey, setDismissedKey] = useState<string | undefined>(undefined)
 
   const activeDownloads = items.filter((item) => item.state === 'queued' || item.state === 'running')
   const failedDownloads = items.filter((item) => item.state === 'failed')
@@ -27,7 +35,10 @@ export function DownloadsFab() {
       )
     : 0
 
-  if (activeDownloads.length === 0 && failedDownloads.length === 0) return null
+  const visibleIds = [...activeDownloads, ...failedDownloads].map((item) => item.id)
+  const currentKey = visibleIds.join(',')
+
+  if (visibleIds.length === 0 || currentKey === dismissedKey) return null
 
   const handlePress = () => {
     if (navigationRef.isReady()) navigationRef.navigate('Transfers')
@@ -55,6 +66,9 @@ export function DownloadsFab() {
           <View style={[styles.progressFill, { width: `${averageProgress}%` }]} />
         </View>
       ) : null}
+      <Pressable style={styles.dismissButton} onPress={() => setDismissedKey(currentKey)} hitSlop={8}>
+        <MaterialIcons name="close" size={16} color={colors.mutedForeground} />
+      </Pressable>
     </Pressable>
   )
 }
@@ -95,6 +109,13 @@ const styles = StyleSheet.create({
     height: 9,
     borderRadius: 999,
     backgroundColor: colors.fuchsia
+  },
+  dismissButton: {
+    width: 24,
+    height: 24,
+    borderRadius: 999,
+    alignItems: 'center',
+    justifyContent: 'center'
   },
   textWrap: { flex: 1, minWidth: 0 },
   title: { color: colors.foreground, fontSize: typography.caption.fontSize, fontWeight: '700' },

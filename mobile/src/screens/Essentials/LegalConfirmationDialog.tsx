@@ -1,4 +1,5 @@
 import { Modal, Pressable, StyleSheet, Text, View } from 'react-native'
+import MaterialIcons from '@expo/vector-icons/MaterialIcons'
 import { colors, radius, spacing, typography } from '../../design-system/tokens'
 import { LEGAL_CONFIRMATION_TEXT } from '../../native/EssentialsModule'
 
@@ -22,7 +23,10 @@ export function LegalConfirmationDialog({ visible, itemTitle, onCancel, onConfir
               <Text style={styles.cancelButtonText}>Cancelar</Text>
             </Pressable>
             <Pressable style={styles.confirmButton} onPress={onConfirm}>
-              <Text style={styles.confirmButtonText}>Confirmo e quero baixar</Text>
+              <MaterialIcons name="check-circle" size={16} color={colors.primaryForeground} />
+              <Text style={styles.confirmButtonText} numberOfLines={2}>
+                Confirmo e quero baixar
+              </Text>
             </Pressable>
           </View>
         </View>
@@ -37,8 +41,18 @@ const styles = StyleSheet.create({
   title: { color: colors.foreground, fontSize: typography.subtitle.fontSize, fontWeight: '600' },
   legalText: { color: colors.mutedForeground, fontSize: typography.body.fontSize, lineHeight: 20 },
   actions: { flexDirection: 'row', gap: spacing.sm, marginTop: spacing.sm },
-  cancelButton: { flex: 1, borderRadius: radius.md, borderWidth: 1, borderColor: colors.border, paddingVertical: spacing.sm, alignItems: 'center' },
-  cancelButtonText: { color: colors.foreground, fontSize: typography.body.fontSize },
-  confirmButton: { flex: 1, borderRadius: radius.md, backgroundColor: colors.primary, paddingVertical: spacing.sm, alignItems: 'center' },
-  confirmButtonText: { color: colors.primaryForeground, fontSize: typography.body.fontSize, fontWeight: '600' }
+  cancelButton: { flex: 1, borderRadius: radius.md, borderWidth: 1, borderColor: colors.border, paddingVertical: spacing.sm, alignItems: 'center', justifyContent: 'center' },
+  cancelButtonText: { color: colors.foreground, fontSize: typography.body.fontSize, textAlign: 'center' },
+  confirmButton: {
+    flex: 1,
+    flexDirection: 'row',
+    gap: spacing.xs,
+    borderRadius: radius.md,
+    backgroundColor: colors.primary,
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.xs,
+    alignItems: 'center',
+    justifyContent: 'center'
+  },
+  confirmButtonText: { flexShrink: 1, color: colors.primaryForeground, fontSize: typography.caption.fontSize, fontWeight: '600', textAlign: 'center' }
 })

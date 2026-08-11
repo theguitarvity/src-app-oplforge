@@ -14,6 +14,7 @@ export interface Spec extends TurboModule {
   startSharing(shareName: string): Promise<Object>
   stopSharing(): Promise<Object>
   getConnectionInstructions(): Promise<Object>
+  getRecentConnections(): Promise<Object[]>
   addListener(eventName: string): void
   removeListeners(count: number): void
 }

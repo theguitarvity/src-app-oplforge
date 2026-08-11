@@ -1,12 +1,26 @@
 import { create } from 'zustand'
 import type { SharingSession } from '../types'
 import * as SharingModule from '../native/SharingModule'
+import type { RecentConnection } from '../native/SharingModule'
 import { registerBootstrapStep } from '../app/bootstrap'
+
+export interface SharingLogEntry {
+  id: number
+  kind: string
+  message: string
+  timestamp: string
+}
+
+const MAX_LOG_ENTRIES = 100
 
 interface SharingStoreState {
   session: SharingSession | undefined
   status: 'idle' | 'busy' | 'error'
   errorMessage: string | undefined
+  logs: SharingLogEntry[]
+  clearLogs: () => void
+  recentConnections: RecentConnection[]
+  loadRecentConnections: () => Promise<void>
   loadSession: () => Promise<void>
   saveCredentials: (username: string, password: string) => Promise<void>
   acknowledgeWriteAccess: () => Promise<void>
@@ -20,6 +34,19 @@ export const useSharingStore = create<SharingStoreState>((set) => ({
   session: undefined,
   status: 'idle',
   errorMessage: undefined,
+  logs: [],
+  recentConnections: [],
+
+  clearLogs: () => set({ logs: [] }),
+
+  loadRecentConnections: async () => {
+    try {
+      const recentConnections = await SharingModule.getRecentConnections()
+      set({ recentConnections })
+    } catch {
+      // Best-effort — recent connections are a convenience, never block the screen on this.
+    }
+  },
 
   loadSession: async () => {
     try {
@@ -77,6 +104,7 @@ export const useSharingStore = create<SharingStoreState>((set) => ({
       await SharingModule.acknowledgeWriteAccess()
       const session = await SharingModule.startSharing(shareName || 'oplforge')
       set({ session, status: 'idle' })
+      void useSharingStore.getState().loadRecentConnections()
     } catch (error) {
       set({
         status: 'error',
@@ -99,9 +127,11 @@ export const useSharingStore = create<SharingStoreState>((set) => ({
 // Live state (start/stop/client connect-disconnect/write-conflict) — a
 // single subscription for the app's lifetime, registered once (FR-024).
 let unsubscribeFromEvents: (() => void) | undefined
+let nextLogId = 0
 if (!unsubscribeFromEvents) {
-  unsubscribeFromEvents = SharingModule.onSharingSessionEvent(({ session }) => {
-    useSharingStore.setState({ session })
+  unsubscribeFromEvents = SharingModule.onSharingSessionEvent(({ session, kind, message, timestamp }) => {
+    const entry: SharingLogEntry = { id: nextLogId++, kind, message, timestamp }
+    useSharingStore.setState((state) => ({ session, logs: [entry, ...state.logs].slice(0, MAX_LOG_ENTRIES) }))
   })
 }
 

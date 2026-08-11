@@ -84,3 +84,18 @@ export async function revalidateAccess(): Promise<LibrarySelection | undefined> 
     throw toLibraryModuleError(error)
   }
 }
+
+/**
+ * Full app-data reset — library selection, credentials, catalog cache,
+ * transfer queue, everything (equivalent to Settings > Apps > Clear Data).
+ * On success the app process is killed and restarted by the OS itself, so
+ * this call never actually resolves true from the caller's perspective —
+ * only a failure to even attempt the wipe resolves `false`.
+ */
+export async function clearAppData(): Promise<boolean> {
+  try {
+    return await NativeLibraryModule.clearAppData()
+  } catch (error) {
+    throw toLibraryModuleError(error)
+  }
+}

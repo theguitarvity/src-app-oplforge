@@ -7,6 +7,8 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Semaphore
+import kotlinx.coroutines.sync.withPermit
 import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -15,7 +17,6 @@ import org.json.JSONObject
 import java.time.Duration
 import java.time.Instant
 import java.util.Base64
-import java.util.concurrent.Semaphore
 
 /**
  * Port of desktop's `InternetArchiveDirectoryProvider` (spec 008 research.md
@@ -59,12 +60,7 @@ class EssentialsCatalogClient(private val db: AppDatabase) {
         val checkedAt = Instant.now().toString()
         files.map { file ->
             async {
-                semaphore.acquire()
-                try {
-                    checkOne(file, checkedAt)
-                } finally {
-                    semaphore.release()
-                }
+                semaphore.withPermit { checkOne(file, checkedAt) }
             }
         }.awaitAll()
     }

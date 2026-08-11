@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import type { CatalogListing, SmartFillPlan } from '../types'
 import * as EssentialsModule from '../native/EssentialsModule'
+import type { SmartFillMode } from '../native/EssentialsModule'
 
 interface EssentialsStoreState {
   items: CatalogListing[]
@@ -9,11 +10,14 @@ interface EssentialsStoreState {
   status: 'idle' | 'loading' | 'error'
   errorMessage: string | undefined
   smartFillPlan: SmartFillPlan | undefined
+  availableBytes: number | undefined
   loadCatalog: () => Promise<void>
   refresh: () => Promise<void>
   setSearch: (search: string) => void
   setTier: (tier: string) => void
-  buildSmartFillPlan: (targetBytes: number) => Promise<void>
+  loadAvailableSpace: () => Promise<number | undefined>
+  buildSmartFillPlan: (targetBytes: number, mode: SmartFillMode) => Promise<void>
+  resetSmartFillPlan: () => void
   confirmAndDownload: (items: CatalogListing[]) => Promise<void>
 }
 
@@ -24,6 +28,7 @@ export const useEssentialsStore = create<EssentialsStoreState>((set, get) => ({
   status: 'idle',
   errorMessage: undefined,
   smartFillPlan: undefined,
+  availableBytes: undefined,
 
   loadCatalog: async () => {
     set({ status: 'loading', errorMessage: undefined })
@@ -61,10 +66,24 @@ export const useEssentialsStore = create<EssentialsStoreState>((set, get) => ({
     void get().loadCatalog()
   },
 
-  buildSmartFillPlan: async (targetBytes) => {
+  loadAvailableSpace: async () => {
+    try {
+      const availableBytes = await EssentialsModule.getAvailableSpace()
+      set({ availableBytes })
+      return availableBytes
+    } catch (error) {
+      set({
+        status: 'error',
+        errorMessage: error instanceof EssentialsModule.EssentialsModuleError ? error.message : String(error)
+      })
+      return undefined
+    }
+  },
+
+  buildSmartFillPlan: async (targetBytes, mode) => {
     set({ status: 'loading', errorMessage: undefined })
     try {
-      const smartFillPlan = await EssentialsModule.createSmartFillPlan(targetBytes)
+      const smartFillPlan = await EssentialsModule.createSmartFillPlan(targetBytes, mode)
       set({ smartFillPlan, status: 'idle' })
     } catch (error) {
       set({
@@ -73,6 +92,8 @@ export const useEssentialsStore = create<EssentialsStoreState>((set, get) => ({
       })
     }
   },
+
+  resetSmartFillPlan: () => set({ smartFillPlan: undefined }),
 
   confirmAndDownload: async (items) => {
     set({ status: 'loading', errorMessage: undefined })
