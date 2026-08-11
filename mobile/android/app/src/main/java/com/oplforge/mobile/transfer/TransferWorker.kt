@@ -42,6 +42,15 @@ class TransferWorker(context: Context, params: WorkerParameters) : CoroutineWork
         dao.update(item.copy(state = TransferState.RUNNING, updatedAt = now()))
 
         val (folderName, fileName) = splitLogicalPath(item.destinationLogicalPath)
+        // SAF's ExternalStorageProvider never overwrites on a displayName
+        // collision — it silently disambiguates with a numeric suffix
+        // instead — so a confirmed overwrite deletes the existing same-name
+        // file first and lets the normal createFile path proceed unchanged,
+        // reusing all of this worker's existing progress/checksum/error
+        // handling instead of a second, parallel truncate-write branch.
+        if (item.overwrite) {
+            tree.findFolder(folderName)?.listFiles()?.firstOrNull { it.name == fileName }?.delete()
+        }
         val destination = tree.createFile(folderName, fileName)
         if (destination == null) {
             fail(item, "Não foi possível criar o arquivo de destino.")

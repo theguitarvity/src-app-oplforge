@@ -11,6 +11,7 @@ const phaseLabel: Record<string, string> = {
   downloaded: 'Download concluído',
   validating: 'Validando imagem',
   planning: 'Preparando instalação',
+  'awaiting-confirmation': 'Título já existe — aguardando confirmação',
   installing: 'Instalando no dispositivo',
   promoting: 'Movendo para a pasta local',
   verifying: 'Verificando',
@@ -59,7 +60,8 @@ export function DownloadPipelineCard({
   onPause,
   onResume,
   onRetry,
-  onCancel
+  onCancel,
+  onResolveCollision
 }: {
   task: DurableDownloadTaskSummary
   pending?: boolean
@@ -67,6 +69,7 @@ export function DownloadPipelineCard({
   onResume?(): void
   onRetry?(): void
   onCancel?(): void
+  onResolveCollision?(action: 'overwrite' | 'cancel'): void
 }) {
   const progress = Math.max(0, Math.min(100, task.overallProgress))
   const transferring = task.phase === 'transferring'
@@ -153,28 +156,60 @@ export function DownloadPipelineCard({
           </p>
         </div>
       ) : null}
-      <div className="mt-4 flex flex-wrap justify-end gap-2">
-        {!['paused', 'ready', 'failed', 'cancelled'].includes(task.phase) && onPause ? (
-          <Button size="sm" variant="ghost" disabled={pending} onClick={onPause}>
-            <Pause className="size-4" /> Pausar
-          </Button>
-        ) : null}
-        {task.phase === 'paused' && onResume ? (
-          <Button size="sm" disabled={pending} onClick={onResume}>
-            <Play className="size-4" /> Retomar
-          </Button>
-        ) : null}
-        {task.phase === 'failed' && task.lastError?.retryable && onRetry ? (
-          <Button size="sm" disabled={pending} onClick={onRetry}>
-            <RotateCcw className="size-4" /> Tentar novamente
-          </Button>
-        ) : null}
-        {!terminal && onCancel ? (
-          <Button size="sm" variant="ghost" disabled={pending} onClick={onCancel}>
-            <X className="size-4" /> Cancelar
-          </Button>
-        ) : null}
-      </div>
+      {task.phase === 'awaiting-confirmation' ? (
+        <div
+          role="alert"
+          className="mt-4 rounded-xl border border-amber-400/25 bg-amber-500/5 p-3 text-sm"
+        >
+          <p className="font-medium text-amber-200">Já existe um título com esse nome</p>
+          <p className="mt-1 text-amber-200/80">
+            "{task.requestedTitle}" já está na biblioteca. Sobrescrever substitui o arquivo
+            existente permanentemente.
+          </p>
+          <div className="mt-3 flex justify-end gap-2">
+            <Button
+              size="sm"
+              variant="ghost"
+              disabled={pending}
+              onClick={() => onResolveCollision?.('cancel')}
+            >
+              Cancelar
+            </Button>
+            <Button
+              size="sm"
+              variant="danger"
+              disabled={pending}
+              onClick={() => onResolveCollision?.('overwrite')}
+            >
+              Sobrescrever
+            </Button>
+          </div>
+        </div>
+      ) : null}
+      {task.phase !== 'awaiting-confirmation' ? (
+        <div className="mt-4 flex flex-wrap justify-end gap-2">
+          {!['paused', 'ready', 'failed', 'cancelled'].includes(task.phase) && onPause ? (
+            <Button size="sm" variant="ghost" disabled={pending} onClick={onPause}>
+              <Pause className="size-4" /> Pausar
+            </Button>
+          ) : null}
+          {task.phase === 'paused' && onResume ? (
+            <Button size="sm" disabled={pending} onClick={onResume}>
+              <Play className="size-4" /> Retomar
+            </Button>
+          ) : null}
+          {task.phase === 'failed' && task.lastError?.retryable && onRetry ? (
+            <Button size="sm" disabled={pending} onClick={onRetry}>
+              <RotateCcw className="size-4" /> Tentar novamente
+            </Button>
+          ) : null}
+          {!terminal && onCancel ? (
+            <Button size="sm" variant="ghost" disabled={pending} onClick={onCancel}>
+              <X className="size-4" /> Cancelar
+            </Button>
+          ) : null}
+        </div>
+      ) : null}
     </article>
   )
 }

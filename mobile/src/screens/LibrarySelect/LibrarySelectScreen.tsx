@@ -140,6 +140,8 @@ function sourceKindLabel(kind: string): string {
       return 'Cartão SD'
     case 'usb-otg':
       return 'Dispositivo USB'
+    case 'external-storage':
+      return 'Armazenamento externo'
     default:
       return 'Desconhecida'
   }

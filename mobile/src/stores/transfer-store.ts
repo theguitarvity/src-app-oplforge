@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import type { TransferItem } from '../types'
 import * as TransferModule from '../native/TransferModule'
+import type { EnqueueImportResult } from '../native/TransferModule'
 import { registerBootstrapStep } from '../app/bootstrap'
 
 interface TransferStoreState {
@@ -8,7 +9,7 @@ interface TransferStoreState {
   status: 'idle' | 'busy' | 'error'
   errorMessage: string | undefined
   loadQueue: () => Promise<void>
-  enqueueImport: (sourceUri: string, destinationHint?: string) => Promise<void>
+  enqueueImport: (sourceUri: string, destinationHint?: string, overwrite?: boolean) => Promise<EnqueueImportResult>
   cancel: (transferId: string) => Promise<void>
   retry: (transferId: string) => Promise<void>
 }
@@ -35,11 +36,13 @@ export const useTransferStore = create<TransferStoreState>((set, get) => ({
     }
   },
 
-  enqueueImport: async (sourceUri, destinationHint = '') => {
+  enqueueImport: async (sourceUri, destinationHint = '', overwrite = false) => {
     set({ status: 'busy', errorMessage: undefined })
     try {
-      const item = await TransferModule.enqueueImport(sourceUri, destinationHint)
-      set({ items: upsert(get().items, item), status: 'idle' })
+      const result = await TransferModule.enqueueImport(sourceUri, destinationHint, overwrite)
+      if (result.status === 'queued') set({ items: upsert(get().items, result), status: 'idle' })
+      else set({ status: 'idle' })
+      return result
     } catch (error) {
       set({
         status: 'error',

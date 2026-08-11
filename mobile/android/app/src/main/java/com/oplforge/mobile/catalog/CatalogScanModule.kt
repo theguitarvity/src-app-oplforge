@@ -158,6 +158,76 @@ class CatalogScanModule(reactContext: ReactApplicationContext) :
         }
     }
 
+    /**
+     * Deletes a cataloged title's main file plus its associated ART
+     * (cover/icon) and CFG (per-game OPL config) files, mirroring desktop's
+     * `deleteGame` (`electron/services/file.service.ts`) — same
+     * `${gameId}_COV*`/`${gameId}_ICO*`/`${gameId}.cfg` convention, same
+     * separator normalization as [getArtUri]. Every candidate is attempted
+     * independently (never aborts on the first failure) so partial deletes
+     * are reported rather than silently leaving orphaned art/config.
+     */
+    override fun deleteEntry(entryId: String, promise: Promise) {
+        val stored = preferences.load()
+        if (stored == null || !stored.accessValid) {
+            ErrorMapping.reject(promise, AppError("LIBRARY_ACCESS_INVALID", "O acesso à biblioteca não é mais válido."))
+            return
+        }
+        scope.launch {
+            val entry = db.catalogEntryDao().getById(entryId)
+            if (entry == null) {
+                ErrorMapping.reject(promise, AppError("ENTRY_NOT_FOUND", "Título não encontrado no catálogo."))
+                return@launch
+            }
+            val tree = SafDocumentTree(reactApplicationContext, android.net.Uri.parse(stored.treeUri))
+            val folderName = entry.logicalPath.substringBefore('/')
+            val fileName = entry.logicalPath.substringAfterLast('/')
+
+            val candidates = mutableListOf<androidx.documentfile.provider.DocumentFile>()
+            tree.findFolder(folderName)?.listFiles()?.firstOrNull { it.name == fileName }?.let { candidates.add(it) }
+            entry.gameId?.let { gameId ->
+                val normalized = gameId.replace('-', '_').replace('.', '_').uppercase()
+                for (dir in listOf("ART", "CFG")) {
+                    val folder = tree.findFolder(dir)
+                    tree.filesIn(folder).forEach { file ->
+                        val name = file.name?.uppercase() ?: return@forEach
+                        val base = name.substringBeforeLast('.').replace('-', '_').replace('.', '_')
+                        if (base == normalized || base.startsWith("${normalized}_")) candidates.add(file)
+                    }
+                }
+            }
+
+            val deleted = Arguments.createArray()
+            val failed = Arguments.createArray()
+            for (candidate in candidates) {
+                val name = candidate.name ?: candidate.uri.toString()
+                try {
+                    if (candidate.delete()) deleted.pushString(name)
+                    else failed.pushMap(Arguments.createMap().apply {
+                        putString("path", name)
+                        putString("error", "Falha ao excluir")
+                    })
+                } catch (e: Exception) {
+                    failed.pushMap(Arguments.createMap().apply {
+                        putString("path", name)
+                        putString("error", e.message ?: "Erro desconhecido")
+                    })
+                }
+            }
+
+            db.catalogEntryDao().deleteById(entryId)
+            historyStore.record(
+                HistoryStore.OP_GAME_DELETED,
+                if (failed.size() == 0) HistoryStore.RESULT_SUCCESS else HistoryStore.RESULT_FAILURE,
+                "Título removido: ${entry.title} (${deleted.size()} arquivo(s), ${failed.size()} falha(s))."
+            )
+            promise.resolve(Arguments.createMap().apply {
+                putArray("deleted", deleted)
+                putArray("failed", failed)
+            })
+        }
+    }
+
     override fun addListener(eventName: String) = Unit
     override fun removeListeners(count: Double) = Unit
 

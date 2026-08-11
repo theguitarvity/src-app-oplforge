@@ -10,6 +10,7 @@ import type {
 import {
   copyGame,
   copyPs1Game,
+  deleteGame,
   installApp,
   listInstalledApps,
   prepareDevice,
@@ -104,5 +105,10 @@ export function registerFileIpc() {
   ipcMain.handle('files:list-apps', (_event, devicePath: string) => listInstalledApps(devicePath))
   ipcMain.handle('files:remove-app', (_event, devicePath: string, appName: string) =>
     removeApp(devicePath, appName)
+  )
+  ipcMain.handle(
+    'files:delete-game',
+    (_event, devicePath: string, relativePath: string, gameId?: string) =>
+      deleteGame(devicePath, relativePath, gameId)
   )
 }

@@ -23,6 +23,10 @@ export class DownloadCoordinatorService {
   ) => Promise<void>
   private readonly running = new Set<string>()
   private readonly abortControllers = new Map<string, AbortController>()
+  private readonly pendingCollisions = new Map<
+    string,
+    { resolve: (action: 'overwrite' | 'cancel') => void }
+  >()
 
   constructor(
     private readonly scheduler = new DownloadSchedulerService(),
@@ -289,6 +293,28 @@ export class DownloadCoordinatorService {
       finalize(structuredClone(task))
     )
     return structuredClone(this.require(taskId))
+  }
+
+  /**
+   * Pauses `finalize` at a destination-name collision until the renderer
+   * answers via `resolveCollision` — the task sits in `awaiting-confirmation`
+   * (already a valid state-machine phase, previously never reached because
+   * `main.ts`'s finalize callback auto-substituted without ever asking).
+   */
+  awaitCollisionResolution(taskId: string): Promise<'overwrite' | 'cancel'> {
+    return new Promise((resolve) => {
+      this.pendingCollisions.set(taskId, { resolve })
+    })
+  }
+
+  resolveCollision(taskId: string, action: 'overwrite' | 'cancel'): void {
+    const pending = this.pendingCollisions.get(taskId)
+    if (!pending)
+      throw Object.assign(new Error('No collision awaiting confirmation for this task'), {
+        code: 'NO_PENDING_COLLISION'
+      })
+    this.pendingCollisions.delete(taskId)
+    pending.resolve(action)
   }
 
   async advance(

@@ -26,7 +26,8 @@ class TransferScheduler(private val context: Context) {
         title: String,
         sourceUrl: String,
         expectedBytes: Long?,
-        legalReceiptId: String
+        legalReceiptId: String,
+        overwrite: Boolean = false
     ): TransferItemEntity {
         val item = newItem(
             kind = TransferKind.DOWNLOAD,
@@ -35,14 +36,21 @@ class TransferScheduler(private val context: Context) {
             sourceUrl = sourceUrl,
             sourceTreeUri = null,
             expectedBytes = expectedBytes,
-            legalReceiptId = legalReceiptId
+            legalReceiptId = legalReceiptId,
+            overwrite = overwrite
         )
         db.transferDao().insert(item)
         schedule(item.id)
         return item
     }
 
-    suspend fun enqueueImport(destinationLogicalPath: String, title: String, sourceTreeUri: String, expectedBytes: Long?): TransferItemEntity {
+    suspend fun enqueueImport(
+        destinationLogicalPath: String,
+        title: String,
+        sourceTreeUri: String,
+        expectedBytes: Long?,
+        overwrite: Boolean = false
+    ): TransferItemEntity {
         val item = newItem(
             kind = TransferKind.IMPORT,
             destinationLogicalPath = destinationLogicalPath,
@@ -50,7 +58,8 @@ class TransferScheduler(private val context: Context) {
             sourceUrl = null,
             sourceTreeUri = sourceTreeUri,
             expectedBytes = expectedBytes,
-            legalReceiptId = null
+            legalReceiptId = null,
+            overwrite = overwrite
         )
         db.transferDao().insert(item)
         schedule(item.id)
@@ -86,7 +95,8 @@ class TransferScheduler(private val context: Context) {
         sourceUrl: String?,
         sourceTreeUri: String?,
         expectedBytes: Long?,
-        legalReceiptId: String?
+        legalReceiptId: String?,
+        overwrite: Boolean = false
     ): TransferItemEntity {
         val now = Instant.now().toString()
         return TransferItemEntity(
@@ -103,7 +113,8 @@ class TransferScheduler(private val context: Context) {
             partFiles = emptyList(),
             errorMessage = null,
             createdAt = now,
-            updatedAt = now
+            updatedAt = now,
+            overwrite = overwrite
         )
     }
 

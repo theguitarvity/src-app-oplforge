@@ -51,6 +51,8 @@ const api: OplApi = {
   resumeDurableDownload: (input) => ipcRenderer.invoke('downloads:resume-v2', input),
   retryDurableDownload: (input) => ipcRenderer.invoke('downloads:retry', input),
   cancelDurableDownload: (input) => ipcRenderer.invoke('downloads:cancel-v2', input),
+  resolveDownloadCollision: (taskId: string, action: 'overwrite' | 'cancel') =>
+    ipcRenderer.invoke('downloads:resolve-collision', { taskId, action }),
   retryFailedDownloads: (input) => ipcRenderer.invoke('downloads:retry-failed', input),
   clearTerminalDownloads: (input) => ipcRenderer.invoke('downloads:clear-terminal', input),
   getFinalizationPlan: (planId) => ipcRenderer.invoke('finalization:get-plan', { planId }),
@@ -155,6 +157,8 @@ const api: OplApi = {
   listInstalledApps: (devicePath) => ipcRenderer.invoke('files:list-apps', devicePath),
   removeApp: (devicePath: string, appName: string) =>
     ipcRenderer.invoke('files:remove-app', devicePath, appName),
+  deleteGame: (devicePath: string, relativePath: string, gameId?: string) =>
+    ipcRenderer.invoke('files:delete-game', devicePath, relativePath, gameId),
   listSourceFiles: (config: SourceProviderConfig) =>
     ipcRenderer.invoke('sources:list-files', config),
   importFromSource: (input: ImportFromSourceInput) =>

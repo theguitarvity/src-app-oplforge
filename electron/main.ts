@@ -270,6 +270,15 @@ app.whenReady().then(async () => {
             fileSystem: device.fileSystem
           })
         )
+        if (plan.replaces) {
+          await downloads.advance(task.taskId, 'awaiting-confirmation')
+          const resolution = await downloads.awaitCollisionResolution(task.taskId)
+          if (resolution === 'cancel') {
+            installation.cancel(plan.id)
+            await downloads.advance(task.taskId, 'cancelled')
+            return
+          }
+        }
         await downloads.advance(task.taskId, 'installing')
         await installation.confirm(
           plan.id,

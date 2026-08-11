@@ -13,6 +13,7 @@ export interface Spec extends TurboModule {
   getLatestSnapshot(): Promise<Object>
   getCatalogEntries(page: number, pageSize: number, typeFilter: string): Promise<Object>
   getArtUri(gameId: string): Promise<Object>
+  deleteEntry(entryId: string): Promise<Object>
   addListener(eventName: string): void
   removeListeners(count: number): void
 }

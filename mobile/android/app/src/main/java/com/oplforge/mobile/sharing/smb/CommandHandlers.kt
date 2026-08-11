@@ -10,8 +10,16 @@ import com.oplforge.mobile.shared.WriteLock
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import java.nio.charset.Charset
+import java.util.concurrent.Callable
+import java.util.concurrent.ExecutorService
+import java.util.concurrent.Executors
+import java.util.concurrent.TimeUnit
+import java.util.concurrent.TimeoutException
 
 private val OEM = Charset.forName("ISO-8859-1")
+
+/** File I/O this server issues per SMB request has no client-visible timeout of its own — a stalled USB-OTG read/write must not hang the connection forever. */
+private const val FILE_IO_TIMEOUT_MS = 10_000L
 
 /** Windows FILETIME (100ns ticks since 1601-01-01T00:00:00Z) — MS-CIFS 2.2.4.52.2 SystemTime field. */
 private fun writeFileTime(buf: ByteBuffer, offset: Int, unixMillis: Long) {
@@ -36,6 +44,15 @@ internal fun String.stripTrailingNul(): String = trimEnd(' ', '\u0000')
 /** One open file/directory handle within a connection (SMB1 FID). */
 data class OpenFile(val documentFile: DocumentFile, val pfd: ParcelFileDescriptor?, val isDirectory: Boolean)
 
+/** A blocking file read/write against the underlying storage exceeded [FILE_IO_TIMEOUT_MS] (e.g. a stalled USB-OTG device). */
+class SmbIoTimeoutException(cause: Throwable) : Exception(cause)
+
+/** One FIND_FIRST2/FIND_NEXT2 directory-listing entry. */
+data class DirEntry(val name: String, val isDirectory: Boolean, val size: Long, val lastModified: Long)
+
+/** FIND_FIRST2 search state, continued across FIND_NEXT2 calls by SID. */
+data class SearchState(val entries: List<DirEntry>, var nextIndex: Int)
+
 /** Per-TCP-connection SMB1 protocol state — never shared across connections. */
 class SmbConnectionState {
     var authenticated = false
@@ -46,6 +63,16 @@ class SmbConnectionState {
     val challenge: ByteArray = NtlmV1.randomChallenge()
     private var nextFid = 1
     private val fids = mutableMapOf<Int, OpenFile>()
+    // A real PS2 OPL client always sends FIND_NEXT2 after FIND_FIRST2,
+    // regardless of the EndOfSearch flag — without real per-SID state here
+    // (was previously always SID=0, "no continuation supported"), that
+    // FIND_NEXT2 had nothing to continue and every directory came back
+    // empty on real hardware even though FIND_FIRST2 itself was correct.
+    // Mirrors desktop's SmbSession.searches exactly.
+    private var nextSid = 1
+    val searches = mutableMapOf<Int, SearchState>()
+
+    fun allocateSid(): Int = nextSid++
 
     fun openFile(documentFile: DocumentFile, pfd: ParcelFileDescriptor?, isDirectory: Boolean): Int {
         val fid = nextFid++
@@ -63,6 +90,7 @@ class SmbConnectionState {
     fun closeAll() {
         fids.values.forEach { it.pfd?.close() }
         fids.clear()
+        searches.clear()
     }
 }
 
@@ -80,22 +108,67 @@ class CommandHandlers(
     private val writeLock: WriteLock,
     private val isWriteAccessAcknowledged: () -> Boolean
 ) {
+    // Bounds otherwise-unbounded blocking file I/O (see readAndx/writeAndx) —
+    // created once per CommandHandlers instance (one per running SmbServer),
+    // shut down via close(). Never create a new executor per call, that
+    // leaks a thread on every request.
+    private val ioTimeoutExecutor: ExecutorService = Executors.newCachedThreadPool()
 
-    fun handle(frame: SmbFrame, state: SmbConnectionState): SmbFrame = when (frame.command) {
-        SmbCommand.NEGOTIATE -> negotiate(frame, state)
-        SmbCommand.SESSION_SETUP_ANDX -> sessionSetup(frame, state)
-        SmbCommand.TREE_CONNECT_ANDX -> treeConnect(frame, state)
-        SmbCommand.TREE_DISCONNECT -> FrameCodec.response(frame, NtStatus.SUCCESS)
-        SmbCommand.LOGOFF_ANDX -> { state.closeAll(); FrameCodec.response(frame, NtStatus.SUCCESS) }
-        SmbCommand.ECHO -> echo(frame)
-        SmbCommand.CHECK_DIRECTORY -> checkDirectory(frame, state)
-        SmbCommand.NT_CREATE_ANDX -> ntCreate(frame, state)
-        SmbCommand.OPEN_ANDX -> openAndx(frame, state)
-        SmbCommand.READ_ANDX -> readAndx(frame, state)
-        SmbCommand.WRITE_ANDX -> writeAndx(frame, state)
-        SmbCommand.CLOSE -> closeFile(frame, state)
-        SmbCommand.TRANSACTION2 -> transaction2(frame, state)
-        else -> FrameCodec.response(frame, NtStatus.NOT_SUPPORTED)
+    /** Shuts down the I/O timeout executor. Call once when the owning SmbServer stops. */
+    fun close() {
+        ioTimeoutExecutor.shutdownNow()
+    }
+
+    /**
+     * Runs [block] with a hard wall-clock timeout, unblocking a stuck
+     * blocking I/O call by interrupting its thread. [block] MUST perform its
+     * blocking I/O through a `java.nio` interruptible channel (e.g.
+     * `FileChannel.read`/`write`) — interrupting a thread blocked in the
+     * older `java.io` stream APIs (`FileInputStream.read(ByteArray)`) does
+     * NOT unblock it. A real PS2 freeze was traced to exactly this: a USB-OTG
+     * drive stalling `readAndx`'s file read indefinitely, with nothing here
+     * bounding it — `socket.soTimeout` only bounds waiting for the *next
+     * network frame*, never the file I/O itself.
+     */
+    private fun <T> withIoTimeout(block: () -> T): T {
+        val future = ioTimeoutExecutor.submit(Callable { block() })
+        return try {
+            future.get(FILE_IO_TIMEOUT_MS, TimeUnit.MILLISECONDS)
+        } catch (e: TimeoutException) {
+            future.cancel(true) // interrupts the worker thread -> ClosedByInterruptException on the blocked channel call
+            throw SmbIoTimeoutException(e)
+        }
+    }
+
+    fun handle(frame: SmbFrame, state: SmbConnectionState): SmbFrame {
+        android.util.Log.d("OplForgeSmbTiming", "-> cmd=0x%02X paramsLen=%d dataLen=%d".format(frame.command, frame.params.size, frame.data.size))
+        val response = dispatch(frame, state)
+        android.util.Log.d("OplForgeSmbTiming", "<- cmd=0x%02X status=0x%08X".format(frame.command, response.status))
+        return response
+    }
+
+    private fun dispatch(frame: SmbFrame, state: SmbConnectionState): SmbFrame {
+        return when (frame.command) {
+            SmbCommand.NEGOTIATE -> negotiate(frame, state)
+            SmbCommand.SESSION_SETUP_ANDX -> sessionSetup(frame, state)
+            SmbCommand.TREE_CONNECT_ANDX -> treeConnect(frame, state)
+            SmbCommand.TREE_DISCONNECT -> FrameCodec.response(frame, NtStatus.SUCCESS)
+            SmbCommand.LOGOFF_ANDX -> { state.closeAll(); FrameCodec.response(frame, NtStatus.SUCCESS) }
+            SmbCommand.ECHO -> echo(frame)
+            SmbCommand.CHECK_DIRECTORY -> checkDirectory(frame, state)
+            SmbCommand.NT_CREATE_ANDX -> ntCreate(frame, state)
+            SmbCommand.OPEN_ANDX -> openAndx(frame, state)
+            SmbCommand.READ_ANDX -> readAndx(frame, state)
+            SmbCommand.WRITE_ANDX -> writeAndx(frame, state)
+            SmbCommand.CLOSE -> closeFile(frame, state)
+            SmbCommand.TRANSACTION2 -> transaction2(frame, state)
+            SmbCommand.FIND_CLOSE2 -> {
+                val sid = if (frame.params.size >= 2) ByteBuffer.wrap(frame.params).order(ByteOrder.LITTLE_ENDIAN).getShort(0).toInt() and 0xFFFF else -1
+                state.searches.remove(sid)
+                FrameCodec.response(frame, NtStatus.SUCCESS)
+            }
+            else -> FrameCodec.response(frame, NtStatus.NOT_SUPPORTED)
+        }
     }
 
     /**
@@ -257,6 +330,7 @@ class CommandHandlers(
         }.stripTrailingNul()
 
         val target = if (rawPath.isBlank()) tree.root else PathConfinement.resolve(tree, rawPath)
+        android.util.Log.d("OplForgeSmbTiming", "ntCreate rawPath='$rawPath' found=${target != null}")
         if (target == null) return FrameCodec.response(frame, NtStatus.OBJECT_NAME_NOT_FOUND)
 
         val pfd = if (!target.isDirectory) {
@@ -354,13 +428,32 @@ class CommandHandlers(
         val pfd = open.pfd ?: return FrameCodec.response(frame, NtStatus.ACCESS_DENIED)
 
         // Never buffers a full file (FR-026/SC-008) — reads exactly the requested,
-        // OPL-bounded chunk directly from the seekable descriptor.
-        val bytesRead = java.io.FileInputStream(pfd.fileDescriptor).use { stream ->
-            stream.channel.position(offset)
-            val chunk = ByteArray(maxCount)
-            val n = stream.read(chunk)
-            if (n <= 0) ByteArray(0) else chunk.copyOf(n)
+        // OPL-bounded chunk directly from the seekable descriptor. Goes through
+        // FileChannel (not FileInputStream.read(ByteArray)) specifically because
+        // it's interruptible — withIoTimeout relies on that to actually cancel a
+        // stalled USB-OTG read rather than just abandoning it in the background.
+        val readStart = System.currentTimeMillis()
+        val bytesRead = try {
+            withIoTimeout {
+                java.io.FileInputStream(pfd.fileDescriptor).channel.use { channel ->
+                    channel.position(offset)
+                    val buf = ByteBuffer.allocate(maxCount)
+                    val n = channel.read(buf)
+                    if (n <= 0) ByteArray(0) else buf.array().copyOf(n)
+                }
+            }
+        } catch (e: SmbIoTimeoutException) {
+            android.util.Log.w(
+                "OplForgeSmbTiming",
+                "READ TIMEOUT fid=$fid offset=$offset maxCount=$maxCount after ${System.currentTimeMillis() - readStart}ms"
+            )
+            return FrameCodec.response(frame, NtStatus.UNSUCCESSFUL)
         }
+        val readDurationMs = System.currentTimeMillis() - readStart
+        android.util.Log.d(
+            "OplForgeSmbTiming",
+            "READ fid=$fid offset=$offset maxCount=$maxCount got=${bytesRead.size} took=${readDurationMs}ms"
+        )
 
         // 24-byte READ_ANDX response, MS-CIFS 2.2.4.42.2 — byte-for-byte
         // mirror of desktop's handleReadAndx, including a real (not
@@ -401,9 +494,14 @@ class CommandHandlers(
         val (written, wasConflict) = kotlinx.coroutines.runBlocking { writeLock.withWriteLock(open.documentFile.uri.toString()) {
             try {
                 context.contentResolver.openFileDescriptor(open.documentFile.uri, "rw")?.use { writePfd ->
-                    java.io.FileOutputStream(writePfd.fileDescriptor).use { stream ->
-                        stream.channel.position(offset)
-                        stream.write(writeData)
+                    // FileChannel (not FileOutputStream.write(ByteArray)) so a
+                    // stalled write to slow USB-OTG storage is interruptible —
+                    // see withIoTimeout/readAndx for why this matters.
+                    withIoTimeout {
+                        java.io.FileOutputStream(writePfd.fileDescriptor).channel.use { channel ->
+                            channel.position(offset)
+                            channel.write(ByteBuffer.wrap(writeData))
+                        }
                     }
                 }
                 writeData.size
@@ -467,9 +565,58 @@ class CommandHandlers(
         val trans2Params = frame.data.copyOfRange(trans2ParamsStart, trans2ParamsStart + paramCount)
 
         return when (subcommand) {
-            Trans2Subcommand.FIND_FIRST2 -> findFirst2(frame, trans2Params)
+            Trans2Subcommand.FIND_FIRST2 -> findFirst2(frame, trans2Params, state)
+            Trans2Subcommand.FIND_NEXT2 -> findNext2(frame, trans2Params, state)
+            Trans2Subcommand.QUERY_PATH_INFORMATION -> queryPathInformation(frame, trans2Params)
             else -> FrameCodec.response(frame, NtStatus.NOT_SUPPORTED)
         }
+    }
+
+    /**
+     * TRANS2_QUERY_PATH_INFORMATION (MS-CIFS 2.2.4.46.2) — byte-for-byte
+     * mirror of desktop's handleQueryPathInformation. A real PS2 OPL client
+     * queries this for the root and for `ul.cfg` (its optional USBExtreme
+     * config) before ever sending FIND_FIRST2 — without this, OPL sees every
+     * such query answered NOT_SUPPORTED and never lists any games at all,
+     * even though the folder structure and FIND_FIRST2 itself are both
+     * correct (found chasing a real-PS2 "games don't list" report).
+     */
+    private fun queryPathInformation(frame: SmbFrame, trans2Params: ByteArray): SmbFrame {
+        // LevelOfInterest(2)+Reserved(4) precede the OEM path, MS-CIFS 2.2.4.46.2.
+        if (trans2Params.size < 7) return FrameCodec.response(frame, NtStatus.UNSUCCESSFUL)
+        val informationLevel = ByteBuffer.wrap(trans2Params).order(ByteOrder.LITTLE_ENDIAN).getShort(0).toInt() and 0xFFFF
+        val fileName = OEM.decode(ByteBuffer.wrap(trans2Params, 6, trans2Params.size - 6)).toString().stripTrailingNul()
+
+        val target = if (fileName.isBlank()) tree.root else PathConfinement.resolve(tree, fileName)
+        if (target == null) return FrameCodec.response(frame, NtStatus.OBJECT_NAME_NOT_FOUND)
+
+        val mtime = target.lastModified()
+        val data = when (informationLevel) {
+            InfoLevel.QUERY_FILE_BASIC_INFO -> {
+                // SMB_QUERY_FILE_BASIC_INFO: four FILETIMEs + ExtFileAttributes.
+                val buf = ByteBuffer.allocate(36).order(ByteOrder.LITTLE_ENDIAN)
+                writeFileTime(buf, 0, mtime) // CreationTime — SAF only exposes lastModified(), reused for all four
+                writeFileTime(buf, 8, mtime) // LastAccessTime
+                writeFileTime(buf, 16, mtime) // LastWriteTime
+                writeFileTime(buf, 24, mtime) // LastChangeTime
+                buf.putInt(32, if (target.isDirectory) 0x10 else 0x80)
+                buf.array()
+            }
+            InfoLevel.QUERY_FILE_STANDARD_INFO -> {
+                // SMB_QUERY_FILE_STANDARD_INFO: alloc/end size, links, two flags.
+                val buf = ByteBuffer.allocate(22).order(ByteOrder.LITTLE_ENDIAN)
+                val size = if (target.isDirectory) 0L else target.length()
+                val roundedSize = ((size + 511) / 512) * 512
+                buf.putLong(0, roundedSize)
+                buf.putLong(8, size)
+                buf.putInt(16, 1) // NumberOfLinks
+                buf.put(20, 0) // DeletePending
+                buf.put(21, if (target.isDirectory) 1 else 0) // Directory
+                buf.array()
+            }
+            else -> return FrameCodec.response(frame, NtStatus.NOT_SUPPORTED)
+        }
+        return buildTrans2Response(frame, ByteArray(2), data)
     }
 
     /**
@@ -548,7 +695,7 @@ class CommandHandlers(
      * still caps the page and sets EndOfSearch correctly for a directory
      * larger than one page, matching desktop's per-call behavior).
      */
-    private fun findFirst2(frame: SmbFrame, trans2Params: ByteArray): SmbFrame {
+    private fun findFirst2(frame: SmbFrame, trans2Params: ByteArray, state: SmbConnectionState): SmbFrame {
         if (trans2Params.size < 12) return FrameCodec.response(frame, NtStatus.NOT_SUPPORTED)
         val buf = ByteBuffer.wrap(trans2Params).order(ByteOrder.LITTLE_ENDIAN)
         val searchCount = buf.getShort(2).toInt() and 0xFFFF
@@ -563,30 +710,86 @@ class CommandHandlers(
         val dirPath = fileName.substringBeforeLast('\\', "")
 
         val listed = PathConfinement.listDirectory(tree, dirPath) ?: emptyList()
-        data class Entry(val name: String, val isDirectory: Boolean, val size: Long, val lastModified: Long)
         val entries = listOf(
-            Entry(".", true, 0, System.currentTimeMillis()),
-            Entry("..", true, 0, System.currentTimeMillis())
-        ) + listed.map { Entry(it.name ?: "", it.isDirectory, it.length(), it.lastModified()) }
+            DirEntry(".", true, 0, System.currentTimeMillis()),
+            DirEntry("..", true, 0, System.currentTimeMillis())
+        ) + listed.map { DirEntry(it.name ?: "", it.isDirectory, it.length(), it.lastModified()) }
+
+        val sid = state.allocateSid()
+        val searchState = SearchState(entries, 0)
+        state.searches[sid] = searchState
 
         val page = entries.take(if (searchCount > 0) searchCount else entries.size)
-        val endOfSearch = page.size >= entries.size
+        searchState.nextIndex = page.size
+        val endOfSearch = searchState.nextIndex >= entries.size
+        if (endOfSearch) state.searches.remove(sid)
 
+        val dataBuffer = encodeDirEntries(page)
+        val trans2ResponseParams = ByteBuffer.allocate(10).order(ByteOrder.LITTLE_ENDIAN).apply {
+            putShort(0, sid.toShort())
+            putShort(2, page.size.toShort())
+            putShort(4, if (endOfSearch) 1 else 0)
+            putShort(6, 0) // EaErrorOffset
+            putShort(8, lastNameOffset(page, dataBuffer)) // LastNameOffset
+        }.array()
+
+        return buildTrans2Response(frame, trans2ResponseParams, dataBuffer)
+    }
+
+    /**
+     * TRANS2_FIND_NEXT2 (MS-CIFS 2.2.4.47) — continues a search started by
+     * FIND_FIRST2. A real PS2 OPL client always sends this after
+     * FIND_FIRST2 regardless of the EndOfSearch flag; an unknown/exhausted
+     * SID (this server never paginates beyond one page today, so the SID is
+     * always already removed) mirrors desktop's real behavior: an empty,
+     * successful, EndOfSearch page rather than an error — a real client
+     * reads that as "no more files," not a failure.
+     */
+    private fun findNext2(frame: SmbFrame, trans2Params: ByteArray, state: SmbConnectionState): SmbFrame {
+        if (trans2Params.size < 4) return FrameCodec.response(frame, NtStatus.NOT_SUPPORTED)
+        val buf = ByteBuffer.wrap(trans2Params).order(ByteOrder.LITTLE_ENDIAN)
+        val sid = buf.getShort(0).toInt() and 0xFFFF
+        val searchCount = buf.getShort(2).toInt() and 0xFFFF
+
+        val searchState = state.searches[sid]
+        val page: List<DirEntry>
+        val endOfSearch: Boolean
+        if (searchState == null) {
+            page = emptyList()
+            endOfSearch = true
+        } else {
+            page = searchState.entries.drop(searchState.nextIndex).take(if (searchCount > 0) searchCount else Int.MAX_VALUE)
+            searchState.nextIndex += page.size
+            endOfSearch = searchState.nextIndex >= searchState.entries.size
+            if (endOfSearch) state.searches.remove(sid)
+        }
+
+        val dataBuffer = encodeDirEntries(page)
+        val trans2ResponseParams = ByteBuffer.allocate(8).order(ByteOrder.LITTLE_ENDIAN).apply {
+            putShort(0, page.size.toShort())
+            putShort(2, if (endOfSearch) 1 else 0)
+            putShort(4, 0) // EaErrorOffset
+            putShort(6, lastNameOffset(page, dataBuffer)) // LastNameOffset
+        }.array()
+
+        return buildTrans2Response(frame, trans2ResponseParams, dataBuffer)
+    }
+
+    private fun encodeDirEntries(page: List<DirEntry>): ByteArray {
         val entryBuffers = page.mapIndexed { index, entry ->
             encodeDirectoryEntry(entry.name, entry.isDirectory, entry.size, entry.lastModified, index == page.size - 1)
         }
         val dataBuffer = ByteArray(entryBuffers.sumOf { it.size })
         var pos = 0
         entryBuffers.forEach { it.copyInto(dataBuffer, pos); pos += it.size }
+        return dataBuffer
+    }
 
-        val trans2ResponseParams = ByteBuffer.allocate(10).order(ByteOrder.LITTLE_ENDIAN).apply {
-            putShort(0, 0) // SID — no continuation supported in this scope
-            putShort(2, page.size.toShort())
-            putShort(4, if (endOfSearch) 1 else 0)
-            putShort(6, 0) // EaErrorOffset
-            putShort(8, (if (entryBuffers.isEmpty()) 0 else dataBuffer.size - entryBuffers.last().size).toShort()) // LastNameOffset
-        }.array()
-
-        return buildTrans2Response(frame, trans2ResponseParams, dataBuffer)
+    private fun lastNameOffset(page: List<DirEntry>, dataBuffer: ByteArray): Short {
+        if (page.isEmpty()) return 0
+        val lastEntryBuffer = encodeDirectoryEntry(
+            page.last().name, page.last().isDirectory, page.last().size, page.last().lastModified, true
+        )
+        return (dataBuffer.size - lastEntryBuffer.size).toShort()
     }
 }

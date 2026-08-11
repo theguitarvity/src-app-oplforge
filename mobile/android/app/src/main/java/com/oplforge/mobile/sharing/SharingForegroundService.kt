@@ -13,6 +13,7 @@ import android.net.Uri
 import android.net.wifi.WifiManager
 import android.os.Build
 import android.os.IBinder
+import android.os.PowerManager
 import androidx.core.app.NotificationCompat
 import androidx.core.content.getSystemService
 import com.oplforge.mobile.MainActivity
@@ -31,12 +32,15 @@ import java.net.NetworkInterface
 class SharingForegroundService : Service() {
 
     private var smbServer: SmbServer? = null
+    private var wifiLock: WifiManager.WifiLock? = null
+    private var wakeLock: PowerManager.WakeLock? = null
 
     override fun onBind(intent: Intent?): IBinder? = null
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         val shareName = intent?.getStringExtra(EXTRA_SHARE_NAME) ?: SHARE_NAME_DEFAULT
         startForeground(NOTIFICATION_ID, buildNotification())
+        acquireLocks()
 
         val stored = LibraryPreferences(this).load()
         if (stored == null) {
@@ -88,7 +92,38 @@ class SharingForegroundService : Service() {
         smbServer = null
         boundAddress = null
         boundPort = null
+        releaseLocks()
         super.onDestroy()
+    }
+
+    /**
+     * Without these, the PS2's SMB connections start dying under real
+     * conditions (screen off, app backgrounded) with the socket read
+     * throwing "Socket closed" almost immediately — Doze/App Standby (and
+     * Samsung's own aggressive power management on top of it) can suspend
+     * Wi-Fi and this service's accept/connection threads even though it's a
+     * foreground service, since nothing here was telling the OS this
+     * process needs the radio and CPU to stay responsive. A real freeze
+     * found via on-device testing with the screen locked.
+     */
+    private fun acquireLocks() {
+        val wifiManager = applicationContext.getSystemService<WifiManager>()
+        wifiLock = wifiManager?.createWifiLock(
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) WifiManager.WIFI_MODE_FULL_LOW_LATENCY
+            else WifiManager.WIFI_MODE_FULL_HIGH_PERF,
+            "OplForgeMobile:smbSharing"
+        )?.apply { setReferenceCounted(false); acquire() }
+
+        val powerManager = applicationContext.getSystemService<PowerManager>()
+        wakeLock = powerManager?.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "OplForgeMobile:smbSharing")
+            ?.apply { setReferenceCounted(false); acquire() }
+    }
+
+    private fun releaseLocks() {
+        wifiLock?.let { if (it.isHeld) it.release() }
+        wifiLock = null
+        wakeLock?.let { if (it.isHeld) it.release() }
+        wakeLock = null
     }
 
     private fun findLanAddress(): String? {

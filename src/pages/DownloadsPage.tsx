@@ -73,6 +73,18 @@ export function DownloadsPage() {
       revision: number
     }) => executeAction(kind, taskId, revision)
   })
+  const resolveCollision = useMutation({
+    mutationFn: ({
+      taskId,
+      action: collisionAction
+    }: {
+      taskId: string
+      action: 'overwrite' | 'cancel'
+    }) => oplApi.resolveDownloadCollision(taskId, collisionAction),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ['durable-downloads'] })
+    }
+  })
   const clearTerminal = useMutation({
     mutationFn: () =>
       oplApi.clearTerminalDownloads({
@@ -180,6 +192,9 @@ export function DownloadsPage() {
               }
               onCancel={() =>
                 action.mutate({ kind: 'cancel', taskId: task.taskId, revision: task.revision })
+              }
+              onResolveCollision={(collisionAction) =>
+                resolveCollision.mutate({ taskId: task.taskId, action: collisionAction })
               }
             />
           ))}

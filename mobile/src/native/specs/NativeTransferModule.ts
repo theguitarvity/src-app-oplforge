@@ -8,7 +8,7 @@ import { TurboModuleRegistry } from 'react-native'
  */
 /* eslint-disable @typescript-eslint/no-wrapper-object-types -- Codegen requires the literal `Object` type */
 export interface Spec extends TurboModule {
-  enqueueImport(sourceUri: string, destinationHint: string): Promise<Object>
+  enqueueImport(sourceUri: string, destinationHint: string, overwrite: boolean): Promise<Object>
   getQueue(): Promise<Object>
   cancel(transferId: string): Promise<Object>
   retry(transferId: string): Promise<Object>

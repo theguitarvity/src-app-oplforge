@@ -131,6 +131,12 @@ export const schemas = {
           message: 'Discard confirmation required'
         })
     }),
+  downloadResolveCollision: z
+    .object({
+      taskId: strictId,
+      action: z.enum(['overwrite', 'cancel'])
+    })
+    .strict(),
   downloadRetryFailed: z
     .object({ deviceId: strictId.optional(), expectedQueueRevision: revision })
     .strict(),

@@ -1,6 +1,9 @@
-import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native'
+import { useState } from 'react'
+import { Alert, Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native'
 import { colors, radius, spacing, typography } from '../../design-system/tokens'
 import { GameArtThumbnail } from '../../components/GameArtThumbnail'
+import * as CatalogModule from '../../native/CatalogModule'
+import { useSharingStore } from '../../stores/sharing-store'
 import type { CatalogEntry } from '../../types'
 
 const CONTENT_TYPE_LABEL: Record<CatalogEntry['contentType'], string> = {
@@ -19,13 +22,49 @@ function formatSize(bytes: number): string {
 interface GameDetailSheetProps {
   entry: CatalogEntry | undefined
   onClose: () => void
+  onDeleted?: (entryId: string) => void
 }
 
 /**
  * T068 — Ficha de detalhes do jogo (metadados, status de validação,
  * problemas estruturais) aberta a partir de um card na LibraryScreen.
  */
-export function GameDetailSheet({ entry, onClose }: GameDetailSheetProps) {
+export function GameDetailSheet({ entry, onClose, onDeleted }: GameDetailSheetProps) {
+  const sharingState = useSharingStore((state) => state.session?.state)
+  const sharingActive = sharingState === 'running-connected' || sharingState === 'running-idle'
+  const [deleting, setDeleting] = useState(false)
+
+  const handleDelete = () => {
+    if (!entry) return
+    Alert.alert(
+      'Excluir título',
+      sharingActive
+        ? `Isso remove o arquivo do jogo, capa e configuração de "${entry.title}". O compartilhamento está ativo — excluir um jogo que o PS2 esteja lendo agora pode causar falha no PS2. Esta ação não pode ser desfeita.`
+        : `Isso remove o arquivo do jogo, capa e configuração de "${entry.title}". Esta ação não pode ser desfeita.`,
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        {
+          text: 'Excluir',
+          style: 'destructive',
+          onPress: () => {
+            setDeleting(true)
+            CatalogModule.deleteEntry(entry.id)
+              .then((result) => {
+                if (result.failed.length === 0) {
+                  onDeleted?.(entry.id)
+                  onClose()
+                } else {
+                  Alert.alert('Excluído com falhas', result.failed.map((f) => f.path).join(', '))
+                }
+              })
+              .catch((error) => Alert.alert('Erro ao excluir', error instanceof Error ? error.message : String(error)))
+              .finally(() => setDeleting(false))
+          }
+        }
+      ]
+    )
+  }
+
   return (
     <Modal visible={entry !== undefined} transparent animationType="slide" onRequestClose={onClose}>
       <View style={styles.backdrop}>
@@ -81,6 +120,10 @@ export function GameDetailSheet({ entry, onClose }: GameDetailSheetProps) {
                 ))}
               </View>
 
+              <Pressable style={styles.deleteButton} onPress={handleDelete} disabled={deleting}>
+                <Text style={styles.deleteButtonText}>{deleting ? 'Excluindo...' : 'Excluir Título'}</Text>
+              </Pressable>
+
               <Pressable style={styles.closeButton} onPress={onClose}>
                 <Text style={styles.closeButtonText}>Fechar</Text>
               </Pressable>
@@ -111,8 +154,18 @@ const styles = StyleSheet.create({
   statusWarning: { borderColor: colors.amber },
   statusTitle: { color: colors.foreground, fontSize: typography.body.fontSize, fontWeight: '600' },
   statusIssue: { color: colors.mutedForeground, fontSize: typography.caption.fontSize },
-  closeButton: {
+  deleteButton: {
     marginTop: spacing.lg,
+    borderRadius: radius.md,
+    borderWidth: 1,
+    borderColor: colors.destructive,
+    backgroundColor: 'rgba(220, 38, 38, 0.1)',
+    paddingVertical: spacing.sm,
+    alignItems: 'center'
+  },
+  deleteButtonText: { color: colors.destructive, fontSize: typography.body.fontSize, fontWeight: '600' },
+  closeButton: {
+    marginTop: spacing.sm,
     borderRadius: radius.md,
     borderWidth: 1,
     borderColor: colors.border,

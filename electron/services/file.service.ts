@@ -246,6 +246,70 @@ export async function listInstalledApps(devicePath: string): Promise<InstalledAp
   return installed.sort((a, b) => a.name.localeCompare(b.name, 'pt-BR'))
 }
 
+export interface DeleteGameResult {
+  deleted: string[]
+  failed: { path: string; error: string }[]
+}
+
+/**
+ * Deletes a cataloged title's main file plus its associated ART (cover/icon)
+ * and CFG (per-game OPL config) files — mirrors the `${gameId}_COV*`/
+ * `${gameId}_ICO*`/`${gameId}.cfg` naming convention confirmed against a
+ * real PS2 OPL client's SMB traffic. Never aborts on the first failure —
+ * every candidate file is attempted independently so a caller can report
+ * exactly what was and wasn't removed rather than leaving the user unsure
+ * whether a partial delete left orphaned art/config behind.
+ */
+export async function deleteGame(
+  devicePath: string,
+  relativePath: string,
+  gameId?: string
+): Promise<DeleteGameResult> {
+  const candidates = [path.join(devicePath, relativePath)]
+  if (gameId) {
+    for (const dir of ['ART', 'CFG'] as const) {
+      const dirPath = path.join(devicePath, dir)
+      const names = await fs.readdir(dirPath).catch(() => [] as string[])
+      for (const name of names) {
+        const base = name.toLocaleLowerCase('pt-BR')
+        const prefix = gameId.toLocaleLowerCase('pt-BR')
+        if (base.startsWith(`${prefix}_`) || base.startsWith(`${prefix}.`)) {
+          candidates.push(path.join(dirPath, name))
+        }
+      }
+    }
+  }
+
+  const deleted: string[] = []
+  const failed: { path: string; error: string }[] = []
+  for (const candidate of candidates) {
+    try {
+      await ensureInsideDevice(devicePath, candidate)
+      await fs.rm(candidate, { recursive: true, force: true })
+      deleted.push(candidate)
+    } catch (error) {
+      failed.push({
+        path: candidate,
+        error: error instanceof Error ? error.message : String(error)
+      })
+    }
+  }
+
+  sendLog(
+    'WARNING',
+    `Título removido: ${relativePath} (${deleted.length} arquivo(s), ${failed.length} falha(s))`
+  )
+  await addHistory({
+    operation: 'Excluir título',
+    destination: path.join(devicePath, relativePath),
+    result: failed.length ? 'error' : 'success',
+    message: failed.length
+      ? `Excluído com falhas: ${failed.map((f) => f.path).join(', ')}`
+      : `${deleted.length} arquivo(s) removido(s).`
+  })
+  return { deleted, failed }
+}
+
 export async function removeApp(devicePath: string, appName: string) {
   const destination = path.join(devicePath, 'APPS', sanitizeSegment(appName))
   try {

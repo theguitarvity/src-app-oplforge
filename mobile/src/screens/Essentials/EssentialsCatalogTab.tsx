@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, TextInput, View } from 'react-native'
+import { ActivityIndicator, Alert, FlatList, Pressable, StyleSheet, Text, TextInput, View } from 'react-native'
 import MaterialIcons from '@expo/vector-icons/MaterialIcons'
 import { colors, radius, spacing, typography } from '../../design-system/tokens'
 import { useEssentialsStore } from '../../stores/essentials-store'
@@ -68,7 +68,25 @@ export function EssentialsCatalogTab({ onDownloadStarted }: EssentialsCatalogTab
     setConfirming(false)
     const toDownload = selectedItems
     setSelectedIds(new Set())
-    void confirmAndDownload(toDownload).then(() => onDownloadStarted())
+    void confirmAndDownload(toDownload).then((result) => {
+      if (result?.duplicates.length) {
+        const fileNames = result.duplicates.map((d) => d.fileName)
+        Alert.alert(
+          'Alguns títulos já existem',
+          `${fileNames.join(', ')} já estão na biblioteca. Sobrescrever substitui os arquivos existentes permanentemente.`,
+          [
+            { text: 'Cancelar', style: 'cancel' },
+            {
+              text: 'Sobrescrever',
+              style: 'destructive',
+              onPress: () => void confirmAndDownload(toDownload, fileNames).then(() => onDownloadStarted())
+            }
+          ]
+        )
+      } else {
+        onDownloadStarted()
+      }
+    })
   }
 
   return (

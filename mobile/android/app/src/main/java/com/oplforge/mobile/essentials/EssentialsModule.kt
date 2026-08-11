@@ -126,7 +126,12 @@ class EssentialsModule(reactContext: com.facebook.react.bridge.ReactApplicationC
         }
     }
 
-    override fun confirmAndEnqueue(items: ReadableArray, legalConfirmationText: String, promise: Promise) {
+    override fun confirmAndEnqueue(
+        items: ReadableArray,
+        legalConfirmationText: String,
+        overwriteFileNames: ReadableArray,
+        promise: Promise
+    ) {
         if (legalConfirmationText != LEGAL_CONFIRMATION_TEXT) {
             ErrorMapping.reject(promise, AppError("LEGAL_CONFIRMATION_REQUIRED", "Confirmação legal obrigatória ausente ou inválida."))
             return
@@ -152,7 +157,11 @@ class EssentialsModule(reactContext: com.facebook.react.bridge.ReactApplicationC
                     return@launch
                 }
 
+                val confirmedOverwrites = (0 until overwriteFileNames.size()).mapNotNull { overwriteFileNames.getString(it) }.toSet()
+                val latestSnapshot = db.catalogSnapshotDao().getLatestCompleted()
+
                 val created = Arguments.createArray()
+                val duplicates = Arguments.createArray()
                 for (selection in selections) {
                     val mediaType = selection.getString("mediaType") ?: "ps2-dvd"
                     val folder = when (mediaType) {
@@ -166,16 +175,35 @@ class EssentialsModule(reactContext: com.facebook.react.bridge.ReactApplicationC
                     val sizeBytes = if (selection.hasKey("sizeBytes")) selection.getDouble("sizeBytes").toLong() else null
                     val legalReceiptId = "essentials:${selection.getString("id")}:${System.currentTimeMillis()}"
 
+                    // Duplicates are collected (not enqueued) rather than
+                    // rejecting the whole batch — the caller prompts once for
+                    // everything found and re-calls with overwriteFileNames set.
+                    val overwrite = fileName in confirmedOverwrites
+                    if (!overwrite && latestSnapshot != null) {
+                        val duplicate = db.catalogEntryDao().findByFileName(latestSnapshot.id, fileName)
+                        if (duplicate != null) {
+                            duplicates.pushMap(Arguments.createMap().apply {
+                                putString("fileName", fileName)
+                                putString("existingEntryId", duplicate.id)
+                            })
+                            continue
+                        }
+                    }
+
                     val item = scheduler.enqueueDownload(
                         destinationLogicalPath = "$folder/$fileName",
                         title = title,
                         sourceUrl = url,
                         expectedBytes = sizeBytes,
-                        legalReceiptId = legalReceiptId
+                        legalReceiptId = legalReceiptId,
+                        overwrite = overwrite
                     )
                     created.pushMap(transferItemToMap(item))
                 }
-                promise.resolve(created)
+                promise.resolve(Arguments.createMap().apply {
+                    putArray("created", created)
+                    putArray("duplicates", duplicates)
+                })
             } catch (e: Exception) {
                 ErrorMapping.rejectUnexpected(promise, e)
             }

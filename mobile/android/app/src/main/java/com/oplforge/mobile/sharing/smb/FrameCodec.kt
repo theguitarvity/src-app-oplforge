@@ -20,15 +20,19 @@ object SmbCommand {
     const val READ_ANDX = 0x2E
     const val WRITE_ANDX = 0x2F
     const val TRANSACTION2 = 0x32
+    const val FIND_CLOSE2 = 0x34
     const val CHECK_DIRECTORY = 0x10
 }
 
 object Trans2Subcommand {
     const val FIND_FIRST2 = 0x0001
+    const val FIND_NEXT2 = 0x0002
     const val QUERY_PATH_INFORMATION = 0x0005
 }
 
 object InfoLevel {
+    const val QUERY_FILE_BASIC_INFO = 0x0101
+    const val QUERY_FILE_STANDARD_INFO = 0x0102
     const val FIND_FILE_BOTH_DIRECTORY_INFO = 0x0104
 }
 

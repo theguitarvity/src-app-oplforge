@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native'
+import { Alert, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native'
 import MaterialIcons from '@expo/vector-icons/MaterialIcons'
 import { colors, radius, spacing, typography } from '../../design-system/tokens'
 import { useEssentialsStore } from '../../stores/essentials-store'
@@ -69,10 +69,32 @@ export function SmartFillSheet({ onDownloadStarted }: SmartFillSheetProps) {
   const handleConfirmAll = () => {
     if (!smartFillPlan) return
     setConfirmingAll(false)
-    void confirmAndDownload(smartFillPlan.selectedItems).then(() => {
-      resetSmartFillPlan()
-      setStep('space')
-      onDownloadStarted()
+    const selectedItems = smartFillPlan.selectedItems
+    void confirmAndDownload(selectedItems).then((result) => {
+      if (result?.duplicates.length) {
+        const fileNames = result.duplicates.map((d) => d.fileName)
+        Alert.alert(
+          'Alguns títulos já existem',
+          `${fileNames.join(', ')} já estão na biblioteca. Sobrescrever substitui os arquivos existentes permanentemente.`,
+          [
+            { text: 'Cancelar', style: 'cancel' },
+            {
+              text: 'Sobrescrever',
+              style: 'destructive',
+              onPress: () =>
+                void confirmAndDownload(selectedItems, fileNames).then(() => {
+                  resetSmartFillPlan()
+                  setStep('space')
+                  onDownloadStarted()
+                })
+            }
+          ]
+        )
+      } else {
+        resetSmartFillPlan()
+        setStep('space')
+        onDownloadStarted()
+      }
     })
   }
 

@@ -26,7 +26,7 @@ import com.oplforge.mobile.transfer.TransferItemEntity
         DiagnosticsReportEntity::class,
         CatalogListingCacheEntity::class
     ],
-    version = 4,
+    version = 5,
     exportSchema = false
 )
 @TypeConverters(StructuralIssuesConverter::class)

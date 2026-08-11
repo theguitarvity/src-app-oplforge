@@ -69,9 +69,33 @@ export async function getAvailableSpace(): Promise<number> {
 export const LEGAL_CONFIRMATION_TEXT =
   'Confirmo que possuo este jogo fisicamente/digitalmente ou tenho autorização legal para baixar este backup.'
 
-export async function confirmAndEnqueue(items: CatalogListing[], legalConfirmationText: string): Promise<TransferItem[]> {
+export interface DuplicateItem {
+  fileName: string
+  existingEntryId: string
+}
+
+export interface ConfirmAndEnqueueResult {
+  created: TransferItem[]
+  duplicates: DuplicateItem[]
+}
+
+/**
+ * Duplicates found against the already-cataloged library are returned (not
+ * thrown) in `duplicates`, alongside whatever was legitimately enqueued in
+ * `created` — the caller prompts once for the whole batch and re-calls with
+ * `overwriteFileNames` set to proceed with the ones the user confirms.
+ */
+export async function confirmAndEnqueue(
+  items: CatalogListing[],
+  legalConfirmationText: string,
+  overwriteFileNames: string[] = []
+): Promise<ConfirmAndEnqueueResult> {
   try {
-    return (await NativeEssentialsModule.confirmAndEnqueue(items, legalConfirmationText)) as TransferItem[]
+    return (await NativeEssentialsModule.confirmAndEnqueue(
+      items,
+      legalConfirmationText,
+      overwriteFileNames
+    )) as ConfirmAndEnqueueResult
   } catch (error) {
     throw toEssentialsModuleError(error)
   }

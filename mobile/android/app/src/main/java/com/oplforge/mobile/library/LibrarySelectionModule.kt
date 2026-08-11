@@ -3,6 +3,7 @@ package com.oplforge.mobile.library
 import android.app.Activity
 import android.content.Intent
 import android.net.Uri
+import android.os.storage.StorageManager
 import com.oplforge.mobile.specs.NativeLibraryModuleSpec
 import com.facebook.react.bridge.ActivityEventListener
 import com.facebook.react.bridge.Arguments
@@ -138,14 +139,30 @@ class LibrarySelectionModule(reactContext: ReactApplicationContext) :
         if (!cleared) promise.resolve(false)
     }
 
+    /**
+     * `ExternalStorageProvider` exposes real SD cards AND many USB-OTG mass
+     * storage devices under the same authority, distinguished only by a
+     * non-"primary" volume id — the doc id alone can't tell them apart. Only
+     * claim "sd-card" when `StorageVolume` (API 30+) confirms removable +
+     * non-emulated *and* we can actually match the volume; otherwise fall
+     * back to the neutral "external-storage" rather than guessing wrong (a
+     * real bug found on-device: a USB-OTG HD was always labeled "Cartão SD").
+     */
     private fun classifySource(uri: Uri): String {
         val authority = uri.authority ?: return "unknown"
         val docId = uri.lastPathSegment ?: ""
+        if (!authority.contains("externalstorage")) return "unknown"
+        if (docId.startsWith("primary:")) return "internal"
+
+        val volumeId = docId.substringBefore(':', missingDelimiterValue = "")
+        val storageManager = reactApplicationContext.getSystemService(StorageManager::class.java)
+        val volume = storageManager?.storageVolumes?.firstOrNull { vol ->
+            android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R &&
+                vol.uuid?.equals(volumeId, ignoreCase = true) == true
+        }
         return when {
-            authority.contains("externalstorage") && docId.startsWith("primary:") -> "internal"
-            authority.contains("externalstorage") -> "sd-card"
-            authority.contains("usb") || docId.contains("usb", ignoreCase = true) -> "usb-otg"
-            else -> "unknown"
+            volume != null && volume.isRemovable && !volume.isEmulated -> "sd-card"
+            else -> "external-storage"
         }
     }
 

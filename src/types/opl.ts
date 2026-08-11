@@ -456,6 +456,11 @@ export interface OperationConfirmation {
   confirmation: string
 }
 
+export interface DeleteGameResult {
+  deleted: string[]
+  failed: { path: string; error: string }[]
+}
+
 export type CatalogItemClassification = 'ready' | 'warning' | 'invalid'
 export type CatalogGameIdSource = 'iso' | 'zso' | 'filename' | 'ul-cfg' | 'manual' | 'none'
 export interface FileIdentity {
@@ -826,6 +831,7 @@ export interface SourceProviderConfig {
 export interface ImportFromSourceInput {
   file: SourceFile
   destination: string
+  overwrite?: boolean
 }
 
 export interface InternetArchiveSourceConfig {
@@ -1124,6 +1130,7 @@ export interface OplApi {
   pauseDurableDownload(input: RevisionedTaskRef): Promise<DurableDownloadTask>
   resumeDurableDownload(input: RevisionedTaskRef): Promise<DurableDownloadTask>
   retryDurableDownload(input: RevisionedTaskRef): Promise<DurableDownloadTask>
+  resolveDownloadCollision(taskId: string, action: 'overwrite' | 'cancel'): Promise<void>
   cancelDurableDownload(
     input: RevisionedTaskRef & {
       partialPolicy: 'keep-for-resume' | 'discard'
@@ -1282,6 +1289,7 @@ export interface OplApi {
   installApp(input: AppInstallInput): Promise<HistoryEntry>
   listInstalledApps(devicePath: string): Promise<InstalledApp[]>
   removeApp(devicePath: string, appName: string): Promise<HistoryEntry>
+  deleteGame(devicePath: string, relativePath: string, gameId?: string): Promise<DeleteGameResult>
   listSourceFiles(config: SourceProviderConfig): Promise<SourceFile[]>
   importFromSource(input: ImportFromSourceInput): Promise<HistoryEntry>
   listManagedSources(): Promise<ManagedSourceConfig[]>

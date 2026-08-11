@@ -61,7 +61,7 @@ class TransferQueueModule(reactContext: ReactApplicationContext) :
         super.invalidate()
     }
 
-    override fun enqueueImport(sourceUri: String, destinationHint: String, promise: Promise) {
+    override fun enqueueImport(sourceUri: String, destinationHint: String, overwrite: Boolean, promise: Promise) {
         val stored = libraryPreferences.load()
         if (stored == null) {
             ErrorMapping.reject(promise, AppError("NO_LIBRARY_SELECTED", "Nenhuma biblioteca foi selecionada."))
@@ -80,12 +80,21 @@ class TransferQueueModule(reactContext: ReactApplicationContext) :
             val fileName = doc.name ?: "arquivo"
             val folder = destinationHint.ifBlank { detectFolder(fileName) }
 
-            val latestSnapshot = catalogStore.getLatestCompleted()
-            if (latestSnapshot != null) {
-                val duplicate = db.catalogEntryDao().findByFileName(latestSnapshot.id, fileName)
-                if (duplicate != null) {
-                    ErrorMapping.reject(promise, AppError("DUPLICATE_ITEM", "\"$fileName\" já existe na biblioteca."))
-                    return@launch
+            // Resolved (not rejected) on a duplicate — the caller decides
+            // whether to prompt for overwrite and re-call with overwrite=true,
+            // rather than the queue treating "already exists" as a hard error.
+            if (!overwrite) {
+                val latestSnapshot = catalogStore.getLatestCompleted()
+                if (latestSnapshot != null) {
+                    val duplicate = db.catalogEntryDao().findByFileName(latestSnapshot.id, fileName)
+                    if (duplicate != null) {
+                        promise.resolve(Arguments.createMap().apply {
+                            putString("status", "duplicate")
+                            putString("fileName", fileName)
+                            putString("existingEntryId", duplicate.id)
+                        })
+                        return@launch
+                    }
                 }
             }
 
@@ -93,9 +102,10 @@ class TransferQueueModule(reactContext: ReactApplicationContext) :
                 destinationLogicalPath = "$folder/$fileName",
                 title = fileName,
                 sourceTreeUri = sourceUri,
-                expectedBytes = doc.length().takeIf { it > 0 }
+                expectedBytes = doc.length().takeIf { it > 0 },
+                overwrite = overwrite
             )
-            promise.resolve(itemToMap(item))
+            promise.resolve(itemToMap(item).apply { putString("status", "queued") })
         }
     }
 

@@ -29,6 +29,10 @@ export function registerDurableDownloadIpc(
     const parsed = parseInput('downloadCancel', input)
     return coordinator.cancel({ taskId: parsed.taskId, expectedRevision: parsed.expectedRevision })
   })
+  main.handle('downloads:resolve-collision', (_event, input: unknown) => {
+    const parsed = parseInput('downloadResolveCollision', input)
+    coordinator.resolveCollision(parsed.taskId, parsed.action)
+  })
   main.handle('downloads:retry-failed', (_event, input: unknown) => {
     const parsed = parseInput('downloadRetryFailed', input)
     return coordinator.retryFailed(parsed.expectedQueueRevision, parsed.deviceId)

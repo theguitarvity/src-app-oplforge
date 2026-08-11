@@ -1,7 +1,7 @@
 import { create } from 'zustand'
 import type { CatalogListing, SmartFillPlan } from '../types'
 import * as EssentialsModule from '../native/EssentialsModule'
-import type { SmartFillMode } from '../native/EssentialsModule'
+import type { ConfirmAndEnqueueResult, SmartFillMode } from '../native/EssentialsModule'
 
 interface EssentialsStoreState {
   items: CatalogListing[]
@@ -18,7 +18,7 @@ interface EssentialsStoreState {
   loadAvailableSpace: () => Promise<number | undefined>
   buildSmartFillPlan: (targetBytes: number, mode: SmartFillMode) => Promise<void>
   resetSmartFillPlan: () => void
-  confirmAndDownload: (items: CatalogListing[]) => Promise<void>
+  confirmAndDownload: (items: CatalogListing[], overwriteFileNames?: string[]) => Promise<ConfirmAndEnqueueResult | undefined>
 }
 
 export const useEssentialsStore = create<EssentialsStoreState>((set, get) => ({
@@ -95,16 +95,22 @@ export const useEssentialsStore = create<EssentialsStoreState>((set, get) => ({
 
   resetSmartFillPlan: () => set({ smartFillPlan: undefined }),
 
-  confirmAndDownload: async (items) => {
+  confirmAndDownload: async (items, overwriteFileNames = []) => {
     set({ status: 'loading', errorMessage: undefined })
     try {
-      await EssentialsModule.confirmAndEnqueue(items, EssentialsModule.LEGAL_CONFIRMATION_TEXT)
+      const result = await EssentialsModule.confirmAndEnqueue(
+        items,
+        EssentialsModule.LEGAL_CONFIRMATION_TEXT,
+        overwriteFileNames
+      )
       set({ status: 'idle' })
+      return result
     } catch (error) {
       set({
         status: 'error',
         errorMessage: error instanceof EssentialsModule.EssentialsModuleError ? error.message : String(error)
       })
+      return undefined
     }
   }
 }))

@@ -107,7 +107,11 @@ export function LibraryScreen() {
         )}
       />
 
-      <GameDetailSheet entry={selected} onClose={() => setSelected(undefined)} />
+      <GameDetailSheet
+        entry={selected}
+        onClose={() => setSelected(undefined)}
+        onDeleted={(entryId) => setEntries((prev) => prev.filter((entry) => entry.id !== entryId))}
+      />
     </View>
   )
 }

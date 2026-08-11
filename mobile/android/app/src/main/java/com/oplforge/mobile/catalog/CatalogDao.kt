@@ -43,6 +43,13 @@ interface CatalogEntryDao {
     @Query("DELETE FROM catalog_entry WHERE snapshotId = :snapshotId")
     suspend fun deleteForSnapshot(snapshotId: String)
 
+    @Query("SELECT * FROM catalog_entry WHERE id = :id")
+    suspend fun getById(id: String): CatalogEntryEntity?
+
+    /** Single-row delete, used after a user-initiated title deletion — keeps the cached catalog in sync without a full rescan. */
+    @Query("DELETE FROM catalog_entry WHERE id = :id")
+    suspend fun deleteById(id: String)
+
     /** Case-insensitive filename match within one snapshot, for import duplicate detection (spec 008 FR-009). */
     @Query(
         """

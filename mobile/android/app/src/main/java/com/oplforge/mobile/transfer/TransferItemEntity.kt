@@ -19,7 +19,12 @@ data class TransferItemEntity(
     val partFiles: List<String>,
     val errorMessage: String?,
     val createdAt: String,
-    val updatedAt: String
+    val updatedAt: String,
+    // User confirmed replacing an existing same-name file at enqueue time —
+    // persisted (not just an in-memory flag) so WorkManager retries after
+    // process death still know to overwrite rather than re-reject as a
+    // duplicate. Defaults false so existing/older rows behave unchanged.
+    val overwrite: Boolean = false
 )
 
 object TransferState {

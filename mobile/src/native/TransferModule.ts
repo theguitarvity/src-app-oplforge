@@ -25,10 +25,23 @@ function toTransferModuleError(error: unknown): TransferModuleError {
   return new TransferModuleError({ code: 'UNKNOWN_ERROR', message: String(error) })
 }
 
-/** Starts a local-file import (US2) — `sourceUri` is a SAF document URI from the system file picker. */
-export async function enqueueImport(sourceUri: string, destinationHint = ''): Promise<TransferItem> {
+export type EnqueueImportResult =
+  | ({ status: 'queued' } & TransferItem)
+  | { status: 'duplicate'; fileName: string; existingEntryId: string }
+
+/**
+ * Starts a local-file import (US2) — `sourceUri` is a SAF document URI from
+ * the system file picker. Resolves with `{status: 'duplicate', ...}` instead
+ * of throwing when a same-name title already exists; the caller decides
+ * whether to prompt for overwrite and re-call with `overwrite: true`.
+ */
+export async function enqueueImport(
+  sourceUri: string,
+  destinationHint = '',
+  overwrite = false
+): Promise<EnqueueImportResult> {
   try {
-    return (await NativeTransferModule.enqueueImport(sourceUri, destinationHint)) as TransferItem
+    return (await NativeTransferModule.enqueueImport(sourceUri, destinationHint, overwrite)) as EnqueueImportResult
   } catch (error) {
     throw toTransferModuleError(error)
   }

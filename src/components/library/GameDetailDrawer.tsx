@@ -10,11 +10,14 @@ import {
   AlertTriangle,
   Gamepad2,
   Images,
-  ShieldCheck
+  ShieldCheck,
+  Trash2
 } from 'lucide-react'
 import type { UnifiedGameItem } from '@/types/library'
 import { oplApi } from '@/services/api'
 import { useDeviceStore } from '@/stores/device-store'
+import { useNetworkShareStore } from '@/stores/network-share-store'
+import { ConfirmDialog } from '@/components/ConfirmDialog'
 
 interface GameDetailDrawerProps {
   item: UnifiedGameItem | null
@@ -31,12 +34,14 @@ function formatBytes(bytes?: number) {
 
 export function GameDetailDrawer({ item, isOpen, onClose, onUpdated }: GameDetailDrawerProps) {
   const activeDevice = useDeviceStore((state) => state.activeDevice)
+  const sharingActive = useNetworkShareStore((state) => state.status?.smb.state) === 'running'
   const [isProcessing, setIsProcessing] = useState(false)
   const [feedback, setFeedback] = useState<string | null>(null)
   const [showPcsx2Picker, setShowPcsx2Picker] = useState(false)
   const [pcsx2Path, setPcsx2Path] = useState('')
   const [biosPath, setBiosPath] = useState('')
   const [cardPath, setCardPath] = useState('')
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
 
   const profiles = useQuery({
     queryKey: ['opl-profiles'],
@@ -176,6 +181,27 @@ export function GameDetailDrawer({ item, isOpen, onClose, onUpdated }: GameDetai
       setFeedback(`Hash calculado: ${hash}`)
     } catch (err) {
       setFeedback(`Erro na validação: ${(err as Error).message}`)
+    } finally {
+      setIsProcessing(false)
+    }
+  }
+
+  const handleDelete = async () => {
+    if (!activeDevice) return
+    setShowDeleteConfirm(false)
+    setIsProcessing(true)
+    setFeedback(null)
+    try {
+      const result = await oplApi.deleteGame(activeDevice.path, item.filePath, item.gameId)
+      if (result.failed.length) {
+        setFeedback(`Excluído com falhas: ${result.failed.map((f) => f.path).join(', ')}`)
+      } else {
+        setFeedback(`${item.title} removido da biblioteca.`)
+        onUpdated?.()
+        onClose()
+      }
+    } catch (err) {
+      setFeedback(`Erro ao excluir: ${(err as Error).message}`)
     } finally {
       setIsProcessing(false)
     }
@@ -354,6 +380,17 @@ export function GameDetailDrawer({ item, isOpen, onClose, onUpdated }: GameDetai
               </span>
               <span className="text-[10px] text-violet-300 font-mono">Catálogo</span>
             </Link>
+
+            <button
+              onClick={() => setShowDeleteConfirm(true)}
+              disabled={isProcessing}
+              className="flex w-full items-center justify-between rounded-xl border border-red-500/30 bg-red-500/10 p-3 text-xs font-semibold text-red-300 transition hover:bg-red-500/20 disabled:opacity-50"
+            >
+              <span className="flex items-center gap-2">
+                <Trash2 className="size-4" />
+                Excluir Título
+              </span>
+            </button>
           </div>
         </div>
 
@@ -367,6 +404,19 @@ export function GameDetailDrawer({ item, isOpen, onClose, onUpdated }: GameDetai
           </button>
         </div>
       </div>
+
+      <ConfirmDialog
+        open={showDeleteConfirm}
+        onOpenChange={setShowDeleteConfirm}
+        title="Excluir título"
+        description={
+          sharingActive
+            ? `Isso remove o arquivo do jogo, capa e configuração de "${item.title}". O compartilhamento está ativo — excluir um jogo que o PS2 esteja lendo agora pode causar falha no PS2. Esta ação não pode ser desfeita.`
+            : `Isso remove o arquivo do jogo, capa e configuração de "${item.title}". Esta ação não pode ser desfeita.`
+        }
+        confirmLabel="Excluir"
+        onConfirm={handleDelete}
+      />
     </div>
   )
 }

@@ -47,12 +47,14 @@ class SmbServer(
     private var acceptThread: Thread? = null
     private val connectionExecutor = Executors.newCachedThreadPool()
     private val activeSockets = ConcurrentHashMap<String, Socket>()
+    private var handlers: CommandHandlers? = null
     @Volatile private var running = false
 
     val boundPort: Int get() = serverSocket?.localPort ?: port
 
     fun start() {
         val handlers = CommandHandlers(context, tree, credentialStore, shareName, writeLock, isWriteAccessAcknowledged)
+        this.handlers = handlers
         val socket = ServerSocket()
         socket.reuseAddress = true
         val address = if (bindAddress != null) InetSocketAddress(bindAddress, port) else InetSocketAddress(port)
@@ -106,9 +108,11 @@ class SmbServer(
             }
         } catch (e: EOFException) {
             // Clean disconnect — expected when the client (or its cable) goes away.
+            Log.d(TAG, "Connection $connectionId closed: EOF ($e)")
         } catch (e: SocketTimeoutException) {
             // Idle timeout — the PS2 went silent without a clean TCP close
             // (e.g. dropped off Wi-Fi). Treated the same as a clean disconnect.
+            Log.d(TAG, "Connection $connectionId closed: idle timeout ($e)")
         } catch (e: Exception) {
             Log.e(TAG, "Connection $connectionId failed", e)
         } finally {
@@ -127,6 +131,8 @@ class SmbServer(
         acceptThread?.join(2000)
         acceptThread = null
         serverSocket = null
+        handlers?.close()
+        handlers = null
     }
 
     companion object {

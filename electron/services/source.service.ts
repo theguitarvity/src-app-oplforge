@@ -31,9 +31,7 @@ export class LocalFolderProvider implements SourceProvider {
     const entries = await fs.readdir(this.rootPath, { withFileTypes: true })
     const files = await Promise.all(
       entries
-        .filter(
-          (entry) => entry.isFile() && allowed.has(path.extname(entry.name).toLowerCase())
-        )
+        .filter((entry) => entry.isFile() && allowed.has(path.extname(entry.name).toLowerCase()))
         .map(async (entry) => {
           const filePath = path.join(this.rootPath, entry.name)
           const stat = await fs.stat(filePath)
@@ -120,6 +118,20 @@ export async function listSourceFiles(config: SourceProviderConfig): Promise<Sou
 }
 
 export async function importFromSource(input: ImportFromSourceInput) {
+  if (!input.overwrite) {
+    const exists = await fs.stat(input.destination).then(
+      () => true,
+      () => false
+    )
+    // Thrown outside the try/catch below on purpose — recordFailure() would
+    // swallow this into a resolved HistoryEntry with result:'error', which
+    // the renderer can't distinguish from a real failure to decide whether
+    // to show an overwrite prompt. A real collision must reject the IPC call.
+    if (exists)
+      throw Object.assign(new Error('Já existe um arquivo com esse nome no destino.'), {
+        code: 'IMPORT_COLLISION'
+      })
+  }
   try {
     const provider = new LocalFolderProvider(path.dirname(input.file.path))
     await provider.downloadFile(input.file, input.destination)

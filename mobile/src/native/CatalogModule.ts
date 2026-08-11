@@ -103,6 +103,20 @@ export async function getArtUri(gameId: string): Promise<string | undefined> {
   }
 }
 
+export interface DeleteEntryResult {
+  deleted: string[]
+  failed: { path: string; error: string }[]
+}
+
+/** Deletes a cataloged title's main file plus its associated ART/CFG files, and drops it from the cached catalog. */
+export async function deleteEntry(entryId: string): Promise<DeleteEntryResult> {
+  try {
+    return (await NativeCatalogModule.deleteEntry(entryId)) as DeleteEntryResult
+  } catch (error) {
+    throw toCatalogModuleError(error)
+  }
+}
+
 export interface CatalogScanEventPayload {
   snapshot: CatalogSnapshot
   message: string
