@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Disc3, FolderOpen } from 'lucide-react'
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
 import { z } from 'zod'
 import { EmptyState } from '@/components/EmptyState'
 import { Button } from '@/components/ui/button'
@@ -16,14 +17,15 @@ import { basename } from '@/utils/path'
 import type { InstallationPlan, InstallationResult } from '@/types/opl'
 
 const schema = z.object({
-  name: z.string().min(1, 'Informe o nome do jogo.'),
-  oplProfileId: z.string().min(1, 'Selecione uma versão exata do OPL.'),
-  authorized: z.literal(true, { message: 'Confirme que o backup é autorizado.' })
+  name: z.string().min(1, 'nameRequired'),
+  oplProfileId: z.string().min(1, 'profileRequired'),
+  authorized: z.literal(true, { message: 'authorizationRequired' })
 })
 
 type FormValues = z.infer<typeof schema>
 
 export function Ps2ImportPage() {
+  const { t } = useTranslation()
   const [files, setFiles] = useState<string[]>([])
   const [plan, setPlan] = useState<InstallationPlan | null>(null)
   const [result, setResult] = useState<InstallationResult | null>(null)
@@ -51,10 +53,11 @@ export function Ps2ImportPage() {
         return prepared
       }
       if (prepared.replaces && !replaceConfirmed)
-        throw new Error('Confirme explicitamente a substituição do jogo existente.')
+        throw new Error(t('pages.ps2Import.replaceConfirmRequired') ?? '')
       return oplApi.confirmInstallation({
         operationId: prepared.id,
         expectedRevision: prepared.expectedRevision,
+        // Literal confirmation phrases expected by the backend — not localized (Constitution Principle I).
         confirmation: prepared.replaces
           ? 'SUBSTITUIR BACKUP AUTORIZADO'
           : 'INSTALAR BACKUP AUTORIZADO'
@@ -98,8 +101,8 @@ export function Ps2ImportPage() {
     return (
       <EmptyState
         icon={Disc3}
-        title="Selecione um dispositivo"
-        description="Escolha o dispositivo ativo antes de importar jogos PS2."
+        title={t('pages.ps2Import.selectDeviceTitle')}
+        description={t('pages.ps2Import.selectDeviceDescription')}
       />
     )
 
@@ -107,17 +110,15 @@ export function Ps2ImportPage() {
     <Card>
       <div className="mb-6 flex items-center justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-semibold text-white">Importador PS2</h2>
-          <p className="mt-1 text-sm text-muted-foreground">
-            A mídia, o Game ID e o formato são inspecionados antes da instalação transacional.
-          </p>
+          <h2 className="text-2xl font-semibold text-white">{t('pages.ps2Import.title')}</h2>
+          <p className="mt-1 text-sm text-muted-foreground">{t('pages.ps2Import.subtitle')}</p>
         </div>
         <div className="flex gap-2">
           <Button variant="secondary" onClick={pickFolder}>
-            <FolderOpen className="size-4" /> Pasta com ISOs
+            <FolderOpen className="size-4" /> {t('pages.ps2Import.folderWithIsos')}
           </Button>
           <Button variant="secondary" onClick={pickFiles}>
-            <Disc3 className="size-4" /> Selecionar ISO
+            <Disc3 className="size-4" /> {t('pages.ps2Import.selectIso')}
           </Button>
         </div>
       </div>
@@ -128,13 +129,16 @@ export function Ps2ImportPage() {
       >
         <div className="grid gap-4 md:grid-cols-2">
           <div className="space-y-2">
-            <Label>Nome</Label>
-            <Input {...form.register('name')} placeholder="Ex: Gran Turismo 4" />
+            <Label>{t('pages.ps2Import.nameLabel')}</Label>
+            <Input
+              {...form.register('name')}
+              placeholder={t('pages.ps2Import.namePlaceholder') ?? ''}
+            />
           </div>
           <div className="space-y-2">
-            <Label>Perfil OPL exato</Label>
+            <Label>{t('pages.ps2Import.exactProfile')}</Label>
             <Select {...form.register('oplProfileId')}>
-              <option value="">Selecione</option>
+              <option value="">{t('pages.ps2Import.selectOption')}</option>
               {profiles.data?.map((profile) => (
                 <option key={profile.id} value={profile.id}>
                   {profile.version} · {profile.variant}
@@ -144,10 +148,12 @@ export function Ps2ImportPage() {
           </div>
         </div>
         {form.formState.errors.name ? (
-          <p className="text-sm text-red-300">{form.formState.errors.name.message}</p>
+          <p className="text-sm text-red-300">{t('pages.ps2Import.nameRequired')}</p>
         ) : null}
         <div className="rounded-xl border border-white/10 bg-black/20 p-4">
-          <p className="text-sm font-medium text-white">Arquivos selecionados: {files.length}</p>
+          <p className="text-sm font-medium text-white">
+            {t('pages.ps2Import.filesSelected', { count: files.length })}
+          </p>
           <div className="mt-2 max-h-32 overflow-auto text-xs text-muted-foreground">
             {files.map((file) => (
               <p key={file}>{file}</p>
@@ -155,19 +161,21 @@ export function Ps2ImportPage() {
           </div>
         </div>
         <label className="flex items-center gap-2 text-sm text-muted-foreground">
-          <input type="checkbox" {...form.register('authorized')} /> Confirmo que possuo autorização
-          para usar este backup.
+          <input type="checkbox" {...form.register('authorized')} />{' '}
+          {t('pages.ps2Import.authorizedLabel')}
         </label>
         {plan ? (
           <div className="rounded-xl border border-amber-400/30 bg-amber-400/5 p-4 text-sm">
-            <p className="font-medium text-white">Plano pronto para confirmação</p>
+            <p className="font-medium text-white">{t('pages.ps2Import.planReadyTitle')}</p>
             <p>
               {plan.gameId} · {plan.media} · {plan.format}
             </p>
             <p className="break-all text-muted-foreground">
-              Destino: {plan.destinationRelativePath}
+              {t('pages.ps2Import.destinationLabel', { path: plan.destinationRelativePath })}
             </p>
-            <p className="text-muted-foreground">SHA-256: {plan.sourceSha256}</p>
+            <p className="text-muted-foreground">
+              {t('pages.ps2Import.shaLabel', { sha: plan.sourceSha256 })}
+            </p>
             {plan.warnings.map((warning) => (
               <p key={warning} className="text-amber-300">
                 {warning}
@@ -182,20 +190,24 @@ export function Ps2ImportPage() {
               checked={replaceConfirmed}
               onChange={(event) => setReplaceConfirmed(event.target.checked)}
             />{' '}
-            Confirmo a substituição; o jogo atual será preservado até a validação.
+            {t('pages.ps2Import.confirmReplaceLabel')}
           </label>
         ) : null}
         {result ? (
           <div className="rounded-xl border border-emerald-400/30 bg-emerald-400/5 p-4 text-sm text-emerald-100">
-            <p>Instalação promovida e verificada: {result.verification}</p>
-            <p>Contiguidade: {result.fragmentation}</p>
-            <p className="break-all">Hash destino: {result.destinationSha256}</p>
+            <p>{t('pages.ps2Import.installedVerified', { verification: result.verification })}</p>
+            <p>{t('pages.ps2Import.fragmentation', { value: result.fragmentation })}</p>
+            <p className="break-all">
+              {t('pages.ps2Import.destinationHash', { hash: result.destinationSha256 })}
+            </p>
           </div>
         ) : null}
         {mutation.error ? <p className="text-sm text-red-300">{mutation.error.message}</p> : null}
         <div className="flex gap-2">
           <Button className="w-fit" disabled={files.length !== 1 || mutation.isPending}>
-            {plan ? 'Confirmar instalação' : 'Validar e criar plano'}
+            {plan
+              ? t('pages.ps2Import.confirmInstallation')
+              : t('pages.ps2Import.validateAndCreatePlan')}
           </Button>
           {plan ? (
             <Button
@@ -206,7 +218,7 @@ export function Ps2ImportPage() {
                 setPlan(null)
               }}
             >
-              Cancelar plano
+              {t('pages.ps2Import.cancelPlan')}
             </Button>
           ) : null}
         </div>
