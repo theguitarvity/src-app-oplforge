@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { CheckSquare2, HardDrive, LoaderCircle, ScanSearch } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Select } from '@/components/ui/select'
@@ -24,6 +25,7 @@ import type {
 } from '@/types/opl'
 
 export function FragmentationRepairPage() {
+  const { t } = useTranslation()
   const activeDevice = useDeviceStore((state) => state.activeDevice)
   const setActiveDevice = useDeviceStore((state) => state.setActiveDevice)
   const [selectedDeviceId, setSelectedDeviceId] = useState(activeDevice?.id ?? '')
@@ -41,9 +43,10 @@ export function FragmentationRepairPage() {
   })
   const diagnosis = useMutation({
     mutationFn: () => {
-      if (!selectedDevice) throw new Error('Selecione um dispositivo antes de iniciar.')
+      if (!selectedDevice)
+        throw new Error(t('pages.fragmentationRepair.selectDeviceBeforeStart') ?? '')
       if (selectedGames.length === 0 && !inventory.isError)
-        throw new Error('Selecione ao menos um jogo para analisar.')
+        throw new Error(t('pages.fragmentationRepair.selectAtLeastOneGame') ?? '')
       return oplApi.diagnoseFragmentation({
         devicePath: selectedDevice.path,
         selectionKeys: selectedGames.length ? selectedGames : undefined
@@ -90,7 +93,7 @@ export function FragmentationRepairPage() {
   const isDiagnosing = diagnosis.isPending || diagnosisActivity.data?.status === 'running'
   const planning = useMutation({
     mutationFn: ({ games, mode }: { games: GameDiagnostic[]; mode: 'single' | 'batch' }) => {
-      if (!currentDiagnostic) throw new Error('Execute um novo diagnóstico.')
+      if (!currentDiagnostic) throw new Error(t('pages.fragmentationRepair.noPlanError') ?? '')
       return oplApi.planFragmentationRepair({
         diagnosticId: currentDiagnostic.diagnosticId,
         expectedRevision: currentDiagnostic.revision,
@@ -102,10 +105,11 @@ export function FragmentationRepairPage() {
   })
   const confirmation = useMutation({
     mutationFn: () => {
-      if (!plan) throw new Error('O plano não está mais disponível.')
+      if (!plan) throw new Error(t('pages.fragmentationRepair.noPlanAvailableError') ?? '')
       return oplApi.confirmFragmentationRepair({
         planId: plan.planId,
         expectedRevision: plan.revision,
+        // Literal confirmation phrase expected by the backend — not localized (Constitution Principle I).
         confirmation: 'CORRIGIR FRAGMENTAÇÃO'
       })
     },
@@ -138,9 +142,11 @@ export function FragmentationRepairPage() {
   return (
     <div className="space-y-5">
       <header>
-        <h2 className="text-2xl font-semibold text-white">Diagnóstico de fragmentação</h2>
+        <h2 className="text-2xl font-semibold text-white">
+          {t('pages.fragmentationRepair.title')}
+        </h2>
         <p className="mt-1 text-sm text-muted-foreground">
-          Analise ISO, ZSO e USBExtreme sem modificar o dispositivo.
+          {t('pages.fragmentationRepair.subtitle')}
         </p>
       </header>
       <section
@@ -150,28 +156,28 @@ export function FragmentationRepairPage() {
         <div className="flex items-center gap-3">
           <HardDrive className="size-5 text-violet-200" aria-hidden="true" />
           <h3 id="diagnosis-device-title" className="font-semibold text-white">
-            Selecionar dispositivo
+            {t('pages.fragmentationRepair.selectDeviceTitle')}
           </h3>
         </div>
         {devices.isLoading ? (
           <p className="mt-3 text-sm text-muted-foreground" role="status">
-            Buscando dispositivos…
+            {t('pages.fragmentationRepair.searchingDevices')}
           </p>
         ) : null}
         {devices.error ? (
           <p className="mt-3 text-sm text-red-300" role="alert">
-            Não foi possível listar os dispositivos: {devices.error.message}
+            {t('pages.fragmentationRepair.listDevicesError', { message: devices.error.message })}
           </p>
         ) : null}
         {!devices.isLoading && !devices.error && devices.data?.length === 0 ? (
           <p className="mt-3 text-sm text-muted-foreground">
-            Nenhum dispositivo compatível foi encontrado.
+            {t('pages.fragmentationRepair.noCompatibleDevice')}
           </p>
         ) : null}
         {devices.data && devices.data.length > 0 ? (
           <div className="mt-3 flex flex-col gap-3 sm:flex-row sm:items-end">
             <label className="flex-1 text-sm text-muted-foreground">
-              Dispositivo
+              {t('pages.fragmentationRepair.deviceLabel')}
               <Select
                 value={selectedDeviceId}
                 disabled={isDiagnosing}
@@ -185,7 +191,7 @@ export function FragmentationRepairPage() {
                 }}
                 className="mt-1"
               >
-                <option value="">Selecione explicitamente</option>
+                <option value="">{t('pages.fragmentationRepair.selectExplicitly')}</option>
                 {devices.data.map((device) => (
                   <option key={device.id} value={device.id}>
                     {device.name} — {device.fileSystem} — {device.path}
@@ -200,7 +206,9 @@ export function FragmentationRepairPage() {
               disabled={!selectedDevice || inventory.isFetching || isDiagnosing}
             >
               <ScanSearch className="size-4" aria-hidden="true" />
-              {inventory.isFetching ? 'Lendo jogos…' : 'Atualizar lista'}
+              {inventory.isFetching
+                ? t('pages.fragmentationRepair.readingGames')
+                : t('pages.fragmentationRepair.refreshList')}
             </Button>
             <Button
               type="button"
@@ -212,7 +220,7 @@ export function FragmentationRepairPage() {
               }
             >
               <ScanSearch className="size-4" aria-hidden="true" />
-              Iniciar diagnóstico
+              {t('pages.fragmentationRepair.startDiagnosis')}
             </Button>
           </div>
         ) : null}
@@ -241,7 +249,7 @@ export function FragmentationRepairPage() {
           role="alert"
           className="rounded-xl border border-red-400/30 bg-red-400/5 p-4 text-red-200"
         >
-          Não foi possível consultar recuperações: {recovery.error.message}
+          {t('pages.fragmentationRepair.recoveryError', { message: recovery.error.message })}
         </p>
       ) : null}
       {isDiagnosing ? (
@@ -256,7 +264,7 @@ export function FragmentationRepairPage() {
           className="rounded-xl border border-white/10 bg-black/20 p-4 text-muted-foreground"
           role="status"
         >
-          Diagnóstico cancelado. Nenhum arquivo foi alterado.
+          {t('pages.fragmentationRepair.diagnosisCancelled')}
         </p>
       ) : null}
       {!isDiagnosing &&
@@ -266,11 +274,9 @@ export function FragmentationRepairPage() {
           className="rounded-xl border border-red-400/30 bg-red-400/5 p-4 text-red-200"
           role="alert"
         >
-          <p className="font-medium">Não foi possível concluir o diagnóstico.</p>
+          <p className="font-medium">{t('pages.fragmentationRepair.diagnosisFailedTitle')}</p>
           {diagnosis.error ? <p className="mt-1 text-sm">{diagnosis.error.message}</p> : null}
-          <p className="mt-1 text-sm">
-            Verifique a conexão, montagem e permissões do dispositivo e tente novamente.
-          </p>
+          <p className="mt-1 text-sm">{t('pages.fragmentationRepair.diagnosisFailedHint')}</p>
         </div>
       ) : null}
       {currentDiagnostic?.status === 'complete' ? (
@@ -283,7 +289,7 @@ export function FragmentationRepairPage() {
                 disabled={planning.isPending || Boolean(operation)}
                 onClick={() => planning.mutate({ games: eligibleGames, mode: 'batch' })}
               >
-                Corrigir todos os {eligibleGames.length} jogos elegíveis
+                {t('pages.fragmentationRepair.fixAllEligible', { count: eligibleGames.length })}
               </Button>
             </div>
           ) : null}
@@ -295,7 +301,7 @@ export function FragmentationRepairPage() {
             />
           ) : (
             <p className="rounded-xl border border-white/10 bg-black/20 p-4 text-muted-foreground">
-              Nenhuma instalação OPL reconhecida foi encontrada.
+              {t('pages.fragmentationRepair.noOplInstallations')}
             </p>
           )}
         </>
@@ -308,7 +314,7 @@ export function FragmentationRepairPage() {
           <p>{planningError.message}</p>
           {planningError.code === 'STALE_PLAN' ? (
             <Button className="mt-3" type="button" variant="secondary" onClick={diagnoseAgain}>
-              Diagnosticar novamente
+              {t('pages.fragmentationRepair.diagnoseAgain')}
             </Button>
           ) : null}
         </div>
@@ -332,9 +338,11 @@ export function FragmentationRepairPage() {
           className="rounded-xl border border-emerald-400/30 bg-emerald-400/5 p-4"
         >
           <h3 id="repair-report-title" className="font-semibold text-white">
-            Relatório da correção
+            {t('pages.fragmentationRepair.reportTitle')}
           </h3>
-          <p className="mt-1 text-sm">Resultado: {report.result}</p>
+          <p className="mt-1 text-sm">
+            {t('pages.fragmentationRepair.reportResult', { result: report.result })}
+          </p>
           <ul className="mt-3 space-y-2">
             {report.games.map((game) => (
               <li key={game.installation.installationId} className="rounded-lg bg-black/20 p-3">
@@ -372,43 +380,51 @@ function GameSelection({
   onChange: (keys: string[]) => void
   onDiagnose: () => void
 }) {
+  const { t, i18n } = useTranslation()
   const allSelected = items.length > 0 && selected.length === items.length
   const size = (bytes: number) =>
-    new Intl.NumberFormat('pt-BR', {
+    new Intl.NumberFormat(i18n.language, {
       style: 'unit',
       unit: 'megabyte',
       maximumFractionDigits: 0
     }).format(bytes / 1024 / 1024)
+  const gameWord =
+    selected.length === 1
+      ? t('pages.fragmentationRepair.gameSingular')
+      : t('pages.fragmentationRepair.gamePlural')
   return (
     <Card className="overflow-hidden p-0">
       <div className="flex flex-wrap items-start justify-between gap-4 border-b border-white/10 p-5">
         <div>
           <h3 className="flex items-center gap-2 font-semibold text-white">
             <CheckSquare2 className="size-4 text-violet-300" />
-            Escolha os jogos
+            {t('pages.fragmentationRepair.chooseGamesTitle')}
           </h3>
           <p className="mt-1 text-sm text-muted-foreground">
-            A listagem não verifica fragmentação. Somente os jogos marcados serão analisados.
+            {t('pages.fragmentationRepair.chooseGamesDescription')}
           </p>
         </div>
         <Button disabled={disabled || loading || selected.length === 0} onClick={onDiagnose}>
           <ScanSearch className="size-4" />
-          Analisar {selected.length || ''} {selected.length === 1 ? 'jogo' : 'jogos'}
+          {t('pages.fragmentationRepair.analyzeButton', {
+            count: selected.length || '',
+            gameWord
+          })}
         </Button>
       </div>
       {loading ? (
         <p className="p-5 text-sm text-muted-foreground" role="status">
-          Lendo CD, DVD e ul.cfg…
+          {t('pages.fragmentationRepair.readingCdDvd')}
         </p>
       ) : null}
       {error ? (
         <p className="m-5 rounded-xl border border-amber-400/30 bg-amber-400/5 p-4 text-sm text-amber-100">
-          Não foi possível listar os jogos: {error}
+          {t('pages.fragmentationRepair.listGamesError', { message: error })}
         </p>
       ) : null}
       {!loading && !error && items.length === 0 ? (
         <p className="p-5 text-sm text-muted-foreground">
-          Nenhum jogo ISO, ZSO ou USBExtreme foi encontrado.
+          {t('pages.fragmentationRepair.noGamesFound')}
         </p>
       ) : null}
       {items.length > 0 ? (
@@ -421,9 +437,12 @@ function GameSelection({
               disabled={disabled}
               onChange={() => onChange(allSelected ? [] : items.map((item) => item.selectionKey))}
             />
-            Selecionar todos{' '}
+            {t('pages.fragmentationRepair.selectAll')}{' '}
             <span className="ml-auto text-xs">
-              {selected.length} de {items.length}
+              {t('pages.fragmentationRepair.selectedOfTotal', {
+                selected: selected.length,
+                total: items.length
+              })}
             </span>
           </label>
           <div className="max-h-[420px] divide-y divide-white/5 overflow-y-auto">
@@ -450,7 +469,8 @@ function GameSelection({
                     {item.title}
                   </span>
                   <span className="block truncate text-xs text-muted-foreground">
-                    {item.gameId ?? 'ID não identificado'} · {item.format} · {item.media}
+                    {item.gameId ?? t('pages.fragmentationRepair.unidentifiedId')} · {item.format} ·{' '}
+                    {item.media}
                   </span>
                 </span>
                 <span className="text-xs text-muted-foreground">{size(item.totalBytes)}</span>
@@ -472,6 +492,7 @@ function DiagnosisProgress({
   cancelling: boolean
   onCancel: (diagnosticId: string) => void
 }) {
+  const { t } = useTranslation()
   const progress = Math.max(0, Math.min(1, activity?.progress ?? 0))
   const percent = Math.round(progress * 100)
   const hasInventory = Boolean(activity?.totalItems)
@@ -489,10 +510,10 @@ function DiagnosisProgress({
             className="flex items-center gap-2 font-semibold text-white"
           >
             <LoaderCircle className="size-4 animate-spin" aria-hidden="true" />
-            Diagnóstico em andamento
+            {t('pages.fragmentationRepair.diagnosisInProgress')}
           </h3>
           <p className="mt-1 text-sm text-violet-100">
-            {activity?.message ?? 'Diagnosticando jogos e verificando extents…'}
+            {activity?.message ?? t('pages.fragmentationRepair.diagnosingMessage')}
           </p>
         </div>
         {activity ? (
@@ -502,14 +523,16 @@ function DiagnosisProgress({
             disabled={cancelling}
             onClick={() => onCancel(activity.diagnosticId)}
           >
-            {cancelling ? 'Cancelando…' : 'Cancelar diagnóstico'}
+            {cancelling
+              ? t('pages.fragmentationRepair.cancelling')
+              : t('pages.fragmentationRepair.cancelDiagnosis')}
           </Button>
         ) : null}
       </div>
       <div
         className="mt-4 h-2 overflow-hidden rounded-full bg-black/30"
         role="progressbar"
-        aria-label="Progresso do diagnóstico"
+        aria-label={t('pages.fragmentationRepair.diagnosisProgressAriaLabel') ?? ''}
         aria-valuemin={0}
         aria-valuemax={100}
         aria-valuenow={percent}
@@ -522,19 +545,21 @@ function DiagnosisProgress({
       <div className="mt-2 flex flex-wrap justify-between gap-2 text-xs text-muted-foreground">
         <span>
           {hasInventory
-            ? `${activity?.processedItems} de ${activity?.totalItems} jogos analisados`
-            : 'Inventariando jogos…'}
+            ? t('pages.fragmentationRepair.gamesAnalyzed', {
+                processed: activity?.processedItems,
+                total: activity?.totalItems
+              })
+            : t('pages.fragmentationRepair.inventoryingGames')}
         </span>
         <span>{percent}%</span>
       </div>
       {activity?.currentItem ? (
         <p className="mt-2 break-all text-xs text-violet-100">
-          Arquivo atual: {activity.currentItem}
+          {t('pages.fragmentationRepair.currentFile', { file: activity.currentItem })}
         </p>
       ) : null}
       <p className="mt-3 text-xs text-muted-foreground">
-        Você pode trocar de tela: o diagnóstico continuará em segundo plano e o progresso será
-        recuperado ao voltar.
+        {t('pages.fragmentationRepair.backgroundHint')}
       </p>
     </section>
   )
