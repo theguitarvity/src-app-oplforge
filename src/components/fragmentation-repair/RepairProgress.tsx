@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import type { RepairEvent, RepairOperation } from '@/types/opl'
 import { Button } from '@/components/ui/button'
 import { oplApi } from '@/services/api'
@@ -17,6 +18,7 @@ export function RepairProgress({
   operation: RepairOperation
   onTerminal(operationId: string): void
 }) {
+  const { t } = useTranslation()
   const [events, setEvents] = useState<RepairEvent[]>([])
   const [cancelPending, setCancelPending] = useState(false)
   useEffect(
@@ -49,10 +51,10 @@ export function RepairProgress({
       <div className="flex items-start justify-between gap-3">
         <div>
           <h3 id="repair-progress-title" className="font-semibold text-white">
-            Progresso da correção
+            {t('components.repairProgress.title')}
           </h3>
           <p className="mt-1 text-sm text-muted-foreground" aria-live="polite">
-            {latest?.message ?? 'Preparando operação segura…'}
+            {latest?.message ?? t('components.repairProgress.preparingOperation')}
           </p>
         </div>
         <Button
@@ -62,13 +64,13 @@ export function RepairProgress({
           disabled={cancelPending}
           onClick={() => void cancel()}
         >
-          Cancelar correção
+          {t('components.repairProgress.cancelRepair')}
         </Button>
       </div>
       <div
         className="mt-3 h-2 overflow-hidden rounded bg-white/10"
         role="progressbar"
-        aria-label="Progresso total"
+        aria-label={t('components.repairProgress.ariaTotalProgress') ?? ''}
         aria-valuemin={0}
         aria-valuemax={100}
         aria-valuenow={latest?.progress ?? 0}

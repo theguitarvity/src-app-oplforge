@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import type { RecoveryItem, ResolveRecoveryInput } from '@/types/opl'
 import { Button } from '@/components/ui/button'
 
@@ -16,6 +17,7 @@ export function RecoveryBanner({
   error?: string
   onResolve(input: ResolveRecoveryInput): void
 }) {
+  const { t } = useTranslation()
   const [selection, setSelection] = useState<{
     item: RecoveryWithRevision
     action: RecoveryAction
@@ -36,6 +38,7 @@ export function RecoveryBanner({
       journalId: selection.item.journalId,
       expectedRevision: selection.item.revision,
       action: selection.action,
+      // Literal confirmation phrase expected by the backend — not localized (Constitution Principle I).
       confirmation: 'RECUPERAR JOGO'
     })
   }
@@ -45,20 +48,22 @@ export function RecoveryBanner({
       className="rounded-xl border border-amber-400/40 bg-amber-400/10 p-4"
     >
       <h3 id="recovery-title" className="font-semibold text-amber-100">
-        Recuperação pendente
+        {t('components.recoveryBanner.title')}
       </h3>
-      <p className="mt-1 text-sm text-amber-100">
-        Uma operação anterior não terminou de forma conclusiva. Nenhuma candidata será retomada ou
-        promovida automaticamente.
-      </p>
+      <p className="mt-1 text-sm text-amber-100">{t('components.recoveryBanner.description')}</p>
       <div className="mt-3 space-y-3">
         {items.map((item) => {
           const revisionAvailable = item.revision !== undefined
           return (
             <article key={item.journalId} className="rounded-lg bg-black/20 p-3">
-              <p className="font-medium text-white">Instalação {item.installationId}</p>
+              <p className="font-medium text-white">
+                {t('components.recoveryBanner.installationLabel', { id: item.installationId })}
+              </p>
               <p className="text-xs text-muted-foreground">
-                Estado: {item.state} · journal {item.journalId}
+                {t('components.recoveryBanner.stateJournal', {
+                  state: item.state,
+                  journalId: item.journalId
+                })}
               </p>
               <ul className="mt-2 list-disc pl-5 text-sm">
                 {item.instructions.map((instruction) => (
@@ -67,7 +72,7 @@ export function RecoveryBanner({
               </ul>
               {!revisionAvailable ? (
                 <p className="mt-2 text-sm text-amber-200">
-                  Ação bloqueada: o serviço não informou uma revisão segura do journal.
+                  {t('components.recoveryBanner.actionBlocked')}
                 </p>
               ) : null}
               <div className="mt-3 flex flex-wrap gap-2">
@@ -77,7 +82,7 @@ export function RecoveryBanner({
                   disabled={!revisionAvailable || pending}
                   onClick={() => choose(item, 'restore-original')}
                 >
-                  Restaurar original
+                  {t('components.recoveryBanner.restoreOriginal')}
                 </Button>
                 <Button
                   type="button"
@@ -86,7 +91,7 @@ export function RecoveryBanner({
                   disabled={!revisionAvailable || pending}
                   onClick={() => choose(item, 'clean-verified-residue')}
                 >
-                  Limpar resíduo verificado
+                  {t('components.recoveryBanner.cleanVerifiedResidue')}
                 </Button>
               </div>
             </article>
@@ -97,17 +102,17 @@ export function RecoveryBanner({
         <div
           className="mt-4 rounded-lg border border-amber-300/30 bg-black/20 p-3"
           role="group"
-          aria-label="Confirmar recuperação"
+          aria-label={t('components.recoveryBanner.confirmRecoveryAriaLabel') ?? ''}
         >
           <p className="text-sm">
-            Ação:{' '}
+            {t('components.recoveryBanner.actionLabel')}{' '}
             {selection.action === 'restore-original'
-              ? 'restaurar a versão original'
-              : 'limpar somente resíduo verificado'}
+              ? t('components.recoveryBanner.actionRestoreOriginal')
+              : t('components.recoveryBanner.actionCleanResidue')}
             .
           </p>
           <label className="mt-2 block text-sm text-muted-foreground">
-            Digite RECUPERAR JOGO para confirmar
+            {t('components.recoveryBanner.typeToConfirm')}
             <input
               ref={inputRef}
               value={confirmation}
@@ -128,14 +133,15 @@ export function RecoveryBanner({
               onClick={() => setSelection(undefined)}
               disabled={pending}
             >
-              Cancelar
+              {t('components.recoveryBanner.cancel')}
             </Button>
             <Button
               type="button"
               onClick={resolve}
+              // Literal confirmation phrase expected by the backend — not localized (Constitution Principle I).
               disabled={confirmation !== 'RECUPERAR JOGO' || pending}
             >
-              Autorizar recuperação
+              {t('components.recoveryBanner.authorizeRecovery')}
             </Button>
           </div>
         </div>

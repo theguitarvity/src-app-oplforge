@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import type { DiagnosticState, FragmentationDiagnostic } from '@/types/opl'
 import { formatBytes } from '@/utils/format'
 
@@ -11,6 +12,7 @@ const states: DiagnosticState[] = [
 ]
 
 export function DiagnosticSummary({ diagnostic }: { diagnostic: FragmentationDiagnostic }) {
+  const { t } = useTranslation()
   const { summary, device } = diagnostic
 
   return (
@@ -21,14 +23,17 @@ export function DiagnosticSummary({ diagnostic }: { diagnostic: FragmentationDia
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <h3 id="fragmentation-summary-title" className="font-semibold text-white">
-            Resumo do diagnóstico
+            {t('components.fragmentationDiagnosticSummary.title')}
           </h3>
           <p className="mt-1 text-sm text-muted-foreground">
-            {device.fileSystem} · verificação {device.extentVerification}
+            {t('components.fragmentationDiagnosticSummary.verification', {
+              fileSystem: device.fileSystem,
+              method: device.extentVerification
+            })}
           </p>
         </div>
         <span className="rounded-full bg-white/10 px-3 py-1 text-sm text-white">
-          {summary.total} jogos
+          {t('components.fragmentationDiagnosticSummary.totalGames', { count: summary.total })}
         </span>
       </div>
 
@@ -43,26 +48,36 @@ export function DiagnosticSummary({ diagnostic }: { diagnostic: FragmentationDia
 
       <dl className="mt-4 grid gap-3 text-sm sm:grid-cols-2 lg:grid-cols-4">
         <div>
-          <dt className="text-muted-foreground">Elegíveis</dt>
+          <dt className="text-muted-foreground">
+            {t('components.fragmentationDiagnosticSummary.eligible')}
+          </dt>
           <dd>{summary.eligibleGames}</dd>
         </div>
         <div>
-          <dt className="text-muted-foreground">Arquivos afetados</dt>
+          <dt className="text-muted-foreground">
+            {t('components.fragmentationDiagnosticSummary.affectedFiles')}
+          </dt>
           <dd>{summary.affectedFiles}</dd>
         </div>
         <div>
-          <dt className="text-muted-foreground">Espaço livre</dt>
+          <dt className="text-muted-foreground">
+            {t('components.fragmentationDiagnosticSummary.freeSpace')}
+          </dt>
           <dd>{formatBytes(summary.freeBytes)}</dd>
         </div>
         <div>
-          <dt className="text-muted-foreground">Pico temporário</dt>
+          <dt className="text-muted-foreground">
+            {t('components.fragmentationDiagnosticSummary.peakTemporary')}
+          </dt>
           <dd>{formatBytes(summary.peakTemporaryBytes)}</dd>
         </div>
       </dl>
 
       {device.limitations.length > 0 ? (
         <div className="mt-4 rounded-lg border border-amber-400/30 bg-amber-400/5 p-3" role="note">
-          <p className="font-medium text-amber-200">Limitações da verificação</p>
+          <p className="font-medium text-amber-200">
+            {t('components.fragmentationDiagnosticSummary.limitationsTitle')}
+          </p>
           <ul className="mt-1 list-disc pl-5 text-sm text-amber-100">
             {device.limitations.map((limitation) => (
               <li key={limitation}>{limitation}</li>
