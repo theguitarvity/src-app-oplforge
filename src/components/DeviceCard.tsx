@@ -1,4 +1,5 @@
 import { CheckCircle2, FolderOpen, HardDrive, TriangleAlert } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import type { DeviceInfo } from '@/types/opl'
@@ -12,6 +13,7 @@ interface DeviceCardProps {
 }
 
 export function DeviceCard({ device, selected, onSelect, onPrepare }: DeviceCardProps) {
+  const { t } = useTranslation()
   const usage = device.total > 0 ? Math.round((device.used / device.total) * 100) : 0
 
   return (
@@ -29,14 +31,14 @@ export function DeviceCard({ device, selected, onSelect, onPrepare }: DeviceCard
             <h3 className="font-semibold text-white">{device.name}</h3>
             {device.sourceKind === 'local-folder' ? (
               <span className="mt-1 inline-flex rounded-md border border-cyan-400/20 bg-cyan-500/10 px-2 py-0.5 text-[10px] font-medium text-cyan-200">
-                Biblioteca local
+                {t('components.deviceCard.localLibrary')}
               </span>
             ) : null}
             <p className="mt-1 text-sm text-muted-foreground">{device.path}</p>
             <div className="mt-3 flex flex-wrap gap-2 text-xs text-muted-foreground">
               <span>{device.fileSystem}</span>
-              <span>{formatBytes(device.free)} livres</span>
-              <span>{formatBytes(device.total)} totais</span>
+              <span>{t('components.deviceCard.free', { value: formatBytes(device.free) })}</span>
+              <span>{t('components.deviceCard.total', { value: formatBytes(device.total) })}</span>
             </div>
           </div>
         </div>
@@ -44,7 +46,7 @@ export function DeviceCard({ device, selected, onSelect, onPrepare }: DeviceCard
           {device.status === 'ready' ? (
             <span className="inline-flex items-center gap-1 rounded-full border border-white/10 px-2 py-1 text-xs text-white/80">
               <CheckCircle2 className="size-3 text-emerald-300" />
-              Pronto
+              {t('components.deviceCard.ready')}
             </span>
           ) : (
             <button
@@ -52,11 +54,11 @@ export function DeviceCard({ device, selected, onSelect, onPrepare }: DeviceCard
               className="inline-flex items-center gap-1 rounded-full border border-amber-400/30 bg-amber-500/10 px-2 py-1 text-xs font-medium text-amber-200 hover:bg-amber-500/20"
             >
               <TriangleAlert className="size-3 text-amber-300" />
-              Preparar
+              {t('components.deviceCard.prepare')}
             </button>
           )}
           <Button variant={selected ? 'secondary' : 'primary'} onClick={onSelect}>
-            {selected ? 'Selecionado' : 'Selecionar'}
+            {selected ? t('components.deviceCard.selected') : t('components.deviceCard.select')}
           </Button>
         </div>
       </div>

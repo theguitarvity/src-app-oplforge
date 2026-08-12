@@ -179,6 +179,106 @@
       "addToQueue": "Zur Warteschlange hinzufügen",
       "deviceRequiredError": "Wähle ein Gerät aus.",
       "magnetRequiredError": "Diese Quelle bietet noch keinen sicheren Magnet-Link für die dauerhafte Warteschlange."
+    },
+    "devices": {
+      "addLocalFolder": "Ordner als lokale Bibliothek hinzufügen",
+      "tabOverview": "Übersicht",
+      "tabManage": "Geräte verwalten ({{count}})",
+      "tabDiagnostics": "Diagnose",
+      "connectedDevices": "Verbundene Geräte",
+      "refreshList": "Liste aktualisieren",
+      "prepareDevice": "Gerät vorbereiten",
+      "addLocalFolderShort": "Lokalen Ordner hinzufügen",
+      "runFullScan": "Vollständige Prüfung ausführen",
+      "defaultLocalName": "Lokale Bibliothek",
+      "localFolderLabel": "Lokaler Ordner"
+    }
+  },
+  "components": {
+    "deviceWorkspaceHeader": {
+      "defaultName": "PS2-Festplatte",
+      "defaultFileSystem": "exFAT",
+      "readyForOpl": "Bereit für OPL",
+      "itemsNeedAttention": "{{count}} Element(e) erfordern Aufmerksamkeit",
+      "itemsSaved": "{{count}} gespeicherte Elemente",
+      "addGames": "Spiele hinzufügen",
+      "openLibrary": "Bibliothek öffnen",
+      "diagnostics": "Diagnose",
+      "usedSpace": "Belegter Speicher: {{size}} ({{percent}}%)",
+      "freeOf": "Frei: {{free}} von {{total}}"
+    },
+    "deviceOverviewTab": {
+      "issuesNeedAttention": "{{count}} Element(e) auf dem Gerät erfordern Aufmerksamkeit",
+      "issuesDescription": "Fragmentierte Spiele oder Namen außerhalb des OPL-Standards wurden erkannt.",
+      "runDiagnostics": "Diagnose ausführen",
+      "excellentState": "Gerät in ausgezeichnetem Zustand",
+      "excellentStateDescription": "OPL-Verzeichnisstruktur und Spiele ohne Probleme validiert.",
+      "ps2Games": "PS2-Spiele",
+      "ps2Formats": "ISO- und HDLoader-Formate",
+      "ps1Games": "PS1-Spiele",
+      "ps1Formats": "VCD-/POPStarter-Formate",
+      "apps": "Apps & Homebrews",
+      "appsFormats": "ELF und OPL-Dienstprogramme"
+    },
+    "deviceCard": {
+      "localLibrary": "Lokale Bibliothek",
+      "free": "{{value}} frei",
+      "total": "{{value}} gesamt",
+      "ready": "Bereit",
+      "prepare": "Vorbereiten",
+      "selected": "Ausgewählt",
+      "select": "Auswählen"
+    },
+    "diagnosticSummary": {
+      "title": "Diagnose",
+      "filesystem": "Dateisystem",
+      "cluster": "Cluster",
+      "notChecked": "nicht geprüft",
+      "largeFiles": "Dateien > 4 GiB"
+    },
+    "reorganizationWizard": {
+      "title": "Transaktionale Reorganisation",
+      "description": "Erfordert ein Backup auf einem anderen Dateisystem. Formatiert nicht und deaktiviert nicht die OPL-Prüfung.",
+      "externalBackup": "Externes Backup: {{value}}",
+      "selectPrompt": "auswählen",
+      "inventoryAndPlan": "Inventarisieren und planen",
+      "filesRequired": "{{files}} Dateien · {{mib}} MiB erforderlich.",
+      "backupLabel": "Backup: {{value}}",
+      "confirmButton": "Backup, Entfernung und sequenzielles Umschreiben bestätigen",
+      "cancelButton": "Abbrechen",
+      "restoredFiles": "{{count}} Dateien überprüft; Kontiguität {{fragmentation}}."
+    },
+    "prepWizard": {
+      "title": "Gerät für OPL vorbereiten",
+      "stepOf": "Schritt {{step}} von 5: {{label}}",
+      "step1Label": "Gerät auswählen",
+      "step2Label": "Dateisystem konfigurieren",
+      "step3Label": "Sicherheitsbestätigung",
+      "step4Label": "Vorbereitung läuft",
+      "step5Label": "Fertig!",
+      "selectTargetDevice": "Wähle das Zielgerät aus",
+      "searchingDevices": "Suche nach Geräten...",
+      "noDevicesDetected": "Keine Geräte im System erkannt.",
+      "next": "Weiter",
+      "back": "Zurück",
+      "chooseOplConfig": "Wähle die OPL-Konfiguration",
+      "exfatRecommended": "exFAT (Empfohlen)",
+      "exfatDescription": "Unterstützt ISO-Dateien über 4 GB, ohne sie aufteilen zu müssen (OPL 1.2+).",
+      "fat32": "FAT32",
+      "fat32Description": "Legacy-Kompatibilität mit älteren OPL-Versionen und hart modifizierten Konsolen.",
+      "foldersToCreate": "OPL-Ordner, die erstellt werden:",
+      "sensitiveOperationTitle": "Warnung: Sensibler Vorgang",
+      "sensitiveOperationDescription": "Die Vorbereitung schreibt die OPL-Struktur auf das ausgewählte Gerät.",
+      "targetDevice": "Zielgerät:",
+      "fileSystem": "Dateisystem:",
+      "confirmationLabel": "Mir ist bewusst, dass ich das Gerät {{path}} ändere.",
+      "startPreparation": "Vorbereitung starten",
+      "creatingStructure": "OPL-Verzeichnisstruktur wird erstellt...",
+      "keepConnected": "Bitte halte das Gerät angeschlossen.",
+      "successTitle": "Gerät erfolgreich vorbereitet!",
+      "successDescription": "Die OPL-Struktur wurde erstellt. Du kannst jetzt deine Spiele in die DVD/CD-Ordner des Geräts kopieren.",
+      "goToWorkspace": "Zum Geräte-Arbeitsbereich",
+      "preparationFailed": "Gerätevorbereitung fehlgeschlagen: {{message}}"
     }
   }
 }

@@ -179,6 +179,106 @@
       "addToQueue": "キューに追加",
       "deviceRequiredError": "デバイスを選択してください。",
       "magnetRequiredError": "このソースはまだ永続キュー用の安全なマグネットリンクを提供していません。"
+    },
+    "devices": {
+      "addLocalFolder": "フォルダをローカルライブラリとして追加",
+      "tabOverview": "概要",
+      "tabManage": "デバイス管理（{{count}}）",
+      "tabDiagnostics": "診断",
+      "connectedDevices": "接続されたデバイス",
+      "refreshList": "リストを更新",
+      "prepareDevice": "デバイスを準備",
+      "addLocalFolderShort": "ローカルフォルダを追加",
+      "runFullScan": "完全スキャンを実行",
+      "defaultLocalName": "ローカルライブラリ",
+      "localFolderLabel": "ローカルフォルダ"
+    }
+  },
+  "components": {
+    "deviceWorkspaceHeader": {
+      "defaultName": "PS2 HDD",
+      "defaultFileSystem": "exFAT",
+      "readyForOpl": "OPLの準備完了",
+      "itemsNeedAttention": "{{count}} 件の項目に注意が必要です",
+      "itemsSaved": "{{count}} 件のアイテムを保存済み",
+      "addGames": "ゲームを追加",
+      "openLibrary": "ライブラリを開く",
+      "diagnostics": "診断",
+      "usedSpace": "使用容量: {{size}}（{{percent}}%）",
+      "freeOf": "空き容量: {{free}} / {{total}}"
+    },
+    "deviceOverviewTab": {
+      "issuesNeedAttention": "デバイス上の {{count}} 件の項目に注意が必要です",
+      "issuesDescription": "断片化したゲームまたはOPL標準外の名前が検出されました。",
+      "runDiagnostics": "診断を実行",
+      "excellentState": "デバイスは良好な状態です",
+      "excellentStateDescription": "OPLディレクトリ構造とゲームは問題なく検証されました。",
+      "ps2Games": "PS2ゲーム",
+      "ps2Formats": "ISOおよびHDLoader形式",
+      "ps1Games": "PS1ゲーム",
+      "ps1Formats": "VCD / POPStarter形式",
+      "apps": "アプリとホームブリュー",
+      "appsFormats": "ELFおよびOPLユーティリティ"
+    },
+    "deviceCard": {
+      "localLibrary": "ローカルライブラリ",
+      "free": "空き {{value}}",
+      "total": "合計 {{value}}",
+      "ready": "準備完了",
+      "prepare": "準備",
+      "selected": "選択済み",
+      "select": "選択"
+    },
+    "diagnosticSummary": {
+      "title": "診断",
+      "filesystem": "ファイルシステム",
+      "cluster": "クラスタ",
+      "notChecked": "未確認",
+      "largeFiles": "4 GiB を超えるファイル"
+    },
+    "reorganizationWizard": {
+      "title": "トランザクション再編成",
+      "description": "別のファイルシステムへのバックアップが必要です。フォーマットやOPL検証の無効化は行いません。",
+      "externalBackup": "外部バックアップ: {{value}}",
+      "selectPrompt": "選択",
+      "inventoryAndPlan": "棚卸しして計画を作成",
+      "filesRequired": "{{files}} ファイル · {{mib}} MiB が必要です。",
+      "backupLabel": "バックアップ: {{value}}",
+      "confirmButton": "バックアップ、削除、順次書き換えを確認",
+      "cancelButton": "キャンセル",
+      "restoredFiles": "{{count}} ファイルを検証済み。連続性: {{fragmentation}}。"
+    },
+    "prepWizard": {
+      "title": "OPL用にデバイスを準備",
+      "stepOf": "ステップ {{step}} / 5: {{label}}",
+      "step1Label": "デバイスを選択",
+      "step2Label": "ファイルシステムを設定",
+      "step3Label": "安全確認",
+      "step4Label": "準備を実行中",
+      "step5Label": "完了！",
+      "selectTargetDevice": "対象のデバイスを選択してください",
+      "searchingDevices": "デバイスを検索しています...",
+      "noDevicesDetected": "システム上にデバイスが検出されませんでした。",
+      "next": "次へ",
+      "back": "戻る",
+      "chooseOplConfig": "OPLの構成を選択してください",
+      "exfatRecommended": "exFAT（推奨）",
+      "exfatDescription": "4GBを超えるISOファイルを分割せずにサポートします（OPL 1.2以降）。",
+      "fat32": "FAT32",
+      "fat32Description": "古いOPLバージョンやハードモッドされたコンソールとの互換性。",
+      "foldersToCreate": "作成されるOPLフォルダ:",
+      "sensitiveOperationTitle": "重要な操作に関する警告",
+      "sensitiveOperationDescription": "準備を行うと、選択したデバイスにOPL構造が書き込まれます。",
+      "targetDevice": "対象デバイス:",
+      "fileSystem": "ファイルシステム:",
+      "confirmationLabel": "デバイス {{path}} を変更することを理解しています。",
+      "startPreparation": "準備を開始",
+      "creatingStructure": "OPLディレクトリ構造を作成しています...",
+      "keepConnected": "デバイスを接続したままにしてください。",
+      "successTitle": "デバイスの準備が完了しました！",
+      "successDescription": "OPL構造が作成されました。デバイスのDVD/CDフォルダにゲームをコピーできます。",
+      "goToWorkspace": "デバイスワークスペースへ",
+      "preparationFailed": "デバイスの準備に失敗しました: {{message}}"
     }
   }
 }

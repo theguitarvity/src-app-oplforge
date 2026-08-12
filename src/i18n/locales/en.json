@@ -179,6 +179,106 @@
       "addToQueue": "Add to queue",
       "deviceRequiredError": "Select a device.",
       "magnetRequiredError": "This source doesn't offer a safe magnet for the durable queue yet."
+    },
+    "devices": {
+      "addLocalFolder": "Add folder as local library",
+      "tabOverview": "Overview",
+      "tabManage": "Manage Devices ({{count}})",
+      "tabDiagnostics": "Diagnostics",
+      "connectedDevices": "Connected Devices",
+      "refreshList": "Refresh List",
+      "prepareDevice": "Prepare Device",
+      "addLocalFolderShort": "Add local folder",
+      "runFullScan": "Run Full Scan",
+      "defaultLocalName": "Local library",
+      "localFolderLabel": "Local folder"
+    }
+  },
+  "components": {
+    "deviceWorkspaceHeader": {
+      "defaultName": "PS2 HDD",
+      "defaultFileSystem": "exFAT",
+      "readyForOpl": "Ready for OPL",
+      "itemsNeedAttention": "{{count}} item(s) need attention",
+      "itemsSaved": "{{count}} items saved",
+      "addGames": "Add Games",
+      "openLibrary": "Open Library",
+      "diagnostics": "Diagnostics",
+      "usedSpace": "Used space: {{size}} ({{percent}}%)",
+      "freeOf": "Free: {{free}} of {{total}}"
+    },
+    "deviceOverviewTab": {
+      "issuesNeedAttention": "{{count}} item(s) on the device need attention",
+      "issuesDescription": "Fragmented games or names outside the OPL standard were detected.",
+      "runDiagnostics": "Run Diagnostics",
+      "excellentState": "Device in excellent condition",
+      "excellentStateDescription": "OPL directory structure and games validated with no issues.",
+      "ps2Games": "PS2 Games",
+      "ps2Formats": "ISO and HDLoader formats",
+      "ps1Games": "PS1 Games",
+      "ps1Formats": "VCD / POPStarter formats",
+      "apps": "Apps & Homebrews",
+      "appsFormats": "ELF and OPL utilities"
+    },
+    "deviceCard": {
+      "localLibrary": "Local library",
+      "free": "{{value}} free",
+      "total": "{{value}} total",
+      "ready": "Ready",
+      "prepare": "Prepare",
+      "selected": "Selected",
+      "select": "Select"
+    },
+    "diagnosticSummary": {
+      "title": "Diagnostics",
+      "filesystem": "Filesystem",
+      "cluster": "Cluster",
+      "notChecked": "not checked",
+      "largeFiles": "Files > 4 GiB"
+    },
+    "reorganizationWizard": {
+      "title": "Transactional reorganization",
+      "description": "Requires backup on another filesystem. Doesn't format or disable OPL verification.",
+      "externalBackup": "External backup: {{value}}",
+      "selectPrompt": "select",
+      "inventoryAndPlan": "Inventory and plan",
+      "filesRequired": "{{files}} files · {{mib}} MiB required.",
+      "backupLabel": "Backup: {{value}}",
+      "confirmButton": "Confirm backup, removal and sequential rewrite",
+      "cancelButton": "Cancel",
+      "restoredFiles": "{{count}} files verified; contiguity {{fragmentation}}."
+    },
+    "prepWizard": {
+      "title": "Prepare Device for OPL",
+      "stepOf": "Step {{step}} of 5: {{label}}",
+      "step1Label": "Select Device",
+      "step2Label": "Configure Filesystem",
+      "step3Label": "Safety Confirmation",
+      "step4Label": "Running Preparation",
+      "step5Label": "Done!",
+      "selectTargetDevice": "Select the target device",
+      "searchingDevices": "Scanning for devices...",
+      "noDevicesDetected": "No devices detected on the system.",
+      "next": "Next",
+      "back": "Back",
+      "chooseOplConfig": "Choose the OPL configuration",
+      "exfatRecommended": "exFAT (Recommended)",
+      "exfatDescription": "Supports ISO files larger than 4GB without needing to split them (OPL 1.2+).",
+      "fat32": "FAT32",
+      "fat32Description": "Legacy compatibility with older OPL versions and hard-modded consoles.",
+      "foldersToCreate": "OPL folders that will be created:",
+      "sensitiveOperationTitle": "Sensitive Operation Warning",
+      "sensitiveOperationDescription": "Preparation will write the OPL structure to the selected device.",
+      "targetDevice": "Target Device:",
+      "fileSystem": "Filesystem:",
+      "confirmationLabel": "I understand that I am changing device {{path}}.",
+      "startPreparation": "Start Preparation",
+      "creatingStructure": "Creating OPL directory structure...",
+      "keepConnected": "Please keep the device connected.",
+      "successTitle": "Device Prepared Successfully!",
+      "successDescription": "The OPL structure was created. You can now copy your games to the device's DVD/CD folders.",
+      "goToWorkspace": "Go to Device Workspace",
+      "preparationFailed": "Device preparation failed: {{message}}"
     }
   }
 }

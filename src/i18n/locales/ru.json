@@ -179,6 +179,106 @@
       "addToQueue": "Добавить в очередь",
       "deviceRequiredError": "Выберите устройство.",
       "magnetRequiredError": "Этот источник пока не предлагает безопасный magnet-ссылку для устойчивой очереди."
+    },
+    "devices": {
+      "addLocalFolder": "Добавить папку как локальную библиотеку",
+      "tabOverview": "Обзор",
+      "tabManage": "Управление устройствами ({{count}})",
+      "tabDiagnostics": "Диагностика",
+      "connectedDevices": "Подключённые устройства",
+      "refreshList": "Обновить список",
+      "prepareDevice": "Подготовить устройство",
+      "addLocalFolderShort": "Добавить локальную папку",
+      "runFullScan": "Выполнить полную проверку",
+      "defaultLocalName": "Локальная библиотека",
+      "localFolderLabel": "Локальная папка"
+    }
+  },
+  "components": {
+    "deviceWorkspaceHeader": {
+      "defaultName": "Жёсткий диск PS2",
+      "defaultFileSystem": "exFAT",
+      "readyForOpl": "Готово для OPL",
+      "itemsNeedAttention": "{{count}} элемент(ов) требуют внимания",
+      "itemsSaved": "{{count}} сохранённых элементов",
+      "addGames": "Добавить игры",
+      "openLibrary": "Открыть библиотеку",
+      "diagnostics": "Диагностика",
+      "usedSpace": "Использовано: {{size}} ({{percent}}%)",
+      "freeOf": "Свободно: {{free}} из {{total}}"
+    },
+    "deviceOverviewTab": {
+      "issuesNeedAttention": "{{count}} элемент(ов) на устройстве требуют внимания",
+      "issuesDescription": "Обнаружены фрагментированные игры или имена, не соответствующие стандарту OPL.",
+      "runDiagnostics": "Запустить диагностику",
+      "excellentState": "Устройство в отличном состоянии",
+      "excellentStateDescription": "Структура каталогов OPL и игры проверены без проблем.",
+      "ps2Games": "Игры PS2",
+      "ps2Formats": "Форматы ISO и HDLoader",
+      "ps1Games": "Игры PS1",
+      "ps1Formats": "Форматы VCD / POPStarter",
+      "apps": "Приложения и хомбрю",
+      "appsFormats": "ELF и утилиты OPL"
+    },
+    "deviceCard": {
+      "localLibrary": "Локальная библиотека",
+      "free": "{{value}} свободно",
+      "total": "{{value}} всего",
+      "ready": "Готово",
+      "prepare": "Подготовить",
+      "selected": "Выбрано",
+      "select": "Выбрать"
+    },
+    "diagnosticSummary": {
+      "title": "Диагностика",
+      "filesystem": "Файловая система",
+      "cluster": "Кластер",
+      "notChecked": "не проверено",
+      "largeFiles": "Файлы > 4 ГиБ"
+    },
+    "reorganizationWizard": {
+      "title": "Транзакционная реорганизация",
+      "description": "Требуется резервная копия на другой файловой системе. Не форматирует и не отключает проверку OPL.",
+      "externalBackup": "Внешняя копия: {{value}}",
+      "selectPrompt": "выбрать",
+      "inventoryAndPlan": "Инвентаризировать и спланировать",
+      "filesRequired": "{{files}} файлов · требуется {{mib}} МиБ.",
+      "backupLabel": "Резервная копия: {{value}}",
+      "confirmButton": "Подтвердить резервное копирование, удаление и последовательную перезапись",
+      "cancelButton": "Отмена",
+      "restoredFiles": "{{count}} файлов проверено; непрерывность {{fragmentation}}."
+    },
+    "prepWizard": {
+      "title": "Подготовить устройство для OPL",
+      "stepOf": "Шаг {{step}} из 5: {{label}}",
+      "step1Label": "Выбор устройства",
+      "step2Label": "Настройка файловой системы",
+      "step3Label": "Подтверждение безопасности",
+      "step4Label": "Выполняется подготовка",
+      "step5Label": "Готово!",
+      "selectTargetDevice": "Выберите целевое устройство",
+      "searchingDevices": "Поиск устройств...",
+      "noDevicesDetected": "Устройства в системе не обнаружены.",
+      "next": "Далее",
+      "back": "Назад",
+      "chooseOplConfig": "Выберите конфигурацию OPL",
+      "exfatRecommended": "exFAT (Рекомендуется)",
+      "exfatDescription": "Поддерживает ISO-файлы размером более 4 ГБ без необходимости разбивки (OPL 1.2+).",
+      "fat32": "FAT32",
+      "fat32Description": "Совместимость со старыми версиями OPL и консолями с аппаратными модами.",
+      "foldersToCreate": "Папки OPL, которые будут созданы:",
+      "sensitiveOperationTitle": "Предупреждение о чувствительной операции",
+      "sensitiveOperationDescription": "Подготовка запишет структуру OPL на выбранное устройство.",
+      "targetDevice": "Целевое устройство:",
+      "fileSystem": "Файловая система:",
+      "confirmationLabel": "Я понимаю, что изменяю устройство {{path}}.",
+      "startPreparation": "Начать подготовку",
+      "creatingStructure": "Создание структуры каталогов OPL...",
+      "keepConnected": "Пожалуйста, не отключайте устройство.",
+      "successTitle": "Устройство успешно подготовлено!",
+      "successDescription": "Структура OPL создана. Теперь вы можете скопировать игры в папки DVD/CD устройства.",
+      "goToWorkspace": "Перейти в рабочее пространство устройства",
+      "preparationFailed": "Ошибка подготовки устройства: {{message}}"
     }
   }
 }

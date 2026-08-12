@@ -179,6 +179,106 @@
       "addToQueue": "添加到队列",
       "deviceRequiredError": "请选择一个设备。",
       "magnetRequiredError": "此来源尚未提供可用于持久队列的安全磁力链接。"
+    },
+    "devices": {
+      "addLocalFolder": "将文件夹添加为本地游戏库",
+      "tabOverview": "概览",
+      "tabManage": "管理设备（{{count}}）",
+      "tabDiagnostics": "诊断",
+      "connectedDevices": "已连接设备",
+      "refreshList": "刷新列表",
+      "prepareDevice": "准备设备",
+      "addLocalFolderShort": "添加本地文件夹",
+      "runFullScan": "运行完整扫描",
+      "defaultLocalName": "本地游戏库",
+      "localFolderLabel": "本地文件夹"
+    }
+  },
+  "components": {
+    "deviceWorkspaceHeader": {
+      "defaultName": "PS2 硬盘",
+      "defaultFileSystem": "exFAT",
+      "readyForOpl": "已就绪，可用于 OPL",
+      "itemsNeedAttention": "{{count}} 个项目需要注意",
+      "itemsSaved": "已保存 {{count}} 个项目",
+      "addGames": "添加游戏",
+      "openLibrary": "打开游戏库",
+      "diagnostics": "诊断",
+      "usedSpace": "已用空间：{{size}}（{{percent}}%）",
+      "freeOf": "剩余：{{free}} / {{total}}"
+    },
+    "deviceOverviewTab": {
+      "issuesNeedAttention": "设备上有 {{count}} 个项目需要注意",
+      "issuesDescription": "检测到碎片化游戏或不符合 OPL 标准的名称。",
+      "runDiagnostics": "运行诊断",
+      "excellentState": "设备状态良好",
+      "excellentStateDescription": "OPL 目录结构和游戏已验证，未发现问题。",
+      "ps2Games": "PS2 游戏",
+      "ps2Formats": "ISO 和 HDLoader 格式",
+      "ps1Games": "PS1 游戏",
+      "ps1Formats": "VCD / POPStarter 格式",
+      "apps": "应用与自制软件",
+      "appsFormats": "ELF 和 OPL 实用工具"
+    },
+    "deviceCard": {
+      "localLibrary": "本地游戏库",
+      "free": "剩余 {{value}}",
+      "total": "共 {{value}}",
+      "ready": "就绪",
+      "prepare": "准备",
+      "selected": "已选择",
+      "select": "选择"
+    },
+    "diagnosticSummary": {
+      "title": "诊断",
+      "filesystem": "文件系统",
+      "cluster": "簇",
+      "notChecked": "未检查",
+      "largeFiles": "大于 4 GiB 的文件"
+    },
+    "reorganizationWizard": {
+      "title": "事务性重组",
+      "description": "需要在另一个文件系统上进行备份。不会格式化或禁用 OPL 校验。",
+      "externalBackup": "外部备份：{{value}}",
+      "selectPrompt": "选择",
+      "inventoryAndPlan": "清点并规划",
+      "filesRequired": "需要 {{files}} 个文件 · {{mib}} MiB。",
+      "backupLabel": "备份：{{value}}",
+      "confirmButton": "确认备份、移除和顺序重写",
+      "cancelButton": "取消",
+      "restoredFiles": "已验证 {{count}} 个文件；连续性 {{fragmentation}}。"
+    },
+    "prepWizard": {
+      "title": "为 OPL 准备设备",
+      "stepOf": "第 {{step}} 步，共 5 步：{{label}}",
+      "step1Label": "选择设备",
+      "step2Label": "配置文件系统",
+      "step3Label": "安全确认",
+      "step4Label": "正在执行准备",
+      "step5Label": "完成！",
+      "selectTargetDevice": "选择目标设备",
+      "searchingDevices": "正在搜索设备...",
+      "noDevicesDetected": "系统中未检测到设备。",
+      "next": "下一步",
+      "back": "返回",
+      "chooseOplConfig": "选择 OPL 配置",
+      "exfatRecommended": "exFAT（推荐）",
+      "exfatDescription": "支持大于 4GB 的 ISO 文件，无需分割（OPL 1.2+）。",
+      "fat32": "FAT32",
+      "fat32Description": "与旧版 OPL 和硬改主机兼容。",
+      "foldersToCreate": "将创建的 OPL 文件夹：",
+      "sensitiveOperationTitle": "敏感操作警告",
+      "sensitiveOperationDescription": "准备操作将把 OPL 结构写入所选设备。",
+      "targetDevice": "目标设备：",
+      "fileSystem": "文件系统：",
+      "confirmationLabel": "我知悉我正在更改设备 {{path}}。",
+      "startPreparation": "开始准备",
+      "creatingStructure": "正在创建 OPL 目录结构...",
+      "keepConnected": "请保持设备连接。",
+      "successTitle": "设备准备成功！",
+      "successDescription": "已创建 OPL 结构。您现在可以将游戏复制到设备的 DVD/CD 文件夹中。",
+      "goToWorkspace": "前往设备工作区",
+      "preparationFailed": "设备准备失败：{{message}}"
     }
   }
 }

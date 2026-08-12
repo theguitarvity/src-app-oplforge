@@ -179,6 +179,106 @@
       "addToQueue": "Añadir a la cola",
       "deviceRequiredError": "Selecciona un dispositivo.",
       "magnetRequiredError": "Esta fuente todavía no ofrece un magnet seguro para la cola durable."
+    },
+    "devices": {
+      "addLocalFolder": "Añadir carpeta como biblioteca local",
+      "tabOverview": "Vista General",
+      "tabManage": "Gestionar Dispositivos ({{count}})",
+      "tabDiagnostics": "Diagnóstico",
+      "connectedDevices": "Dispositivos Conectados",
+      "refreshList": "Actualizar Lista",
+      "prepareDevice": "Preparar Dispositivo",
+      "addLocalFolderShort": "Añadir carpeta local",
+      "runFullScan": "Ejecutar Verificación Completa",
+      "defaultLocalName": "Biblioteca local",
+      "localFolderLabel": "Carpeta local"
+    }
+  },
+  "components": {
+    "deviceWorkspaceHeader": {
+      "defaultName": "HD PS2",
+      "defaultFileSystem": "exFAT",
+      "readyForOpl": "Listo para OPL",
+      "itemsNeedAttention": "{{count}} elemento(s) requieren atención",
+      "itemsSaved": "{{count}} elementos guardados",
+      "addGames": "Añadir Juegos",
+      "openLibrary": "Abrir Biblioteca",
+      "diagnostics": "Diagnóstico",
+      "usedSpace": "Espacio usado: {{size}} ({{percent}}%)",
+      "freeOf": "Libre: {{free}} de {{total}}"
+    },
+    "deviceOverviewTab": {
+      "issuesNeedAttention": "{{count}} elemento(s) del dispositivo requieren atención",
+      "issuesDescription": "Se detectaron juegos fragmentados o nombres fuera del estándar OPL.",
+      "runDiagnostics": "Ejecutar Diagnóstico",
+      "excellentState": "Dispositivo en excelente estado",
+      "excellentStateDescription": "Estructura de directorios OPL y juegos validados sin problemas.",
+      "ps2Games": "Juegos PS2",
+      "ps2Formats": "Formatos ISO y HDLoader",
+      "ps1Games": "Juegos PS1",
+      "ps1Formats": "Formatos VCD / POPStarter",
+      "apps": "Aplicaciones y Homebrews",
+      "appsFormats": "ELF y utilidades OPL"
+    },
+    "deviceCard": {
+      "localLibrary": "Biblioteca local",
+      "free": "{{value}} libres",
+      "total": "{{value}} totales",
+      "ready": "Listo",
+      "prepare": "Preparar",
+      "selected": "Seleccionado",
+      "select": "Seleccionar"
+    },
+    "diagnosticSummary": {
+      "title": "Diagnóstico",
+      "filesystem": "Sistema de archivos",
+      "cluster": "Clúster",
+      "notChecked": "no verificado",
+      "largeFiles": "Archivos > 4 GiB"
+    },
+    "reorganizationWizard": {
+      "title": "Reorganización transaccional",
+      "description": "Requiere copia de seguridad en otro sistema de archivos. No formatea ni deshabilita la verificación de OPL.",
+      "externalBackup": "Copia externa: {{value}}",
+      "selectPrompt": "seleccionar",
+      "inventoryAndPlan": "Inventariar y planificar",
+      "filesRequired": "{{files}} archivos · {{mib}} MiB necesarios.",
+      "backupLabel": "Copia de seguridad: {{value}}",
+      "confirmButton": "Confirmar copia, eliminación y reescritura secuencial",
+      "cancelButton": "Cancelar",
+      "restoredFiles": "{{count}} archivos verificados; contigüidad {{fragmentation}}."
+    },
+    "prepWizard": {
+      "title": "Preparar Dispositivo para OPL",
+      "stepOf": "Paso {{step}} de 5: {{label}}",
+      "step1Label": "Seleccionar Dispositivo",
+      "step2Label": "Configurar Sistema de Archivos",
+      "step3Label": "Confirmación de Seguridad",
+      "step4Label": "Ejecutando Preparación",
+      "step5Label": "¡Completado!",
+      "selectTargetDevice": "Selecciona el dispositivo objetivo",
+      "searchingDevices": "Buscando dispositivos...",
+      "noDevicesDetected": "No se detectaron dispositivos en el sistema.",
+      "next": "Siguiente",
+      "back": "Atrás",
+      "chooseOplConfig": "Elige la configuración de OPL",
+      "exfatRecommended": "exFAT (Recomendado)",
+      "exfatDescription": "Admite archivos ISO de más de 4GB sin necesidad de dividirlos (OPL 1.2+).",
+      "fat32": "FAT32",
+      "fat32Description": "Compatibilidad con versiones antiguas de OPL y consolas con mods rígidos.",
+      "foldersToCreate": "Carpetas OPL que se crearán:",
+      "sensitiveOperationTitle": "Aviso de Operación Sensible",
+      "sensitiveOperationDescription": "La preparación escribirá la estructura OPL en el dispositivo seleccionado.",
+      "targetDevice": "Dispositivo Objetivo:",
+      "fileSystem": "Sistema de Archivos:",
+      "confirmationLabel": "Entiendo que estoy modificando el dispositivo {{path}}.",
+      "startPreparation": "Iniciar Preparación",
+      "creatingStructure": "Creando estructura de directorios OPL...",
+      "keepConnected": "Mantén el dispositivo conectado, por favor.",
+      "successTitle": "¡Dispositivo Preparado Correctamente!",
+      "successDescription": "Se creó la estructura OPL. Ya puedes copiar tus juegos a las carpetas DVD/CD del dispositivo.",
+      "goToWorkspace": "Ir al Espacio de Trabajo del Dispositivo",
+      "preparationFailed": "Error al preparar el dispositivo: {{message}}"
     }
   }
 }

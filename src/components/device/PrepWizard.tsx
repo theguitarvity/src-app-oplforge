@@ -9,6 +9,7 @@ import {
   RefreshCw
 } from 'lucide-react'
 import { useQuery } from '@tanstack/react-query'
+import { useTranslation } from 'react-i18next'
 import { oplApi } from '@/services/api'
 import type { DeviceInfo } from '@/types/opl'
 
@@ -19,6 +20,7 @@ interface PrepWizardProps {
 }
 
 export function PrepWizard({ onClose, onSuccess, preselectedDevicePath }: PrepWizardProps) {
+  const { t } = useTranslation()
   const [step, setStep] = useState<1 | 2 | 3 | 4 | 5>(preselectedDevicePath ? 2 : 1)
   const [pickedDevice, setPickedDevice] = useState<DeviceInfo | null>(null)
   const [fileSystem, setFileSystem] = useState<'exFAT' | 'FAT32'>('exFAT')
@@ -35,6 +37,17 @@ export function PrepWizard({ onClose, onSuccess, preselectedDevicePath }: PrepWi
     pickedDevice ?? devices.find((d) => d.path === preselectedDevicePath) ?? null
   const setSelectedDevice = setPickedDevice
 
+  const stepLabel =
+    step === 1
+      ? t('components.prepWizard.step1Label')
+      : step === 2
+        ? t('components.prepWizard.step2Label')
+        : step === 3
+          ? t('components.prepWizard.step3Label')
+          : step === 4
+            ? t('components.prepWizard.step4Label')
+            : t('components.prepWizard.step5Label')
+
   const handleExecutePreparation = async () => {
     if (!selectedDevice || !confirmed) return
     setIsExecuting(true)
@@ -48,7 +61,9 @@ export function PrepWizard({ onClose, onSuccess, preselectedDevicePath }: PrepWi
       setStep(5)
     } catch (err) {
       setErrorMsg(
-        `Falha na preparação do dispositivo: ${err instanceof Error ? err.message : String(err)}`
+        t('components.prepWizard.preparationFailed', {
+          message: err instanceof Error ? err.message : String(err)
+        })
       )
       setStep(3)
     } finally {
@@ -65,13 +80,9 @@ export function PrepWizard({ onClose, onSuccess, preselectedDevicePath }: PrepWi
             <Wrench className="size-5" />
           </div>
           <div>
-            <h3 className="text-base font-bold text-white">Preparar Dispositivo para OPL</h3>
+            <h3 className="text-base font-bold text-white">{t('components.prepWizard.title')}</h3>
             <p className="text-xs text-muted-foreground">
-              Passo {step} de 5: {step === 1 && 'Selecionar Dispositivo'}
-              {step === 2 && 'Configurar Sistema de Arquivos'}
-              {step === 3 && 'Confirmação de Segurança'}
-              {step === 4 && 'Executando Preparação'}
-              {step === 5 && 'Concluído!'}
+              {t('components.prepWizard.stepOf', { step, label: stepLabel })}
             </p>
           </div>
         </div>
@@ -109,12 +120,14 @@ export function PrepWizard({ onClose, onSuccess, preselectedDevicePath }: PrepWi
       {step === 1 && (
         <div className="space-y-4">
           <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-            Selecione o dispositivo alvo
+            {t('components.prepWizard.selectTargetDevice')}
           </h4>
           {isLoading ? (
-            <p className="text-xs text-muted-foreground">Procurando dispositivos...</p>
+            <p className="text-xs text-muted-foreground">
+              {t('components.prepWizard.searchingDevices')}
+            </p>
           ) : devices.length === 0 ? (
-            <p className="text-xs text-amber-300">Nenhum dispositivo detectado no sistema.</p>
+            <p className="text-xs text-amber-300">{t('components.prepWizard.noDevicesDetected')}</p>
           ) : (
             <div className="space-y-2">
               {devices.map((d) => (
@@ -147,7 +160,7 @@ export function PrepWizard({ onClose, onSuccess, preselectedDevicePath }: PrepWi
               onClick={() => setStep(2)}
               className="flex items-center gap-1.5 rounded-xl bg-violet-600 px-5 py-2.5 text-xs font-semibold text-white shadow-md hover:bg-violet-500 disabled:opacity-50"
             >
-              Próximo <ArrowRight className="size-4" />
+              {t('components.prepWizard.next')} <ArrowRight className="size-4" />
             </button>
           </div>
         </div>
@@ -157,7 +170,7 @@ export function PrepWizard({ onClose, onSuccess, preselectedDevicePath }: PrepWi
       {step === 2 && (
         <div className="space-y-4">
           <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-            Escolha a configuração do OPL
+            {t('components.prepWizard.chooseOplConfig')}
           </h4>
 
           <div className="grid grid-cols-2 gap-4">
@@ -169,10 +182,11 @@ export function PrepWizard({ onClose, onSuccess, preselectedDevicePath }: PrepWi
                   : 'border-white/10 bg-white/5 text-muted-foreground hover:bg-white/10'
               }`}
             >
-              <h5 className="text-sm font-bold text-white">exFAT (Recomendado)</h5>
+              <h5 className="text-sm font-bold text-white">
+                {t('components.prepWizard.exfatRecommended')}
+              </h5>
               <p className="mt-1 text-xs text-muted-foreground">
-                Suporta arquivos ISO maiores que 4GB sem necessidade de divisão em partes (OPL
-                1.2+).
+                {t('components.prepWizard.exfatDescription')}
               </p>
             </div>
 
@@ -184,15 +198,15 @@ export function PrepWizard({ onClose, onSuccess, preselectedDevicePath }: PrepWi
                   : 'border-white/10 bg-white/5 text-muted-foreground hover:bg-white/10'
               }`}
             >
-              <h5 className="text-sm font-bold text-white">FAT32</h5>
+              <h5 className="text-sm font-bold text-white">{t('components.prepWizard.fat32')}</h5>
               <p className="mt-1 text-xs text-muted-foreground">
-                Compatibilidade legada com versões antigas do OPL e consoles com mods rígidos.
+                {t('components.prepWizard.fat32Description')}
               </p>
             </div>
           </div>
 
           <div className="rounded-xl border border-white/10 bg-white/5 p-4 text-xs text-muted-foreground space-y-1">
-            <p className="font-semibold text-white">Pastas OPL que serão criadas:</p>
+            <p className="font-semibold text-white">{t('components.prepWizard.foldersToCreate')}</p>
             <p className="font-mono text-violet-300">DVD / CD / PS1 / APPS / ART / CFG / VMC</p>
           </div>
 
@@ -201,13 +215,13 @@ export function PrepWizard({ onClose, onSuccess, preselectedDevicePath }: PrepWi
               onClick={() => setStep(1)}
               className="flex items-center gap-1.5 rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-xs font-semibold text-white hover:bg-white/10"
             >
-              <ArrowLeft className="size-4" /> Voltar
+              <ArrowLeft className="size-4" /> {t('components.prepWizard.back')}
             </button>
             <button
               onClick={() => setStep(3)}
               className="flex items-center gap-1.5 rounded-xl bg-violet-600 px-5 py-2.5 text-xs font-semibold text-white shadow-md hover:bg-violet-500"
             >
-              Próximo <ArrowRight className="size-4" />
+              {t('components.prepWizard.next')} <ArrowRight className="size-4" />
             </button>
           </div>
         </div>
@@ -219,9 +233,11 @@ export function PrepWizard({ onClose, onSuccess, preselectedDevicePath }: PrepWi
           <div className="flex items-center gap-3 rounded-2xl border border-rose-500/30 bg-rose-500/10 p-4 text-rose-200">
             <ShieldAlert className="size-8 text-rose-400 shrink-0" />
             <div>
-              <h4 className="text-sm font-bold text-white">Aviso de Operação Sensível</h4>
+              <h4 className="text-sm font-bold text-white">
+                {t('components.prepWizard.sensitiveOperationTitle')}
+              </h4>
               <p className="text-xs text-rose-200/80">
-                A preparação irá gravar a estrutura OPL no dispositivo selecionado.
+                {t('components.prepWizard.sensitiveOperationDescription')}
               </p>
             </div>
           </div>
@@ -234,13 +250,15 @@ export function PrepWizard({ onClose, onSuccess, preselectedDevicePath }: PrepWi
 
           <div className="rounded-2xl border border-white/10 bg-white/5 p-4 text-xs space-y-2">
             <p>
-              <span className="text-muted-foreground">Dispositivo Alvo:</span>{' '}
+              <span className="text-muted-foreground">
+                {t('components.prepWizard.targetDevice')}
+              </span>{' '}
               <strong className="text-white font-mono">
                 {selectedDevice?.name} ({selectedDevice?.path})
               </strong>
             </p>
             <p>
-              <span className="text-muted-foreground">Sistema de Arquivos:</span>{' '}
+              <span className="text-muted-foreground">{t('components.prepWizard.fileSystem')}</span>{' '}
               <strong className="text-violet-300 font-mono">{fileSystem}</strong>
             </p>
           </div>
@@ -253,8 +271,7 @@ export function PrepWizard({ onClose, onSuccess, preselectedDevicePath }: PrepWi
               className="size-4 rounded accent-violet-600"
             />
             <span className="text-xs text-white">
-              Estou ciente de que estou alterando o dispositivo{' '}
-              <strong className="text-violet-300">{selectedDevice?.path}</strong>.
+              {t('components.prepWizard.confirmationLabel', { path: selectedDevice?.path })}
             </span>
           </label>
 
@@ -263,14 +280,14 @@ export function PrepWizard({ onClose, onSuccess, preselectedDevicePath }: PrepWi
               onClick={() => setStep(2)}
               className="flex items-center gap-1.5 rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-xs font-semibold text-white hover:bg-white/10"
             >
-              <ArrowLeft className="size-4" /> Voltar
+              <ArrowLeft className="size-4" /> {t('components.prepWizard.back')}
             </button>
             <button
               disabled={!confirmed || isExecuting}
               onClick={handleExecutePreparation}
               className="flex items-center gap-1.5 rounded-xl bg-rose-600 px-5 py-2.5 text-xs font-semibold text-white shadow-md hover:bg-rose-500 disabled:opacity-50"
             >
-              Iniciar Preparação <ArrowRight className="size-4" />
+              {t('components.prepWizard.startPreparation')} <ArrowRight className="size-4" />
             </button>
           </div>
         </div>
@@ -280,9 +297,11 @@ export function PrepWizard({ onClose, onSuccess, preselectedDevicePath }: PrepWi
       {step === 4 && (
         <div className="py-8 text-center space-y-4">
           <RefreshCw className="size-10 animate-spin text-violet-400 mx-auto" />
-          <h4 className="text-base font-bold text-white">Criando estrutura de diretórios OPL...</h4>
+          <h4 className="text-base font-bold text-white">
+            {t('components.prepWizard.creatingStructure')}
+          </h4>
           <p className="text-xs text-muted-foreground">
-            Por favor, mantenha o dispositivo conectado.
+            {t('components.prepWizard.keepConnected')}
           </p>
         </div>
       )}
@@ -291,17 +310,18 @@ export function PrepWizard({ onClose, onSuccess, preselectedDevicePath }: PrepWi
       {step === 5 && (
         <div className="py-8 text-center space-y-4">
           <CheckCircle2 className="size-12 text-emerald-400 mx-auto" />
-          <h4 className="text-lg font-bold text-white">Dispositivo Preparado com Sucesso!</h4>
+          <h4 className="text-lg font-bold text-white">
+            {t('components.prepWizard.successTitle')}
+          </h4>
           <p className="text-xs text-muted-foreground max-w-sm mx-auto">
-            A estrutura OPL foi criada. Você já pode copiar seus jogos para as pastas DVD/CD do
-            dispositivo.
+            {t('components.prepWizard.successDescription')}
           </p>
 
           <button
             onClick={onSuccess}
             className="rounded-xl bg-violet-600 px-6 py-2.5 text-xs font-semibold text-white shadow-md hover:bg-violet-500"
           >
-            Ir para o Dispositivo Workspace
+            {t('components.prepWizard.goToWorkspace')}
           </button>
         </div>
       )}

@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import { Gamepad2, Sparkles, Boxes, AlertTriangle, ArrowRight, CheckCircle2 } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 
 interface DeviceOverviewTabProps {
   ps2Count: number
@@ -14,6 +15,7 @@ export function DeviceOverviewTab({
   appsCount,
   issuesCount
 }: DeviceOverviewTabProps) {
+  const { t } = useTranslation()
   return (
     <div className="space-y-6">
       {/* Issues Banner */}
@@ -23,10 +25,10 @@ export function DeviceOverviewTab({
             <AlertTriangle className="size-5 shrink-0 text-amber-400" />
             <div>
               <p className="text-sm font-semibold text-white">
-                {issuesCount} item(ns) precisam de atenção no dispositivo
+                {t('components.deviceOverviewTab.issuesNeedAttention', { count: issuesCount })}
               </p>
               <p className="text-xs text-amber-200/80">
-                Jogos fragmentados ou nomes fora do padrão OPL foram detectados.
+                {t('components.deviceOverviewTab.issuesDescription')}
               </p>
             </div>
           </div>
@@ -34,7 +36,7 @@ export function DeviceOverviewTab({
             to="/tools?tab=diagnostics"
             className="flex items-center gap-1.5 rounded-xl bg-amber-500 px-4 py-2 text-xs font-semibold text-black transition hover:bg-amber-400"
           >
-            Executar Diagnóstico
+            {t('components.deviceOverviewTab.runDiagnostics')}
             <ArrowRight className="size-3.5" />
           </Link>
         </div>
@@ -42,9 +44,11 @@ export function DeviceOverviewTab({
         <div className="flex items-center gap-3 rounded-2xl border border-emerald-500/20 bg-emerald-500/10 p-4 text-emerald-200">
           <CheckCircle2 className="size-5 shrink-0 text-emerald-400" />
           <div>
-            <p className="text-sm font-semibold text-white">Dispositivo em excelente estado</p>
+            <p className="text-sm font-semibold text-white">
+              {t('components.deviceOverviewTab.excellentState')}
+            </p>
             <p className="text-xs text-emerald-200/80">
-              Estrutura de diretórios OPL e jogos validados sem problemas.
+              {t('components.deviceOverviewTab.excellentStateDescription')}
             </p>
           </div>
         </div>
@@ -58,14 +62,16 @@ export function DeviceOverviewTab({
         >
           <div className="flex items-center justify-between">
             <span className="text-sm font-medium text-muted-foreground group-hover:text-white">
-              Jogos PS2
+              {t('components.deviceOverviewTab.ps2Games')}
             </span>
             <div className="grid size-9 place-items-center rounded-xl bg-violet-500/20 text-violet-300">
               <Gamepad2 className="size-5" />
             </div>
           </div>
           <p className="mt-3 text-3xl font-extrabold text-white">{ps2Count}</p>
-          <p className="mt-1 text-xs text-muted-foreground">Formatos ISO e HDLoader</p>
+          <p className="mt-1 text-xs text-muted-foreground">
+            {t('components.deviceOverviewTab.ps2Formats')}
+          </p>
         </Link>
 
         <Link
@@ -74,14 +80,16 @@ export function DeviceOverviewTab({
         >
           <div className="flex items-center justify-between">
             <span className="text-sm font-medium text-muted-foreground group-hover:text-white">
-              Jogos PS1
+              {t('components.deviceOverviewTab.ps1Games')}
             </span>
             <div className="grid size-9 place-items-center rounded-xl bg-fuchsia-500/20 text-fuchsia-300">
               <Sparkles className="size-5" />
             </div>
           </div>
           <p className="mt-3 text-3xl font-extrabold text-white">{ps1Count}</p>
-          <p className="mt-1 text-xs text-muted-foreground">Formatos VCD / POPStarter</p>
+          <p className="mt-1 text-xs text-muted-foreground">
+            {t('components.deviceOverviewTab.ps1Formats')}
+          </p>
         </Link>
 
         <Link
@@ -90,14 +98,16 @@ export function DeviceOverviewTab({
         >
           <div className="flex items-center justify-between">
             <span className="text-sm font-medium text-muted-foreground group-hover:text-white">
-              Aplicações & Homebrews
+              {t('components.deviceOverviewTab.apps')}
             </span>
             <div className="grid size-9 place-items-center rounded-xl bg-cyan-500/20 text-cyan-300">
               <Boxes className="size-5" />
             </div>
           </div>
           <p className="mt-3 text-3xl font-extrabold text-white">{appsCount}</p>
-          <p className="mt-1 text-xs text-muted-foreground">ELF e utilitários OPL</p>
+          <p className="mt-1 text-xs text-muted-foreground">
+            {t('components.deviceOverviewTab.appsFormats')}
+          </p>
         </Link>
       </div>
     </div>
