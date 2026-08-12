@@ -266,6 +266,25 @@
       "loadingSyncs": "Cargando sincronizaciones…",
       "noSyncStarted": "No se ha iniciado ninguna sincronización",
       "noSyncDescription": "Prepara un plan para descargar las artes faltantes."
+    },
+    "oplNaming": {
+      "selectDeviceTitle": "Selecciona un dispositivo",
+      "selectDeviceDescription": "Elige a continuación el HD/USB cuya biblioteca se leerá. La auditoría es de solo lectura hasta la confirmación explícita.",
+      "searchingDevices": "Buscando dispositivos…",
+      "useDevice": "Usar {{name}} — {{path}}",
+      "listDevicesError": "Error al listar dispositivos: {{message}}",
+      "title": "Adecuación de nombres OPL",
+      "subtitle": "Lee CD y DVD, extrae el Game ID interno de ISO/ZSO, muestra una vista previa y renombra a GAME_ID.Título sin copiar el contenido.",
+      "reading": "Leyendo dispositivo…",
+      "readAndAudit": "Leer dispositivo y auditar nombres",
+      "readError": "Error de lectura: {{message}}",
+      "planError": "Error al crear el plan: {{message}}",
+      "renameError": "Error al renombrar: {{message}}",
+      "renamedResult": "{{count}} juegos adecuados",
+      "filesRead": "{{count}} archivo(s) leído(s); {{correctable}} pueden ser adecuados. Selecciona los elementos deseados.",
+      "preparing": "Preparando…",
+      "fixSelected": "Corregir nombres seleccionados ({{count}})",
+      "noneSelected": "No hay ningún nombre corregible seleccionado."
     }
   },
   "components": {
@@ -447,6 +466,24 @@
       "cancel": "Cancelar",
       "starting": "Iniciando…",
       "startSync": "Iniciar sincronización"
+    },
+    "namingAuditTable": {
+      "caption": "Auditoría de nombres OPL",
+      "select": "Seleccionar",
+      "current": "Actual",
+      "canonical": "Canónico",
+      "classification": "Clasificación",
+      "selectAriaLabel": "Seleccionar {{path}}"
+    },
+    "namingPlanDialog": {
+      "title": "Adecuar nombres al estándar OPL",
+      "description": "Los Game IDs y títulos ya se reconocieron automáticamente. Confirma para aplicar los nombres mostrados en la vista previa, sin copiar ni alterar el contenido de los juegos.",
+      "renamesSelected": "renombramientos seleccionados",
+      "itemsPreserved": "elementos preservados",
+      "unchangedTitle": "Elementos que no se modificarán",
+      "cancel": "Cancelar",
+      "renaming": "Adecuando nombres…",
+      "confirm": "Confirmar adecuación"
     }
   }
 }

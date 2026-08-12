@@ -266,6 +266,25 @@
       "loadingSyncs": "正在加载同步…",
       "noSyncStarted": "尚未开始任何同步",
       "noSyncDescription": "准备一个计划以下载缺失的封面。"
+    },
+    "oplNaming": {
+      "selectDeviceTitle": "选择设备",
+      "selectDeviceDescription": "在下方选择要读取其游戏库的硬盘/U盘。在明确确认之前，审计仅为只读模式。",
+      "searchingDevices": "正在搜索设备…",
+      "useDevice": "使用 {{name}} — {{path}}",
+      "listDevicesError": "列出设备失败：{{message}}",
+      "title": "OPL 命名规范化",
+      "subtitle": "读取 CD 和 DVD，从 ISO/ZSO 中提取内部 Game ID，显示预览并重命名为 GAME_ID.标题，不复制内容。",
+      "reading": "正在读取设备…",
+      "readAndAudit": "读取设备并审计名称",
+      "readError": "读取失败：{{message}}",
+      "planError": "创建计划失败：{{message}}",
+      "renameError": "重命名失败：{{message}}",
+      "renamedResult": "已规范化 {{count}} 个游戏",
+      "filesRead": "已读取 {{count}} 个文件；其中 {{correctable}} 个可规范化。请选择所需项目。",
+      "preparing": "准备中…",
+      "fixSelected": "修正已选名称（{{count}}）",
+      "noneSelected": "未选择任何可修正的名称。"
     }
   },
   "components": {
@@ -447,6 +466,24 @@
       "cancel": "取消",
       "starting": "启动中…",
       "startSync": "开始同步"
+    },
+    "namingAuditTable": {
+      "caption": "OPL 命名审计",
+      "select": "选择",
+      "current": "当前",
+      "canonical": "规范名称",
+      "classification": "分类",
+      "selectAriaLabel": "选择 {{path}}"
+    },
+    "namingPlanDialog": {
+      "title": "将名称调整为 OPL 标准",
+      "description": "Game ID 和标题已自动识别。请确认以应用预览中显示的名称，不会复制或更改游戏内容。",
+      "renamesSelected": "已选择重命名项",
+      "itemsPreserved": "保留的项目",
+      "unchangedTitle": "不会更改的项目",
+      "cancel": "取消",
+      "renaming": "正在调整名称…",
+      "confirm": "确认调整"
     }
   }
 }

@@ -266,6 +266,25 @@
       "loadingSyncs": "Loading syncs…",
       "noSyncStarted": "No sync started yet",
       "noSyncDescription": "Prepare a plan to download the missing art."
+    },
+    "oplNaming": {
+      "selectDeviceTitle": "Select a device",
+      "selectDeviceDescription": "Choose below the HDD/USB whose library will be read. The audit is read-only until explicit confirmation.",
+      "searchingDevices": "Scanning for devices…",
+      "useDevice": "Use {{name}} — {{path}}",
+      "listDevicesError": "Failed to list devices: {{message}}",
+      "title": "OPL Name Adequacy",
+      "subtitle": "Reads CD and DVD, extracts the internal Game ID from ISO/ZSO, shows a preview and renames to GAME_ID.Title without copying the content.",
+      "reading": "Reading device…",
+      "readAndAudit": "Read device and audit names",
+      "readError": "Read failed: {{message}}",
+      "planError": "Failed to create plan: {{message}}",
+      "renameError": "Failed to rename: {{message}}",
+      "renamedResult": "{{count}} games adjusted",
+      "filesRead": "{{count}} file(s) read; {{correctable}} can be adjusted. Select the desired items.",
+      "preparing": "Preparing…",
+      "fixSelected": "Fix selected names ({{count}})",
+      "noneSelected": "No correctable name is selected."
     }
   },
   "components": {
@@ -447,6 +466,24 @@
       "cancel": "Cancel",
       "starting": "Starting…",
       "startSync": "Start sync"
+    },
+    "namingAuditTable": {
+      "caption": "OPL naming audit",
+      "select": "Select",
+      "current": "Current",
+      "canonical": "Canonical",
+      "classification": "Classification",
+      "selectAriaLabel": "Select {{path}}"
+    },
+    "namingPlanDialog": {
+      "title": "Adjust names to OPL standard",
+      "description": "Game IDs and titles have already been automatically recognized. Confirm to apply the names shown in the preview, without copying or altering the games' content.",
+      "renamesSelected": "renames selected",
+      "itemsPreserved": "items preserved",
+      "unchangedTitle": "Items that won't be changed",
+      "cancel": "Cancel",
+      "renaming": "Adjusting names…",
+      "confirm": "Confirm adjustment"
     }
   }
 }

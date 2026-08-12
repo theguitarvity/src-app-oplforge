@@ -266,6 +266,25 @@
       "loadingSyncs": "Synchronisierungen werden geladen…",
       "noSyncStarted": "Noch keine Synchronisierung gestartet",
       "noSyncDescription": "Erstelle einen Plan, um fehlendes Artwork herunterzuladen."
+    },
+    "oplNaming": {
+      "selectDeviceTitle": "Gerät auswählen",
+      "selectDeviceDescription": "Wähle unten die Festplatte/das USB-Laufwerk aus, deren Bibliothek gelesen werden soll. Die Prüfung ist bis zur ausdrücklichen Bestätigung nur lesend.",
+      "searchingDevices": "Suche nach Geräten…",
+      "useDevice": "{{name}} verwenden — {{path}}",
+      "listDevicesError": "Geräte konnten nicht aufgelistet werden: {{message}}",
+      "title": "OPL-Namenskonformität",
+      "subtitle": "Liest CD und DVD, extrahiert die interne Game-ID aus ISO/ZSO, zeigt eine Vorschau und benennt in GAME_ID.Titel um, ohne den Inhalt zu kopieren.",
+      "reading": "Gerät wird gelesen…",
+      "readAndAudit": "Gerät lesen und Namen prüfen",
+      "readError": "Lesevorgang fehlgeschlagen: {{message}}",
+      "planError": "Plan konnte nicht erstellt werden: {{message}}",
+      "renameError": "Umbenennung fehlgeschlagen: {{message}}",
+      "renamedResult": "{{count}} Spiele angepasst",
+      "filesRead": "{{count}} Datei(en) gelesen; {{correctable}} können angepasst werden. Wähle die gewünschten Elemente aus.",
+      "preparing": "Wird vorbereitet…",
+      "fixSelected": "Ausgewählte Namen korrigieren ({{count}})",
+      "noneSelected": "Kein korrigierbarer Name ausgewählt."
     }
   },
   "components": {
@@ -447,6 +466,24 @@
       "cancel": "Abbrechen",
       "starting": "Wird gestartet…",
       "startSync": "Synchronisierung starten"
+    },
+    "namingAuditTable": {
+      "caption": "OPL-Namensprüfung",
+      "select": "Auswählen",
+      "current": "Aktuell",
+      "canonical": "Kanonisch",
+      "classification": "Klassifizierung",
+      "selectAriaLabel": "{{path}} auswählen"
+    },
+    "namingPlanDialog": {
+      "title": "Namen an OPL-Standard anpassen",
+      "description": "Game-IDs und Titel wurden bereits automatisch erkannt. Bestätige, um die in der Vorschau angezeigten Namen anzuwenden, ohne den Inhalt der Spiele zu kopieren oder zu ändern.",
+      "renamesSelected": "ausgewählte Umbenennungen",
+      "itemsPreserved": "beibehaltene Elemente",
+      "unchangedTitle": "Elemente, die nicht geändert werden",
+      "cancel": "Abbrechen",
+      "renaming": "Namen werden angepasst…",
+      "confirm": "Anpassung bestätigen"
     }
   }
 }

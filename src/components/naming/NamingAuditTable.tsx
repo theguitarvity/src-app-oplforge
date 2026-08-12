@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import type { NamingAudit } from '../../types/opl-finalization'
 
 export function NamingAuditTable({
@@ -9,15 +10,16 @@ export function NamingAuditTable({
   selected: Set<string>
   onToggle(itemId: string): void
 }) {
+  const { t } = useTranslation()
   return (
     <table>
-      <caption>Auditoria de nomes OPL</caption>
+      <caption>{t('components.namingAuditTable.caption')}</caption>
       <thead>
         <tr>
-          <th scope="col">Selecionar</th>
-          <th scope="col">Atual</th>
-          <th scope="col">Canônico</th>
-          <th scope="col">Classificação</th>
+          <th scope="col">{t('components.namingAuditTable.select')}</th>
+          <th scope="col">{t('components.namingAuditTable.current')}</th>
+          <th scope="col">{t('components.namingAuditTable.canonical')}</th>
+          <th scope="col">{t('components.namingAuditTable.classification')}</th>
         </tr>
       </thead>
       <tbody>
@@ -25,7 +27,11 @@ export function NamingAuditTable({
           <tr key={item.itemId}>
             <td>
               <input
-                aria-label={`Selecionar ${item.currentRelativePath}`}
+                aria-label={
+                  t('components.namingAuditTable.selectAriaLabel', {
+                    path: item.currentRelativePath
+                  }) ?? ''
+                }
                 type="checkbox"
                 disabled={item.classification !== 'correctable'}
                 checked={selected.has(item.itemId)}

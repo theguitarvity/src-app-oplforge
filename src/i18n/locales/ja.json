@@ -266,6 +266,25 @@
       "loadingSyncs": "同期を読み込み中…",
       "noSyncStarted": "まだ同期が開始されていません",
       "noSyncDescription": "不足しているアートをダウンロードするための計画を準備してください。"
+    },
+    "oplNaming": {
+      "selectDeviceTitle": "デバイスを選択",
+      "selectDeviceDescription": "ライブラリを読み込むHDD/USBを以下から選択してください。明示的な確認が行われるまで、監査は読み取り専用です。",
+      "searchingDevices": "デバイスを検索しています…",
+      "useDevice": "{{name}} を使用 — {{path}}",
+      "listDevicesError": "デバイスの一覧取得に失敗しました: {{message}}",
+      "title": "OPL命名規則の適合",
+      "subtitle": "CDとDVDを読み取り、ISO/ZSOから内部のGame IDを抽出し、プレビューを表示して、内容をコピーせずにGAME_ID.タイトルにリネームします。",
+      "reading": "デバイスを読み込み中…",
+      "readAndAudit": "デバイスを読み込んで名前を監査",
+      "readError": "読み込みに失敗しました: {{message}}",
+      "planError": "計画の作成に失敗しました: {{message}}",
+      "renameError": "リネームに失敗しました: {{message}}",
+      "renamedResult": "{{count}} 件のゲームを適合しました",
+      "filesRead": "{{count}} 件のファイルを読み込みました。{{correctable}} 件が適合可能です。必要な項目を選択してください。",
+      "preparing": "準備中…",
+      "fixSelected": "選択した名前を修正 ({{count}})",
+      "noneSelected": "修正可能な名前が選択されていません。"
     }
   },
   "components": {
@@ -447,6 +466,24 @@
       "cancel": "キャンセル",
       "starting": "開始中…",
       "startSync": "同期を開始"
+    },
+    "namingAuditTable": {
+      "caption": "OPL命名監査",
+      "select": "選択",
+      "current": "現在",
+      "canonical": "正規名",
+      "classification": "分類",
+      "selectAriaLabel": "{{path}} を選択"
+    },
+    "namingPlanDialog": {
+      "title": "OPL標準に名前を適合",
+      "description": "Game IDとタイトルはすでに自動的に認識されています。ゲームの内容をコピーまたは変更せずに、プレビューに表示された名前を適用するには確認してください。",
+      "renamesSelected": "選択されたリネーム",
+      "itemsPreserved": "保持される項目",
+      "unchangedTitle": "変更されない項目",
+      "cancel": "キャンセル",
+      "renaming": "名前を適合中…",
+      "confirm": "適合を確認"
     }
   }
 }

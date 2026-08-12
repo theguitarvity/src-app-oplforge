@@ -266,6 +266,25 @@
       "loadingSyncs": "Carregando sincronizações…",
       "noSyncStarted": "Nenhuma sincronização iniciada",
       "noSyncDescription": "Prepare um plano para baixar as artes ausentes."
+    },
+    "oplNaming": {
+      "selectDeviceTitle": "Selecione um dispositivo",
+      "selectDeviceDescription": "Escolha abaixo o HD/USB cuja biblioteca será lida. A auditoria é somente leitura até a confirmação explícita.",
+      "searchingDevices": "Procurando dispositivos…",
+      "useDevice": "Usar {{name}} — {{path}}",
+      "listDevicesError": "Falha ao listar dispositivos: {{message}}",
+      "title": "Adequação de nomes OPL",
+      "subtitle": "Lê CD e DVD, extrai o Game ID interno de ISO/ZSO, mostra a prévia e renomeia para GAME_ID.Título sem copiar o conteúdo.",
+      "reading": "Lendo dispositivo…",
+      "readAndAudit": "Ler dispositivo e auditar nomes",
+      "readError": "Falha na leitura: {{message}}",
+      "planError": "Falha ao criar plano: {{message}}",
+      "renameError": "Falha ao renomear: {{message}}",
+      "renamedResult": "{{count}} jogos adequados",
+      "filesRead": "{{count}} arquivo(s) lido(s); {{correctable}} podem ser adequados. Selecione os itens desejados.",
+      "preparing": "Preparando…",
+      "fixSelected": "Corrigir nomes selecionados ({{count}})",
+      "noneSelected": "Nenhum nome corrigível está selecionado."
     }
   },
   "components": {
@@ -447,6 +466,24 @@
       "cancel": "Cancelar",
       "starting": "Iniciando…",
       "startSync": "Iniciar sincronização"
+    },
+    "namingAuditTable": {
+      "caption": "Auditoria de nomes OPL",
+      "select": "Selecionar",
+      "current": "Atual",
+      "canonical": "Canônico",
+      "classification": "Classificação",
+      "selectAriaLabel": "Selecionar {{path}}"
+    },
+    "namingPlanDialog": {
+      "title": "Adequar nomes ao padrão OPL",
+      "description": "Os Game IDs e títulos já foram reconhecidos automaticamente. Confirme para aplicar os nomes exibidos na prévia, sem copiar ou alterar o conteúdo dos jogos.",
+      "renamesSelected": "renomes selecionados",
+      "itemsPreserved": "itens preservados",
+      "unchangedTitle": "Itens que não serão alterados",
+      "cancel": "Cancelar",
+      "renaming": "Adequando nomes…",
+      "confirm": "Confirmar adequação"
     }
   }
 }
