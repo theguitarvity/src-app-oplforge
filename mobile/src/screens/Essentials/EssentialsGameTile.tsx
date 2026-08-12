@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Image, Pressable, StyleSheet, Text, View } from 'react-native'
+import { useTranslation } from 'react-i18next'
 import MaterialIcons from '@expo/vector-icons/MaterialIcons'
 import { colors, radius, spacing, typography } from '../../design-system/tokens'
 import type { CatalogListing } from '../../types'
@@ -10,12 +11,6 @@ const TIER_COLOR: Record<string, string> = {
   B: '#34D399',
   C: '#A099B0',
   Unrated: colors.mutedForeground
-}
-
-const MEDIA_LABEL: Record<CatalogListing['mediaType'], string> = {
-  'ps2-dvd': 'PS2 DVD',
-  'ps2-cd': 'PS2 CD',
-  ps1: 'PS1'
 }
 
 function formatSize(bytes?: number): string {
@@ -43,6 +38,7 @@ interface EssentialsGameTileProps {
  * toggles selection for the bulk-download bar; unavailable items are inert.
  */
 export function EssentialsGameTile({ item, selected, onToggle, onRemove }: EssentialsGameTileProps) {
+  const { t } = useTranslation()
   const tierColor = TIER_COLOR[item.scoreTier] ?? colors.mutedForeground
   const [artFailed, setArtFailed] = useState(false)
   const showArt = Boolean(item.boxArtUrl) && !artFailed
@@ -76,7 +72,7 @@ export function EssentialsGameTile({ item, selected, onToggle, onRemove }: Essen
         ) : null}
         {!item.accessible ? (
           <View style={styles.unavailableOverlay}>
-            <Text style={styles.unavailableText}>Indisponível</Text>
+            <Text style={styles.unavailableText}>{t('essentialsGameTile.unavailable')}</Text>
           </View>
         ) : null}
         {onRemove ? (
@@ -89,7 +85,7 @@ export function EssentialsGameTile({ item, selected, onToggle, onRemove }: Essen
         {item.title}
       </Text>
       <Text style={styles.meta} numberOfLines={1}>
-        {MEDIA_LABEL[item.mediaType]} · {formatSize(item.sizeBytes)}
+        {t(`essentialsGameTile.mediaType.${item.mediaType}`)} · {formatSize(item.sizeBytes)}
       </Text>
     </Pressable>
   )

@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { ActivityIndicator, Alert, FlatList, Pressable, StyleSheet, Text, TextInput, View } from 'react-native'
 import * as DocumentPicker from 'expo-document-picker'
+import { useTranslation } from 'react-i18next'
 import MaterialIcons from '@expo/vector-icons/MaterialIcons'
 import { colors, radius, spacing, typography } from '../../design-system/tokens'
 import { useEssentialsStore } from '../../stores/essentials-store'
@@ -14,13 +15,13 @@ const MEDIA_TYPES: CatalogListing['mediaType'][] = ['ps2-dvd', 'ps2-cd', 'ps1']
 
 const GRID_COLUMNS = 3
 
-const TIER_FILTERS: { label: string; value: string }[] = [
-  { label: 'Todos', value: 'all' },
+const TIER_FILTERS: { labelKey?: string; label?: string; value: string }[] = [
+  { labelKey: 'essentialsCatalogTab.tierFilters.all', value: 'all' },
   { label: 'S', value: 'S' },
   { label: 'A', value: 'A' },
   { label: 'B', value: 'B' },
   { label: 'C', value: 'C' },
-  { label: 'Unrated', value: 'Unrated' }
+  { labelKey: 'essentialsCatalogTab.tierFilters.unrated', value: 'Unrated' }
 ]
 
 function formatSize(bytes: number): string {
@@ -41,6 +42,7 @@ interface EssentialsCatalogTabProps {
 }
 
 export function EssentialsCatalogTab({ onDownloadStarted }: EssentialsCatalogTabProps) {
+  const { t } = useTranslation()
   const { items: officialItems, search, tier, status, errorMessage, loadCatalog, setSearch, setTier, confirmAndDownload } =
     useEssentialsStore()
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
@@ -102,7 +104,7 @@ export function EssentialsCatalogTab({ onDownloadStarted }: EssentialsCatalogTab
       setShowManualForm(false)
       await loadCustomCatalog()
     } catch (error) {
-      setManualError(error instanceof Error ? error.message : 'Não foi possível adicionar.')
+      setManualError(error instanceof Error ? error.message : t('essentialsCatalogTab.form.addError'))
     }
   }
 
@@ -145,12 +147,12 @@ export function EssentialsCatalogTab({ onDownloadStarted }: EssentialsCatalogTab
       if (result?.duplicates.length) {
         const fileNames = result.duplicates.map((d) => d.fileName)
         Alert.alert(
-          'Alguns títulos já existem',
-          `${fileNames.join(', ')} já estão na biblioteca. Sobrescrever substitui os arquivos existentes permanentemente.`,
+          t('essentialsCatalogTab.duplicatesTitle'),
+          t('essentialsCatalogTab.duplicatesMessage', { fileNames: fileNames.join(', ') }),
           [
-            { text: 'Cancelar', style: 'cancel' },
+            { text: t('essentialsCatalogTab.cancel'), style: 'cancel' },
             {
-              text: 'Sobrescrever',
+              text: t('essentialsCatalogTab.overwrite'),
               style: 'destructive',
               onPress: () => void confirmAndDownload(toDownload, fileNames).then(() => onDownloadStarted())
             }
@@ -165,11 +167,11 @@ export function EssentialsCatalogTab({ onDownloadStarted }: EssentialsCatalogTab
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>Catálogo Essentials</Text>
+        <Text style={styles.headerTitle}>{t('essentialsCatalogTab.title')}</Text>
         <Text style={styles.headerSubtitle}>
           {source === 'official'
-            ? 'Fonte pré-configurada: Internet Archive — PlayStation 2 Essentials, com pontuação e verificação de disponibilidade automáticas.'
-            : 'Sua própria lista — adicione itens manualmente ou importe um CSV (colunas: title,fileName,url,sizeBytes,mediaType).'}
+            ? t('essentialsCatalogTab.officialDescription')
+            : t('essentialsCatalogTab.customDescription')}
         </Text>
       </View>
 
@@ -182,7 +184,7 @@ export function EssentialsCatalogTab({ onDownloadStarted }: EssentialsCatalogTab
           }}
         >
           <Text style={[styles.sourceTabText, source === 'official' ? styles.sourceTabTextActive : null]}>
-            Catálogo oficial
+            {t('essentialsCatalogTab.officialTab')}
           </Text>
         </Pressable>
         <Pressable
@@ -193,7 +195,7 @@ export function EssentialsCatalogTab({ onDownloadStarted }: EssentialsCatalogTab
           }}
         >
           <Text style={[styles.sourceTabText, source === 'custom' ? styles.sourceTabTextActive : null]}>
-            Minha lista
+            {t('essentialsCatalogTab.customTab')}
           </Text>
         </Pressable>
       </View>
@@ -202,11 +204,11 @@ export function EssentialsCatalogTab({ onDownloadStarted }: EssentialsCatalogTab
         <View style={styles.customActionsRow}>
           <Pressable style={styles.customActionButton} onPress={() => setShowManualForm((value) => !value)}>
             <MaterialIcons name="person-add" size={16} color={colors.foreground} />
-            <Text style={styles.customActionText}>Adicionar manualmente</Text>
+            <Text style={styles.customActionText}>{t('essentialsCatalogTab.addManually')}</Text>
           </Pressable>
           <Pressable style={styles.customActionButton} onPress={() => void handleImportCsv()}>
             <MaterialIcons name="upload-file" size={16} color={colors.foreground} />
-            <Text style={styles.customActionText}>Importar CSV</Text>
+            <Text style={styles.customActionText}>{t('essentialsCatalogTab.importCsv')}</Text>
           </Pressable>
         </View>
       ) : null}
@@ -215,21 +217,21 @@ export function EssentialsCatalogTab({ onDownloadStarted }: EssentialsCatalogTab
         <View style={styles.manualForm}>
           <TextInput
             style={styles.manualInput}
-            placeholder="Título"
+            placeholder={t('essentialsCatalogTab.form.titlePlaceholder')}
             placeholderTextColor={colors.mutedForeground}
             value={manualEntry.title}
             onChangeText={(value) => setManualEntry((current) => ({ ...current, title: value }))}
           />
           <TextInput
             style={styles.manualInput}
-            placeholder="Nome do arquivo (ex.: Meu Jogo.iso)"
+            placeholder={t('essentialsCatalogTab.form.fileNamePlaceholder')}
             placeholderTextColor={colors.mutedForeground}
             value={manualEntry.fileName}
             onChangeText={(value) => setManualEntry((current) => ({ ...current, fileName: value }))}
           />
           <TextInput
             style={styles.manualInput}
-            placeholder="URL"
+            placeholder={t('essentialsCatalogTab.form.urlPlaceholder')}
             placeholderTextColor={colors.mutedForeground}
             autoCapitalize="none"
             value={manualEntry.url}
@@ -237,7 +239,7 @@ export function EssentialsCatalogTab({ onDownloadStarted }: EssentialsCatalogTab
           />
           <TextInput
             style={styles.manualInput}
-            placeholder="Tamanho em bytes (opcional)"
+            placeholder={t('essentialsCatalogTab.form.sizePlaceholder')}
             placeholderTextColor={colors.mutedForeground}
             keyboardType="number-pad"
             value={manualEntry.sizeBytes}
@@ -262,14 +264,14 @@ export function EssentialsCatalogTab({ onDownloadStarted }: EssentialsCatalogTab
             disabled={!manualEntry.title.trim() || !manualEntry.fileName.trim() || !manualEntry.url.trim()}
             onPress={() => void handleAddManualEntry()}
           >
-            <Text style={styles.selectionDownloadText}>Adicionar à minha lista</Text>
+            <Text style={styles.selectionDownloadText}>{t('essentialsCatalogTab.form.addToMyList')}</Text>
           </Pressable>
         </View>
       ) : null}
 
       {source === 'custom' && csvErrors.length > 0 ? (
         <View style={styles.csvErrorsBox}>
-          <Text style={styles.csvErrorsTitle}>Algumas linhas do CSV não foram importadas:</Text>
+          <Text style={styles.csvErrorsTitle}>{t('essentialsCatalogTab.csvErrorsTitle')}</Text>
           {csvErrors.map((err) => (
             <Text key={err} style={styles.csvErrorsText}>
               • {err}
@@ -282,7 +284,7 @@ export function EssentialsCatalogTab({ onDownloadStarted }: EssentialsCatalogTab
         <MaterialIcons name="search" size={20} color={colors.mutedForeground} />
         <TextInput
           style={styles.searchInput}
-          placeholder="Buscar jogos..."
+          placeholder={t('essentialsCatalogTab.searchPlaceholder')}
           placeholderTextColor={colors.mutedForeground}
           value={search}
           onChangeText={setSearch}
@@ -303,7 +305,7 @@ export function EssentialsCatalogTab({ onDownloadStarted }: EssentialsCatalogTab
               onPress={() => setTier(option.value)}
             >
               <Text style={[styles.chipText, tier === option.value ? styles.chipTextActive : null]}>
-                {option.label}
+                {option.labelKey ? t(option.labelKey) : option.label}
               </Text>
             </Pressable>
           ))}
@@ -324,8 +326,8 @@ export function EssentialsCatalogTab({ onDownloadStarted }: EssentialsCatalogTab
           ) : (
             <Text style={styles.emptyText}>
               {source === 'official'
-                ? 'Nenhum item encontrado.'
-                : 'Sua lista está vazia — adicione itens manualmente ou importe um CSV.'}
+                ? t('essentialsCatalogTab.emptyOfficial')
+                : t('essentialsCatalogTab.emptyCustom')}
             </Text>
           )
         }
@@ -342,16 +344,16 @@ export function EssentialsCatalogTab({ onDownloadStarted }: EssentialsCatalogTab
       {selectedItems.length > 0 ? (
         <View style={styles.selectionBar}>
           <Text style={styles.selectionText}>
-            {selectedItems.length} selecionado(s) · {formatSize(selectedBytes)}
+            {t('essentialsCatalogTab.selectedCount', { count: selectedItems.length, size: formatSize(selectedBytes) })}
           </Text>
           <View style={styles.selectionActions}>
             <Pressable style={styles.selectionClear} onPress={() => setSelectedIds(new Set())}>
               <MaterialIcons name="close" size={16} color={colors.foreground} />
-              <Text style={styles.selectionClearText}>Limpar</Text>
+              <Text style={styles.selectionClearText}>{t('essentialsCatalogTab.clear')}</Text>
             </Pressable>
             <Pressable style={styles.selectionDownload} onPress={() => setConfirming(true)}>
               <MaterialIcons name="download" size={16} color={colors.primaryForeground} />
-              <Text style={styles.selectionDownloadText}>Baixar selecionados</Text>
+              <Text style={styles.selectionDownloadText}>{t('essentialsCatalogTab.downloadSelected')}</Text>
             </Pressable>
           </View>
         </View>
@@ -360,7 +362,9 @@ export function EssentialsCatalogTab({ onDownloadStarted }: EssentialsCatalogTab
       <LegalConfirmationDialog
         visible={confirming}
         itemTitle={
-          selectedItems.length === 1 ? selectedItems[0].title : `${selectedItems.length} jogos selecionados`
+          selectedItems.length === 1
+            ? selectedItems[0].title
+            : t('essentialsCatalogTab.multipleGamesSelected', { count: selectedItems.length })
         }
         onCancel={() => setConfirming(false)}
         onConfirm={handleConfirm}

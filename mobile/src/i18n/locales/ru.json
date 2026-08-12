@@ -287,5 +287,91 @@
     "duplicateMessage": "«{{fileName}}» уже есть в библиотеке. Перезапись безвозвратно заменит существующий файл.",
     "cancel": "Отмена",
     "overwrite": "Перезаписать"
+  },
+  "essentialsGameTile": {
+    "unavailable": "Недоступно",
+    "mediaType": {
+      "ps2-dvd": "PS2 DVD",
+      "ps2-cd": "PS2 CD",
+      "ps1": "PS1"
+    }
+  },
+  "legalConfirmationDialog": {
+    "cancel": "Отмена",
+    "confirm": "Подтверждаю и хочу скачать"
+  },
+  "essentialsCatalogTab": {
+    "title": "Каталог Essentials",
+    "officialDescription": "Предустановленный источник: Internet Archive — PlayStation 2 Essentials, с автоматической оценкой и проверкой доступности.",
+    "customDescription": "Ваш собственный список — добавляйте элементы вручную или импортируйте CSV (столбцы: title,fileName,url,sizeBytes,mediaType).",
+    "officialTab": "Официальный каталог",
+    "customTab": "Мой список",
+    "addManually": "Добавить вручную",
+    "importCsv": "Импортировать CSV",
+    "form": {
+      "titlePlaceholder": "Название",
+      "fileNamePlaceholder": "Имя файла (напр.: Моя игра.iso)",
+      "urlPlaceholder": "URL",
+      "sizePlaceholder": "Размер в байтах (необязательно)",
+      "addToMyList": "Добавить в мой список",
+      "addError": "Не удалось добавить."
+    },
+    "csvErrorsTitle": "Некоторые строки CSV не были импортированы:",
+    "searchPlaceholder": "Поиск игр...",
+    "tierFilters": {
+      "all": "Все",
+      "unrated": "Без оценки"
+    },
+    "emptyOfficial": "Ничего не найдено.",
+    "emptyCustom": "Ваш список пуст — добавьте элементы вручную или импортируйте CSV.",
+    "selectedCount_one": "Выбрано {{count}} · {{size}}",
+    "selectedCount_other": "Выбрано {{count}} · {{size}}",
+    "clear": "Очистить",
+    "downloadSelected": "Скачать выбранное",
+    "duplicatesTitle": "Некоторые игры уже существуют",
+    "duplicatesMessage": "{{fileNames}} уже есть в библиотеке. Перезапись безвозвратно заменит существующие файлы.",
+    "cancel": "Отмена",
+    "overwrite": "Перезаписать",
+    "multipleGamesSelected": "Выбрано игр: {{count}}"
+  },
+  "smartFillSheet": {
+    "availableSpaceTitle": "Доступное пространство",
+    "availableSpaceHint": "На выбранном устройстве свободно {{gb}}. Выберите, сколько может использовать Smart Fill.",
+    "readingSpace": "Считывание свободного места на выбранном устройстве...",
+    "budgetWarning": "Выберите значение от 0 до {{max}} ГБ.",
+    "continue": "Продолжить",
+    "howToFillTitle": "Как заполнить?",
+    "howToFillSubtitle": "Выберите режим отбора игр для зарезервированных {{budget}} ГБ.",
+    "modes": {
+      "rating": {
+        "title": "С лучшим рейтингом",
+        "description": "Сначала заполняет играми с самым высоким рейтингом (S, затем A, B, C), пока не закончится место."
+      },
+      "random": {
+        "title": "Случайно",
+        "description": "Выбирает игры из каталога случайным образом, пока не заполнится выбранное пространство, без учёта рейтинга."
+      }
+    },
+    "back": "Назад",
+    "calculatePlan": "Рассчитать план",
+    "reviewPlanTitle": "Просмотр плана",
+    "calculating": "Расчёт...",
+    "summaryLine_one": "Выбрана {{count}} игра · выбрано {{selected}} из {{available}}",
+    "summaryLine_other": "Выбрано игр: {{count}} · выбрано {{selected}} из {{available}}",
+    "restart": "Начать заново",
+    "downloadSelected": "Скачать выбранное",
+    "duplicatesTitle": "Некоторые игры уже существуют",
+    "duplicatesMessage": "{{fileNames}} уже есть в библиотеке. Перезапись безвозвратно заменит существующие файлы.",
+    "cancel": "Отмена",
+    "overwrite": "Перезаписать",
+    "gamesSelected_one": "Выбрана {{count}} игра",
+    "gamesSelected_other": "Выбрано игр: {{count}}"
+  },
+  "essentialsScreen": {
+    "tabs": {
+      "catalog": "Каталог",
+      "smartFill": "Smart Fill",
+      "downloads": "Загрузки"
+    }
   }
 }

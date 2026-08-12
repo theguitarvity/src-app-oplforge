@@ -287,5 +287,91 @@
     "duplicateMessage": "„{{fileName}}“ ist bereits in der Bibliothek. Überschreiben ersetzt die vorhandene Datei dauerhaft.",
     "cancel": "Abbrechen",
     "overwrite": "Überschreiben"
+  },
+  "essentialsGameTile": {
+    "unavailable": "Nicht verfügbar",
+    "mediaType": {
+      "ps2-dvd": "PS2 DVD",
+      "ps2-cd": "PS2 CD",
+      "ps1": "PS1"
+    }
+  },
+  "legalConfirmationDialog": {
+    "cancel": "Abbrechen",
+    "confirm": "Ich bestätige und möchte herunterladen"
+  },
+  "essentialsCatalogTab": {
+    "title": "Essentials-Katalog",
+    "officialDescription": "Vorkonfigurierte Quelle: Internet Archive — PlayStation 2 Essentials, mit automatischer Bewertung und Verfügbarkeitsprüfung.",
+    "customDescription": "Deine eigene Liste — füge Einträge manuell hinzu oder importiere eine CSV-Datei (Spalten: title,fileName,url,sizeBytes,mediaType).",
+    "officialTab": "Offizieller Katalog",
+    "customTab": "Meine Liste",
+    "addManually": "Manuell hinzufügen",
+    "importCsv": "CSV importieren",
+    "form": {
+      "titlePlaceholder": "Titel",
+      "fileNamePlaceholder": "Dateiname (z. B. Mein Spiel.iso)",
+      "urlPlaceholder": "URL",
+      "sizePlaceholder": "Größe in Bytes (optional)",
+      "addToMyList": "Zu meiner Liste hinzufügen",
+      "addError": "Hinzufügen nicht möglich."
+    },
+    "csvErrorsTitle": "Einige CSV-Zeilen wurden nicht importiert:",
+    "searchPlaceholder": "Spiele suchen...",
+    "tierFilters": {
+      "all": "Alle",
+      "unrated": "Unbewertet"
+    },
+    "emptyOfficial": "Keine Einträge gefunden.",
+    "emptyCustom": "Deine Liste ist leer — füge Einträge manuell hinzu oder importiere eine CSV-Datei.",
+    "selectedCount_one": "{{count}} ausgewählt · {{size}}",
+    "selectedCount_other": "{{count}} ausgewählt · {{size}}",
+    "clear": "Leeren",
+    "downloadSelected": "Auswahl herunterladen",
+    "duplicatesTitle": "Einige Titel existieren bereits",
+    "duplicatesMessage": "{{fileNames}} sind bereits in der Bibliothek. Überschreiben ersetzt die vorhandenen Dateien dauerhaft.",
+    "cancel": "Abbrechen",
+    "overwrite": "Überschreiben",
+    "multipleGamesSelected": "{{count}} Spiele ausgewählt"
+  },
+  "smartFillSheet": {
+    "availableSpaceTitle": "Verfügbarer Speicherplatz",
+    "availableSpaceHint": "Das ausgewählte Gerät hat {{gb}} frei. Wähle, wie viel Smart Fill nutzen darf.",
+    "readingSpace": "Freier Speicherplatz des ausgewählten Geräts wird gelesen...",
+    "budgetWarning": "Wähle einen Wert zwischen 0 und {{max}} GB.",
+    "continue": "Weiter",
+    "howToFillTitle": "Wie soll gefüllt werden?",
+    "howToFillSubtitle": "Wähle den Auswahlmodus für Spiele innerhalb der reservierten {{budget}} GB.",
+    "modes": {
+      "rating": {
+        "title": "Am besten bewertet",
+        "description": "Füllt zuerst mit den bestbewerteten Spielen (S, dann A, B, C), bis der Platz aufgebraucht ist."
+      },
+      "random": {
+        "title": "Zufällig",
+        "description": "Wählt zufällig Spiele aus dem Katalog, bis der gewählte Platz gefüllt ist, ohne Bewertung zu priorisieren."
+      }
+    },
+    "back": "Zurück",
+    "calculatePlan": "Plan berechnen",
+    "reviewPlanTitle": "Plan überprüfen",
+    "calculating": "Wird berechnet...",
+    "summaryLine_one": "{{count}} Spiel ausgewählt · {{selected}} von {{available}} gewählt",
+    "summaryLine_other": "{{count}} Spiele ausgewählt · {{selected}} von {{available}} gewählt",
+    "restart": "Neu starten",
+    "downloadSelected": "Auswahl herunterladen",
+    "duplicatesTitle": "Einige Titel existieren bereits",
+    "duplicatesMessage": "{{fileNames}} sind bereits in der Bibliothek. Überschreiben ersetzt die vorhandenen Dateien dauerhaft.",
+    "cancel": "Abbrechen",
+    "overwrite": "Überschreiben",
+    "gamesSelected_one": "{{count}} Spiel ausgewählt",
+    "gamesSelected_other": "{{count}} Spiele ausgewählt"
+  },
+  "essentialsScreen": {
+    "tabs": {
+      "catalog": "Katalog",
+      "smartFill": "Smart Fill",
+      "downloads": "Downloads"
+    }
   }
 }

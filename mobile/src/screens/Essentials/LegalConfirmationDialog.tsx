@@ -1,4 +1,5 @@
 import { Modal, Pressable, StyleSheet, Text, View } from 'react-native'
+import { useTranslation } from 'react-i18next'
 import MaterialIcons from '@expo/vector-icons/MaterialIcons'
 import { colors, radius, spacing, typography } from '../../design-system/tokens'
 import { LEGAL_CONFIRMATION_TEXT } from '../../native/EssentialsModule'
@@ -12,6 +13,7 @@ interface LegalConfirmationDialogProps {
 
 /** Per-item legal confirmation gate (FR-002) — the exact text a user must acknowledge before any download starts. */
 export function LegalConfirmationDialog({ visible, itemTitle, onCancel, onConfirm }: LegalConfirmationDialogProps) {
+  const { t } = useTranslation()
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onCancel}>
       <View style={styles.backdrop}>
@@ -20,12 +22,12 @@ export function LegalConfirmationDialog({ visible, itemTitle, onCancel, onConfir
           <Text style={styles.legalText}>{LEGAL_CONFIRMATION_TEXT}</Text>
           <View style={styles.actions}>
             <Pressable style={styles.cancelButton} onPress={onCancel}>
-              <Text style={styles.cancelButtonText}>Cancelar</Text>
+              <Text style={styles.cancelButtonText}>{t('legalConfirmationDialog.cancel')}</Text>
             </Pressable>
             <Pressable style={styles.confirmButton} onPress={onConfirm}>
               <MaterialIcons name="check-circle" size={16} color={colors.primaryForeground} />
               <Text style={styles.confirmButtonText} numberOfLines={2}>
-                Confirmo e quero baixar
+                {t('legalConfirmationDialog.confirm')}
               </Text>
             </Pressable>
           </View>

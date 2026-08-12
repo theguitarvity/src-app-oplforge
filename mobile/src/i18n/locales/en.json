@@ -287,5 +287,91 @@
     "duplicateMessage": "\"{{fileName}}\" is already in the library. Overwriting permanently replaces the existing file.",
     "cancel": "Cancel",
     "overwrite": "Overwrite"
+  },
+  "essentialsGameTile": {
+    "unavailable": "Unavailable",
+    "mediaType": {
+      "ps2-dvd": "PS2 DVD",
+      "ps2-cd": "PS2 CD",
+      "ps1": "PS1"
+    }
+  },
+  "legalConfirmationDialog": {
+    "cancel": "Cancel",
+    "confirm": "I confirm and want to download"
+  },
+  "essentialsCatalogTab": {
+    "title": "Essentials Catalog",
+    "officialDescription": "Pre-configured source: Internet Archive — PlayStation 2 Essentials, with automatic scoring and availability checks.",
+    "customDescription": "Your own list — add items manually or import a CSV (columns: title,fileName,url,sizeBytes,mediaType).",
+    "officialTab": "Official catalog",
+    "customTab": "My list",
+    "addManually": "Add manually",
+    "importCsv": "Import CSV",
+    "form": {
+      "titlePlaceholder": "Title",
+      "fileNamePlaceholder": "File name (e.g., My Game.iso)",
+      "urlPlaceholder": "URL",
+      "sizePlaceholder": "Size in bytes (optional)",
+      "addToMyList": "Add to my list",
+      "addError": "Could not add it."
+    },
+    "csvErrorsTitle": "Some CSV rows were not imported:",
+    "searchPlaceholder": "Search games...",
+    "tierFilters": {
+      "all": "All",
+      "unrated": "Unrated"
+    },
+    "emptyOfficial": "No items found.",
+    "emptyCustom": "Your list is empty — add items manually or import a CSV.",
+    "selectedCount_one": "{{count}} selected · {{size}}",
+    "selectedCount_other": "{{count}} selected · {{size}}",
+    "clear": "Clear",
+    "downloadSelected": "Download selected",
+    "duplicatesTitle": "Some titles already exist",
+    "duplicatesMessage": "{{fileNames}} are already in the library. Overwriting permanently replaces the existing files.",
+    "cancel": "Cancel",
+    "overwrite": "Overwrite",
+    "multipleGamesSelected": "{{count}} games selected"
+  },
+  "smartFillSheet": {
+    "availableSpaceTitle": "Available space",
+    "availableSpaceHint": "The selected device has {{gb}} free. Choose how much Smart Fill can use.",
+    "readingSpace": "Reading free space on the selected device...",
+    "budgetWarning": "Choose a value between 0 and {{max}} GB.",
+    "continue": "Continue",
+    "howToFillTitle": "How to fill it?",
+    "howToFillSubtitle": "Choose the selection mode for games within the reserved {{budget}} GB.",
+    "modes": {
+      "rating": {
+        "title": "Best rated",
+        "description": "Fills with the highest-rated games first (S, then A, B, C) until space runs out."
+      },
+      "random": {
+        "title": "Random",
+        "description": "Draws games from the catalog until the chosen space is filled, without prioritizing rating."
+      }
+    },
+    "back": "Back",
+    "calculatePlan": "Calculate plan",
+    "reviewPlanTitle": "Review plan",
+    "calculating": "Calculating...",
+    "summaryLine_one": "{{count}} game selected · {{selected}} of {{available}} chosen",
+    "summaryLine_other": "{{count}} games selected · {{selected}} of {{available}} chosen",
+    "restart": "Restart",
+    "downloadSelected": "Download selected",
+    "duplicatesTitle": "Some titles already exist",
+    "duplicatesMessage": "{{fileNames}} are already in the library. Overwriting permanently replaces the existing files.",
+    "cancel": "Cancel",
+    "overwrite": "Overwrite",
+    "gamesSelected_one": "{{count}} game selected",
+    "gamesSelected_other": "{{count}} games selected"
+  },
+  "essentialsScreen": {
+    "tabs": {
+      "catalog": "Catalog",
+      "smartFill": "Smart Fill",
+      "downloads": "Downloads"
+    }
   }
 }

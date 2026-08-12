@@ -287,5 +287,91 @@
     "duplicateMessage": "\"{{fileName}}\" ya está en la biblioteca. Sobrescribir reemplaza permanentemente el archivo existente.",
     "cancel": "Cancelar",
     "overwrite": "Sobrescribir"
+  },
+  "essentialsGameTile": {
+    "unavailable": "No disponible",
+    "mediaType": {
+      "ps2-dvd": "PS2 DVD",
+      "ps2-cd": "PS2 CD",
+      "ps1": "PS1"
+    }
+  },
+  "legalConfirmationDialog": {
+    "cancel": "Cancelar",
+    "confirm": "Confirmo y quiero descargar"
+  },
+  "essentialsCatalogTab": {
+    "title": "Catálogo Essentials",
+    "officialDescription": "Fuente preconfigurada: Internet Archive — PlayStation 2 Essentials, con puntuación y verificación de disponibilidad automáticas.",
+    "customDescription": "Tu propia lista — agrega elementos manualmente o importa un CSV (columnas: title,fileName,url,sizeBytes,mediaType).",
+    "officialTab": "Catálogo oficial",
+    "customTab": "Mi lista",
+    "addManually": "Agregar manualmente",
+    "importCsv": "Importar CSV",
+    "form": {
+      "titlePlaceholder": "Título",
+      "fileNamePlaceholder": "Nombre del archivo (ej.: Mi Juego.iso)",
+      "urlPlaceholder": "URL",
+      "sizePlaceholder": "Tamaño en bytes (opcional)",
+      "addToMyList": "Agregar a mi lista",
+      "addError": "No se pudo agregar."
+    },
+    "csvErrorsTitle": "Algunas filas del CSV no se importaron:",
+    "searchPlaceholder": "Buscar juegos...",
+    "tierFilters": {
+      "all": "Todos",
+      "unrated": "Sin calificar"
+    },
+    "emptyOfficial": "No se encontraron elementos.",
+    "emptyCustom": "Tu lista está vacía — agrega elementos manualmente o importa un CSV.",
+    "selectedCount_one": "{{count}} seleccionado · {{size}}",
+    "selectedCount_other": "{{count}} seleccionados · {{size}}",
+    "clear": "Limpiar",
+    "downloadSelected": "Descargar seleccionados",
+    "duplicatesTitle": "Algunos títulos ya existen",
+    "duplicatesMessage": "{{fileNames}} ya están en la biblioteca. Sobrescribir reemplaza permanentemente los archivos existentes.",
+    "cancel": "Cancelar",
+    "overwrite": "Sobrescribir",
+    "multipleGamesSelected": "{{count}} juegos seleccionados"
+  },
+  "smartFillSheet": {
+    "availableSpaceTitle": "Espacio disponible",
+    "availableSpaceHint": "El dispositivo seleccionado tiene {{gb}} libres. Elige cuánto puede usar Smart Fill.",
+    "readingSpace": "Leyendo el espacio libre del dispositivo seleccionado...",
+    "budgetWarning": "Elige un valor entre 0 y {{max}} GB.",
+    "continue": "Continuar",
+    "howToFillTitle": "¿Cómo llenar?",
+    "howToFillSubtitle": "Elige el modo de selección de juegos para los {{budget}} GB reservados.",
+    "modes": {
+      "rating": {
+        "title": "Mejor valorados",
+        "description": "Llena primero con los juegos de mayor puntuación (S, luego A, B, C) hasta agotar el espacio."
+      },
+      "random": {
+        "title": "Aleatorio",
+        "description": "Sortea juegos del catálogo hasta llenar el espacio elegido, sin priorizar la puntuación."
+      }
+    },
+    "back": "Atrás",
+    "calculatePlan": "Calcular plan",
+    "reviewPlanTitle": "Revisar plan",
+    "calculating": "Calculando...",
+    "summaryLine_one": "{{count}} juego seleccionado · {{selected}} de {{available}} elegidos",
+    "summaryLine_other": "{{count}} juegos seleccionados · {{selected}} de {{available}} elegidos",
+    "restart": "Reiniciar",
+    "downloadSelected": "Descargar seleccionados",
+    "duplicatesTitle": "Algunos títulos ya existen",
+    "duplicatesMessage": "{{fileNames}} ya están en la biblioteca. Sobrescribir reemplaza permanentemente los archivos existentes.",
+    "cancel": "Cancelar",
+    "overwrite": "Sobrescribir",
+    "gamesSelected_one": "{{count}} juego seleccionado",
+    "gamesSelected_other": "{{count}} juegos seleccionados"
+  },
+  "essentialsScreen": {
+    "tabs": {
+      "catalog": "Catálogo",
+      "smartFill": "Smart Fill",
+      "downloads": "Descargas"
+    }
   }
 }

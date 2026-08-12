@@ -66,6 +66,7 @@ export async function getAvailableSpace(): Promise<number> {
 }
 
 /** The exact legal confirmation text required — must match `EssentialsModule.kt`'s `LEGAL_CONFIRMATION_TEXT` byte-for-byte. */
+// Literal confirmation phrase expected by the backend — not localized (Constitution Principle I).
 export const LEGAL_CONFIRMATION_TEXT =
   'Confirmo que possuo este jogo fisicamente/digitalmente ou tenho autorização legal para baixar este backup.'
 

@@ -287,5 +287,91 @@
     "duplicateMessage": "「{{fileName}}」はすでにライブラリにあります。上書きすると既存のファイルは完全に置き換えられます。",
     "cancel": "キャンセル",
     "overwrite": "上書き"
+  },
+  "essentialsGameTile": {
+    "unavailable": "利用不可",
+    "mediaType": {
+      "ps2-dvd": "PS2 DVD",
+      "ps2-cd": "PS2 CD",
+      "ps1": "PS1"
+    }
+  },
+  "legalConfirmationDialog": {
+    "cancel": "キャンセル",
+    "confirm": "確認してダウンロードする"
+  },
+  "essentialsCatalogTab": {
+    "title": "Essentialsカタログ",
+    "officialDescription": "事前設定済みソース: Internet Archive — PlayStation 2 Essentials。自動スコアリングと利用可否チェック付き。",
+    "customDescription": "自分専用のリスト — 手動でアイテムを追加するか、CSVをインポートしてください（列: title,fileName,url,sizeBytes,mediaType）。",
+    "officialTab": "公式カタログ",
+    "customTab": "マイリスト",
+    "addManually": "手動で追加",
+    "importCsv": "CSVをインポート",
+    "form": {
+      "titlePlaceholder": "タイトル",
+      "fileNamePlaceholder": "ファイル名（例: My Game.iso）",
+      "urlPlaceholder": "URL",
+      "sizePlaceholder": "サイズ（バイト、任意）",
+      "addToMyList": "マイリストに追加",
+      "addError": "追加できませんでした。"
+    },
+    "csvErrorsTitle": "一部のCSV行はインポートされませんでした:",
+    "searchPlaceholder": "ゲームを検索...",
+    "tierFilters": {
+      "all": "すべて",
+      "unrated": "未評価"
+    },
+    "emptyOfficial": "項目が見つかりません。",
+    "emptyCustom": "リストが空です — 手動でアイテムを追加するか、CSVをインポートしてください。",
+    "selectedCount_one": "{{count}} 件選択 · {{size}}",
+    "selectedCount_other": "{{count}} 件選択 · {{size}}",
+    "clear": "クリア",
+    "downloadSelected": "選択したものをダウンロード",
+    "duplicatesTitle": "一部のタイトルはすでに存在します",
+    "duplicatesMessage": "{{fileNames}} はすでにライブラリにあります。上書きすると既存のファイルは完全に置き換えられます。",
+    "cancel": "キャンセル",
+    "overwrite": "上書き",
+    "multipleGamesSelected": "{{count}} 件のゲームを選択中"
+  },
+  "smartFillSheet": {
+    "availableSpaceTitle": "利用可能な空き容量",
+    "availableSpaceHint": "選択したデバイスには {{gb}} の空き容量があります。スマートフィルが使用できる上限を選択してください。",
+    "readingSpace": "選択したデバイスの空き容量を読み込んでいます...",
+    "budgetWarning": "0 から {{max}} GB の間の値を選択してください。",
+    "continue": "続ける",
+    "howToFillTitle": "どのように埋めますか？",
+    "howToFillSubtitle": "予約した {{budget}} GB 分のゲームの選び方を選択してください。",
+    "modes": {
+      "rating": {
+        "title": "評価が高い順",
+        "description": "評価の高いゲーム（S、次にA、B、C）から順に、空き容量がなくなるまで埋めます。"
+      },
+      "random": {
+        "title": "ランダム",
+        "description": "評価を優先せず、選択した容量が埋まるまでカタログからランダムにゲームを選びます。"
+      }
+    },
+    "back": "戻る",
+    "calculatePlan": "プランを計算",
+    "reviewPlanTitle": "プランを確認",
+    "calculating": "計算中...",
+    "summaryLine_one": "{{count}} 件選択中 · {{available}} 中 {{selected}} を選択",
+    "summaryLine_other": "{{count}} 件選択中 · {{available}} 中 {{selected}} を選択",
+    "restart": "最初からやり直す",
+    "downloadSelected": "選択したものをダウンロード",
+    "duplicatesTitle": "一部のタイトルはすでに存在します",
+    "duplicatesMessage": "{{fileNames}} はすでにライブラリにあります。上書きすると既存のファイルは完全に置き換えられます。",
+    "cancel": "キャンセル",
+    "overwrite": "上書き",
+    "gamesSelected_one": "{{count}} 件選択中",
+    "gamesSelected_other": "{{count}} 件選択中"
+  },
+  "essentialsScreen": {
+    "tabs": {
+      "catalog": "カタログ",
+      "smartFill": "Smart Fill",
+      "downloads": "ダウンロード"
+    }
   }
 }

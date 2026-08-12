@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Alert, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native'
+import { useTranslation } from 'react-i18next'
 import MaterialIcons from '@expo/vector-icons/MaterialIcons'
 import { colors, radius, spacing, typography } from '../../design-system/tokens'
 import { useEssentialsStore } from '../../stores/essentials-store'
@@ -13,18 +14,18 @@ function formatGb(bytes: number): string {
   return `${(bytes / (1024 * 1024 * 1024)).toFixed(1)} GB`
 }
 
-const MODE_OPTIONS: { key: SmartFillMode; icon: keyof typeof MaterialIcons.glyphMap; title: string; description: string }[] = [
+const MODE_OPTIONS: { key: SmartFillMode; icon: keyof typeof MaterialIcons.glyphMap; titleKey: string; descriptionKey: string }[] = [
   {
     key: 'rating',
     icon: 'star',
-    title: 'Melhor avaliados',
-    description: 'Preenche com os jogos de maior nota primeiro (S, depois A, B, C) até acabar o espaço.'
+    titleKey: 'smartFillSheet.modes.rating.title',
+    descriptionKey: 'smartFillSheet.modes.rating.description'
   },
   {
     key: 'random',
     icon: 'shuffle',
-    title: 'Aleatório',
-    description: 'Sorteia jogos do catálogo até preencher o espaço escolhido, sem priorizar nota.'
+    titleKey: 'smartFillSheet.modes.random.title',
+    descriptionKey: 'smartFillSheet.modes.random.description'
   }
 ]
 
@@ -42,6 +43,7 @@ interface SmartFillSheetProps {
  * consent.
  */
 export function SmartFillSheet({ onDownloadStarted }: SmartFillSheetProps) {
+  const { t } = useTranslation()
   const { smartFillPlan, availableBytes, status, loadAvailableSpace, buildSmartFillPlan, resetSmartFillPlan, confirmAndDownload } =
     useEssentialsStore()
   const [step, setStep] = useState<WizardStep>('space')
@@ -74,12 +76,12 @@ export function SmartFillSheet({ onDownloadStarted }: SmartFillSheetProps) {
       if (result?.duplicates.length) {
         const fileNames = result.duplicates.map((d) => d.fileName)
         Alert.alert(
-          'Alguns títulos já existem',
-          `${fileNames.join(', ')} já estão na biblioteca. Sobrescrever substitui os arquivos existentes permanentemente.`,
+          t('smartFillSheet.duplicatesTitle'),
+          t('smartFillSheet.duplicatesMessage', { fileNames: fileNames.join(', ') }),
           [
-            { text: 'Cancelar', style: 'cancel' },
+            { text: t('smartFillSheet.cancel'), style: 'cancel' },
             {
-              text: 'Sobrescrever',
+              text: t('smartFillSheet.overwrite'),
               style: 'destructive',
               onPress: () =>
                 void confirmAndDownload(selectedItems, fileNames).then(() => {
@@ -118,11 +120,11 @@ export function SmartFillSheet({ onDownloadStarted }: SmartFillSheetProps) {
 
       {step === 'space' ? (
         <View style={styles.card}>
-          <Text style={styles.title}>Espaço disponível</Text>
+          <Text style={styles.title}>{t('smartFillSheet.availableSpaceTitle')}</Text>
           <Text style={styles.subtitle}>
             {availableGb !== undefined
-              ? `O dispositivo selecionado tem ${formatGb(availableBytes ?? 0)} livres. Escolha até quanto o Smart Fill pode usar.`
-              : 'Lendo o espaço livre do dispositivo selecionado...'}
+              ? t('smartFillSheet.availableSpaceHint', { gb: formatGb(availableBytes ?? 0) })
+              : t('smartFillSheet.readingSpace')}
           </Text>
           <View style={styles.budgetRow}>
             <TextInput
@@ -136,14 +138,14 @@ export function SmartFillSheet({ onDownloadStarted }: SmartFillSheetProps) {
             <Text style={styles.unit}>GB</Text>
           </View>
           {availableGb !== undefined && !budgetValid ? (
-            <Text style={styles.warning}>Escolha um valor entre 0 e {availableGb.toFixed(1)} GB.</Text>
+            <Text style={styles.warning}>{t('smartFillSheet.budgetWarning', { max: availableGb.toFixed(1) })}</Text>
           ) : null}
           <Pressable
             style={[styles.primaryButton, !budgetValid ? styles.disabled : null]}
             disabled={!budgetValid}
             onPress={() => setStep('mode')}
           >
-            <Text style={styles.primaryButtonText}>Continuar</Text>
+            <Text style={styles.primaryButtonText}>{t('smartFillSheet.continue')}</Text>
             <MaterialIcons name="arrow-forward" size={18} color={colors.primaryForeground} />
           </Pressable>
         </View>
@@ -151,8 +153,8 @@ export function SmartFillSheet({ onDownloadStarted }: SmartFillSheetProps) {
 
       {step === 'mode' ? (
         <View style={styles.card}>
-          <Text style={styles.title}>Como preencher?</Text>
-          <Text style={styles.subtitle}>Escolha o modo de seleção dos jogos para os {budgetGb} GB reservados.</Text>
+          <Text style={styles.title}>{t('smartFillSheet.howToFillTitle')}</Text>
+          <Text style={styles.subtitle}>{t('smartFillSheet.howToFillSubtitle', { budget: budgetGb })}</Text>
           {MODE_OPTIONS.map((option) => (
             <Pressable
               key={option.key}
@@ -163,8 +165,8 @@ export function SmartFillSheet({ onDownloadStarted }: SmartFillSheetProps) {
                 <MaterialIcons name={option.icon} size={22} color={mode === option.key ? colors.primary : colors.mutedForeground} />
               </View>
               <View style={styles.modeTextWrap}>
-                <Text style={styles.modeTitle}>{option.title}</Text>
-                <Text style={styles.modeDescription}>{option.description}</Text>
+                <Text style={styles.modeTitle}>{t(option.titleKey)}</Text>
+                <Text style={styles.modeDescription}>{t(option.descriptionKey)}</Text>
               </View>
               {mode === option.key ? <MaterialIcons name="check-circle" size={20} color={colors.primary} /> : null}
             </Pressable>
@@ -172,10 +174,10 @@ export function SmartFillSheet({ onDownloadStarted }: SmartFillSheetProps) {
           <View style={styles.wizardActions}>
             <Pressable style={styles.secondaryButton} onPress={() => setStep('space')}>
               <MaterialIcons name="arrow-back" size={18} color={colors.foreground} />
-              <Text style={styles.secondaryButtonText}>Voltar</Text>
+              <Text style={styles.secondaryButtonText}>{t('smartFillSheet.back')}</Text>
             </Pressable>
             <Pressable style={styles.primaryButton} onPress={handleBuildPlan}>
-              <Text style={styles.primaryButtonText}>Calcular plano</Text>
+              <Text style={styles.primaryButtonText}>{t('smartFillSheet.calculatePlan')}</Text>
               <MaterialIcons name="arrow-forward" size={18} color={colors.primaryForeground} />
             </Pressable>
           </View>
@@ -184,14 +186,17 @@ export function SmartFillSheet({ onDownloadStarted }: SmartFillSheetProps) {
 
       {step === 'review' ? (
         <View style={styles.card}>
-          <Text style={styles.title}>Revisar plano</Text>
+          <Text style={styles.title}>{t('smartFillSheet.reviewPlanTitle')}</Text>
           {status === 'loading' && !smartFillPlan ? (
-            <Text style={styles.subtitle}>Calculando...</Text>
+            <Text style={styles.subtitle}>{t('smartFillSheet.calculating')}</Text>
           ) : smartFillPlan ? (
             <>
               <Text style={styles.summaryLine}>
-                {smartFillPlan.selectedItems.length} jogo(s) selecionado(s) · {formatGb(smartFillPlan.estimatedTotalBytes)} de{' '}
-                {formatGb(smartFillPlan.availableBytes)} escolhidos
+                {t('smartFillSheet.summaryLine', {
+                  count: smartFillPlan.selectedItems.length,
+                  selected: formatGb(smartFillPlan.estimatedTotalBytes),
+                  available: formatGb(smartFillPlan.availableBytes)
+                })}
               </Text>
               {smartFillPlan.warnings.map((warning: string) => (
                 <Text key={warning} style={styles.warning}>
@@ -208,12 +213,12 @@ export function SmartFillSheet({ onDownloadStarted }: SmartFillSheetProps) {
               <View style={styles.wizardActions}>
                 <Pressable style={styles.secondaryButton} onPress={handleRestart}>
                   <MaterialIcons name="restart-alt" size={18} color={colors.foreground} />
-                  <Text style={styles.secondaryButtonText}>Recomeçar</Text>
+                  <Text style={styles.secondaryButtonText}>{t('smartFillSheet.restart')}</Text>
                 </Pressable>
                 {smartFillPlan.selectedItems.length > 0 ? (
                   <Pressable style={styles.primaryButton} onPress={() => setConfirmingAll(true)}>
                     <MaterialIcons name="download" size={18} color={colors.primaryForeground} />
-                    <Text style={styles.primaryButtonText}>Baixar selecionados</Text>
+                    <Text style={styles.primaryButtonText}>{t('smartFillSheet.downloadSelected')}</Text>
                   </Pressable>
                 ) : null}
               </View>
@@ -224,7 +229,7 @@ export function SmartFillSheet({ onDownloadStarted }: SmartFillSheetProps) {
 
       <LegalConfirmationDialog
         visible={confirmingAll}
-        itemTitle={`${smartFillPlan?.selectedItems.length ?? 0} jogo(s) selecionados`}
+        itemTitle={t('smartFillSheet.gamesSelected', { count: smartFillPlan?.selectedItems.length ?? 0 })}
         onCancel={() => setConfirmingAll(false)}
         onConfirm={handleConfirmAll}
       />

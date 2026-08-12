@@ -287,5 +287,91 @@
     "duplicateMessage": "“{{fileName}}”已存在于资料库中。覆盖将永久替换现有文件。",
     "cancel": "取消",
     "overwrite": "覆盖"
+  },
+  "essentialsGameTile": {
+    "unavailable": "不可用",
+    "mediaType": {
+      "ps2-dvd": "PS2 DVD",
+      "ps2-cd": "PS2 CD",
+      "ps1": "PS1"
+    }
+  },
+  "legalConfirmationDialog": {
+    "cancel": "取消",
+    "confirm": "我确认并要下载"
+  },
+  "essentialsCatalogTab": {
+    "title": "Essentials 目录",
+    "officialDescription": "预配置来源：Internet Archive —— PlayStation 2 Essentials，自动评分并检查可用性。",
+    "customDescription": "你自己的列表 —— 手动添加项目或导入 CSV（列：title,fileName,url,sizeBytes,mediaType）。",
+    "officialTab": "官方目录",
+    "customTab": "我的列表",
+    "addManually": "手动添加",
+    "importCsv": "导入 CSV",
+    "form": {
+      "titlePlaceholder": "标题",
+      "fileNamePlaceholder": "文件名（例如：我的游戏.iso）",
+      "urlPlaceholder": "URL",
+      "sizePlaceholder": "大小（字节，可选）",
+      "addToMyList": "添加到我的列表",
+      "addError": "无法添加。"
+    },
+    "csvErrorsTitle": "部分 CSV 行未能导入：",
+    "searchPlaceholder": "搜索游戏...",
+    "tierFilters": {
+      "all": "全部",
+      "unrated": "未评级"
+    },
+    "emptyOfficial": "未找到任何项目。",
+    "emptyCustom": "你的列表为空 —— 手动添加项目或导入 CSV。",
+    "selectedCount_one": "已选择 {{count}} 个 · {{size}}",
+    "selectedCount_other": "已选择 {{count}} 个 · {{size}}",
+    "clear": "清除",
+    "downloadSelected": "下载所选",
+    "duplicatesTitle": "部分标题已存在",
+    "duplicatesMessage": "{{fileNames}} 已存在于资料库中。覆盖将永久替换现有文件。",
+    "cancel": "取消",
+    "overwrite": "覆盖",
+    "multipleGamesSelected": "已选择 {{count}} 个游戏"
+  },
+  "smartFillSheet": {
+    "availableSpaceTitle": "可用空间",
+    "availableSpaceHint": "所选设备有 {{gb}} 可用空间。请选择智能填充可以使用的容量。",
+    "readingSpace": "正在读取所选设备的可用空间...",
+    "budgetWarning": "请选择 0 到 {{max}} GB 之间的值。",
+    "continue": "继续",
+    "howToFillTitle": "如何填充？",
+    "howToFillSubtitle": "为预留的 {{budget}} GB 选择游戏的挑选方式。",
+    "modes": {
+      "rating": {
+        "title": "评分最高优先",
+        "description": "优先填充评分最高的游戏（S，然后 A、B、C），直到空间用完。"
+      },
+      "random": {
+        "title": "随机",
+        "description": "从目录中随机抽取游戏，直到填满所选空间，不考虑评分优先级。"
+      }
+    },
+    "back": "返回",
+    "calculatePlan": "计算方案",
+    "reviewPlanTitle": "查看方案",
+    "calculating": "计算中...",
+    "summaryLine_one": "已选择 {{count}} 个游戏 · 已选 {{selected}} / {{available}}",
+    "summaryLine_other": "已选择 {{count}} 个游戏 · 已选 {{selected}} / {{available}}",
+    "restart": "重新开始",
+    "downloadSelected": "下载所选",
+    "duplicatesTitle": "部分标题已存在",
+    "duplicatesMessage": "{{fileNames}} 已存在于资料库中。覆盖将永久替换现有文件。",
+    "cancel": "取消",
+    "overwrite": "覆盖",
+    "gamesSelected_one": "已选择 {{count}} 个游戏",
+    "gamesSelected_other": "已选择 {{count}} 个游戏"
+  },
+  "essentialsScreen": {
+    "tabs": {
+      "catalog": "目录",
+      "smartFill": "Smart Fill",
+      "downloads": "下载"
+    }
   }
 }
