@@ -192,6 +192,29 @@
       "runFullScan": "Выполнить полную проверку",
       "defaultLocalName": "Локальная библиотека",
       "localFolderLabel": "Локальная папка"
+    },
+    "gameLibrary": {
+      "title": "Библиотека игр",
+      "subtitle": "Управляйте и организуйте игры PS2, PS1 и приложения на активном устройстве.",
+      "close": "Закрыть",
+      "addGames": "Добавить игры",
+      "viewGrid": "Сетка",
+      "viewList": "Список",
+      "filterAll": "Все",
+      "searchPlaceholder": "Поиск по названию или Game ID...",
+      "updatingCatalog": "Обновление каталога в фоновом режиме…",
+      "readingLibrary": "Чтение библиотеки устройства",
+      "readingLibraryDescription": "Проверка DVD, CD, USBExtreme, Game ID, фрагментации и локальных обложек…",
+      "readError": "Не удалось прочитать библиотеку",
+      "tryAgain": "Повторить попытку",
+      "noGamesFound": "Игры не найдены",
+      "noGamesFoundDescription": "Добавьте ISO-игры в папку DVD/CD вашего устройства, чтобы начать.",
+      "columnGame": "Игра",
+      "columnGameId": "Game ID",
+      "columnType": "Тип",
+      "columnRegion": "Регион",
+      "columnSize": "Размер",
+      "columnStatus": "Статус OPL"
     }
   },
   "components": {
@@ -279,6 +302,15 @@
       "successDescription": "Структура OPL создана. Теперь вы можете скопировать игры в папки DVD/CD устройства.",
       "goToWorkspace": "Перейти в рабочее пространство устройства",
       "preparationFailed": "Ошибка подготовки устройства: {{message}}"
+    },
+    "gameStatus": {
+      "ready": "Готово",
+      "fragmented": "Фрагментировано",
+      "invalidName": "Недопустимое имя",
+      "needsAttention": "Внимание"
+    },
+    "gameCard": {
+      "noGameId": "Нет Game ID"
     }
   }
 }

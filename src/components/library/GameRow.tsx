@@ -1,4 +1,5 @@
 import { CheckCircle2, AlertTriangle, FileCheck, ScanSearch, Gamepad2 } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import type { UnifiedGameItem } from '@/types/library'
 
 interface GameRowProps {
@@ -13,6 +14,7 @@ function formatBytes(bytes?: number) {
 }
 
 export function GameRow({ item, onSelect }: GameRowProps) {
+  const { t } = useTranslation()
   return (
     <tr
       onClick={() => onSelect(item)}
@@ -49,22 +51,22 @@ export function GameRow({ item, onSelect }: GameRowProps) {
       <td className="py-3 px-4 text-right">
         {item.status === 'ready' && (
           <span className="inline-flex items-center gap-1 rounded-md bg-emerald-500/20 border border-emerald-500/30 px-2 py-0.5 text-[11px] font-medium text-emerald-300">
-            <CheckCircle2 className="size-3" /> Pronto
+            <CheckCircle2 className="size-3" /> {t('components.gameStatus.ready')}
           </span>
         )}
         {item.status === 'fragmented' && (
           <span className="inline-flex items-center gap-1 rounded-md bg-amber-500/20 border border-amber-500/30 px-2 py-0.5 text-[11px] font-medium text-amber-300">
-            <ScanSearch className="size-3" /> Fragmentado
+            <ScanSearch className="size-3" /> {t('components.gameStatus.fragmented')}
           </span>
         )}
         {item.status === 'invalid_name' && (
           <span className="inline-flex items-center gap-1 rounded-md bg-rose-500/20 border border-rose-500/30 px-2 py-0.5 text-[11px] font-medium text-rose-300">
-            <FileCheck className="size-3" /> Nome Inválido
+            <FileCheck className="size-3" /> {t('components.gameStatus.invalidName')}
           </span>
         )}
         {item.status === 'needs_attention' && (
           <span className="inline-flex items-center gap-1 rounded-md bg-amber-500/20 border border-amber-500/30 px-2 py-0.5 text-[11px] font-medium text-amber-300">
-            <AlertTriangle className="size-3" /> Atenção
+            <AlertTriangle className="size-3" /> {t('components.gameStatus.needsAttention')}
           </span>
         )}
       </td>

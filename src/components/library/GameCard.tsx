@@ -7,6 +7,7 @@ import {
   FileCheck,
   ScanSearch
 } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import type { UnifiedGameItem } from '@/types/library'
 
 interface GameCardProps {
@@ -21,6 +22,7 @@ function formatBytes(bytes?: number) {
 }
 
 export function GameCard({ item, onSelect }: GameCardProps) {
+  const { t } = useTranslation()
   return (
     <div
       onClick={() => onSelect(item)}
@@ -65,22 +67,22 @@ export function GameCard({ item, onSelect }: GameCardProps) {
         <div className="absolute bottom-2 left-2 right-2">
           {item.status === 'ready' && (
             <span className="inline-flex items-center gap-1 rounded-md bg-emerald-500/90 px-2 py-1 text-[10px] font-bold text-black backdrop-blur-md">
-              <CheckCircle2 className="size-3" /> Pronto
+              <CheckCircle2 className="size-3" /> {t('components.gameStatus.ready')}
             </span>
           )}
           {item.status === 'fragmented' && (
             <span className="inline-flex items-center gap-1 rounded-md bg-amber-500/90 px-2 py-1 text-[10px] font-bold text-black backdrop-blur-md">
-              <ScanSearch className="size-3" /> Fragmentado
+              <ScanSearch className="size-3" /> {t('components.gameStatus.fragmented')}
             </span>
           )}
           {item.status === 'invalid_name' && (
             <span className="inline-flex items-center gap-1 rounded-md bg-rose-500/90 px-2 py-1 text-[10px] font-bold text-white backdrop-blur-md">
-              <FileCheck className="size-3" /> Nome Inválido
+              <FileCheck className="size-3" /> {t('components.gameStatus.invalidName')}
             </span>
           )}
           {item.status === 'needs_attention' && (
             <span className="inline-flex items-center gap-1 rounded-md bg-amber-500/90 px-2 py-1 text-[10px] font-bold text-black backdrop-blur-md">
-              <AlertTriangle className="size-3" /> Atenção
+              <AlertTriangle className="size-3" /> {t('components.gameStatus.needsAttention')}
             </span>
           )}
         </div>
@@ -93,7 +95,7 @@ export function GameCard({ item, onSelect }: GameCardProps) {
             {item.title}
           </h4>
           <p className="mt-1 font-mono text-[11px] text-muted-foreground">
-            {item.gameId || 'Sem Game ID'}
+            {item.gameId || t('components.gameCard.noGameId')}
           </p>
         </div>
         {item.sizeBytes ? (

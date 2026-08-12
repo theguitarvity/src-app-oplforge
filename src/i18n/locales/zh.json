@@ -192,6 +192,29 @@
       "runFullScan": "运行完整扫描",
       "defaultLocalName": "本地游戏库",
       "localFolderLabel": "本地文件夹"
+    },
+    "gameLibrary": {
+      "title": "游戏库",
+      "subtitle": "管理和整理活动设备上的 PS2、PS1 游戏和应用程序。",
+      "close": "关闭",
+      "addGames": "添加游戏",
+      "viewGrid": "网格视图",
+      "viewList": "列表视图",
+      "filterAll": "全部",
+      "searchPlaceholder": "按名称或 Game ID 搜索...",
+      "updatingCatalog": "正在后台更新目录…",
+      "readingLibrary": "正在读取设备游戏库",
+      "readingLibraryDescription": "正在检查 DVD、CD、USBExtreme、Game ID、碎片化和本地封面…",
+      "readError": "无法读取游戏库",
+      "tryAgain": "重试",
+      "noGamesFound": "未找到游戏",
+      "noGamesFoundDescription": "将 ISO 游戏添加到设备的 DVD/CD 文件夹以开始使用。",
+      "columnGame": "游戏",
+      "columnGameId": "Game ID",
+      "columnType": "类型",
+      "columnRegion": "地区",
+      "columnSize": "大小",
+      "columnStatus": "OPL 状态"
     }
   },
   "components": {
@@ -279,6 +302,15 @@
       "successDescription": "已创建 OPL 结构。您现在可以将游戏复制到设备的 DVD/CD 文件夹中。",
       "goToWorkspace": "前往设备工作区",
       "preparationFailed": "设备准备失败：{{message}}"
+    },
+    "gameStatus": {
+      "ready": "就绪",
+      "fragmented": "碎片化",
+      "invalidName": "名称无效",
+      "needsAttention": "需注意"
+    },
+    "gameCard": {
+      "noGameId": "无 Game ID"
     }
   }
 }

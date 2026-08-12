@@ -192,6 +192,29 @@
       "runFullScan": "Run Full Scan",
       "defaultLocalName": "Local library",
       "localFolderLabel": "Local folder"
+    },
+    "gameLibrary": {
+      "title": "Game Library",
+      "subtitle": "Manage and organize your PS2, PS1 games and apps on the active device.",
+      "close": "Close",
+      "addGames": "Add Games",
+      "viewGrid": "Grid",
+      "viewList": "List",
+      "filterAll": "All",
+      "searchPlaceholder": "Search by name or Game ID...",
+      "updatingCatalog": "Updating catalog in the background…",
+      "readingLibrary": "Reading device library",
+      "readingLibraryDescription": "Checking DVD, CD, USBExtreme, Game IDs, fragmentation and local art…",
+      "readError": "Could not read the library",
+      "tryAgain": "Try again",
+      "noGamesFound": "No games found",
+      "noGamesFoundDescription": "Add ISO games to your device's DVD/CD folder to get started.",
+      "columnGame": "Game",
+      "columnGameId": "Game ID",
+      "columnType": "Type",
+      "columnRegion": "Region",
+      "columnSize": "Size",
+      "columnStatus": "OPL Status"
     }
   },
   "components": {
@@ -279,6 +302,15 @@
       "successDescription": "The OPL structure was created. You can now copy your games to the device's DVD/CD folders.",
       "goToWorkspace": "Go to Device Workspace",
       "preparationFailed": "Device preparation failed: {{message}}"
+    },
+    "gameStatus": {
+      "ready": "Ready",
+      "fragmented": "Fragmented",
+      "invalidName": "Invalid Name",
+      "needsAttention": "Attention"
+    },
+    "gameCard": {
+      "noGameId": "No Game ID"
     }
   }
 }

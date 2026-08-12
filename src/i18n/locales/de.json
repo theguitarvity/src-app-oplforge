@@ -192,6 +192,29 @@
       "runFullScan": "Vollständige Prüfung ausführen",
       "defaultLocalName": "Lokale Bibliothek",
       "localFolderLabel": "Lokaler Ordner"
+    },
+    "gameLibrary": {
+      "title": "Spielebibliothek",
+      "subtitle": "Verwalte und organisiere deine PS2-, PS1-Spiele und Apps auf dem aktiven Gerät.",
+      "close": "Schließen",
+      "addGames": "Spiele hinzufügen",
+      "viewGrid": "Raster",
+      "viewList": "Liste",
+      "filterAll": "Alle",
+      "searchPlaceholder": "Nach Name oder Game-ID suchen...",
+      "updatingCatalog": "Katalog wird im Hintergrund aktualisiert…",
+      "readingLibrary": "Gerätebibliothek wird gelesen",
+      "readingLibraryDescription": "DVD, CD, USBExtreme, Game-IDs, Fragmentierung und lokale Artworks werden geprüft…",
+      "readError": "Bibliothek konnte nicht gelesen werden",
+      "tryAgain": "Erneut versuchen",
+      "noGamesFound": "Keine Spiele gefunden",
+      "noGamesFoundDescription": "Füge ISO-Spiele im DVD/CD-Ordner deines Geräts hinzu, um loszulegen.",
+      "columnGame": "Spiel",
+      "columnGameId": "Game-ID",
+      "columnType": "Typ",
+      "columnRegion": "Region",
+      "columnSize": "Größe",
+      "columnStatus": "OPL-Status"
     }
   },
   "components": {
@@ -279,6 +302,15 @@
       "successDescription": "Die OPL-Struktur wurde erstellt. Du kannst jetzt deine Spiele in die DVD/CD-Ordner des Geräts kopieren.",
       "goToWorkspace": "Zum Geräte-Arbeitsbereich",
       "preparationFailed": "Gerätevorbereitung fehlgeschlagen: {{message}}"
+    },
+    "gameStatus": {
+      "ready": "Bereit",
+      "fragmented": "Fragmentiert",
+      "invalidName": "Ungültiger Name",
+      "needsAttention": "Achtung"
+    },
+    "gameCard": {
+      "noGameId": "Keine Game-ID"
     }
   }
 }

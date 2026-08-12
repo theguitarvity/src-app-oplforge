@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { LayoutGrid, List, Search, Gamepad2, LoaderCircle, Plus, X } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { GameCard } from '@/components/library/GameCard'
 import { GameRow } from '@/components/library/GameRow'
 import { GameDetailDrawer } from '@/components/library/GameDetailDrawer'
@@ -41,6 +42,7 @@ function toUnifiedGameItem(item: CatalogItem): UnifiedGameItem {
 }
 
 export function GameLibraryPage() {
+  const { t } = useTranslation()
   const [searchParams, setSearchParams] = useSearchParams()
   const activeDevice = useDeviceStore((state) => state.activeDevice)
 
@@ -84,10 +86,10 @@ export function GameLibraryPage() {
       {/* Header & Title */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-bold tracking-tight text-white">Biblioteca de Jogos</h2>
-          <p className="text-sm text-muted-foreground">
-            Gerencie e organize seus jogos PS2, PS1 e aplicações no dispositivo ativo.
-          </p>
+          <h2 className="text-2xl font-bold tracking-tight text-white">
+            {t('pages.gameLibrary.title')}
+          </h2>
+          <p className="text-sm text-muted-foreground">{t('pages.gameLibrary.subtitle')}</p>
         </div>
 
         <div className="flex items-center gap-2">
@@ -101,7 +103,7 @@ export function GameLibraryPage() {
             }`}
           >
             {showAddPanel ? <X className="size-3.5" /> : <Plus className="size-3.5" />}
-            {showAddPanel ? 'Fechar' : 'Adicionar Jogos'}
+            {showAddPanel ? t('pages.gameLibrary.close') : t('pages.gameLibrary.addGames')}
           </button>
 
           {/* View Mode Toggle */}
@@ -115,7 +117,7 @@ export function GameLibraryPage() {
               }`}
             >
               <LayoutGrid className="size-3.5" />
-              Grid
+              {t('pages.gameLibrary.viewGrid')}
             </button>
             <button
               onClick={() => setViewMode('list')}
@@ -126,7 +128,7 @@ export function GameLibraryPage() {
               }`}
             >
               <List className="size-3.5" />
-              Lista
+              {t('pages.gameLibrary.viewList')}
             </button>
           </div>
         </div>
@@ -143,17 +145,17 @@ export function GameLibraryPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/10 pb-4">
         {/* Type Tabs */}
         <div className="flex gap-2">
-          {(['ALL', 'PS2', 'PS1', 'APP'] as const).map((t) => (
+          {(['ALL', 'PS2', 'PS1', 'APP'] as const).map((type) => (
             <button
-              key={t}
-              onClick={() => setSearchParams({ type: t === 'ALL' ? '' : t })}
+              key={type}
+              onClick={() => setSearchParams({ type: type === 'ALL' ? '' : type })}
               className={`rounded-xl px-4 py-2 text-xs font-semibold transition ${
-                (t === 'ALL' && !searchParams.get('type')) || searchParams.get('type') === t
+                (type === 'ALL' && !searchParams.get('type')) || searchParams.get('type') === type
                   ? 'bg-violet-600 text-white shadow-md shadow-violet-600/30'
                   : 'border border-white/10 bg-white/5 text-muted-foreground hover:bg-white/10 hover:text-white'
               }`}
             >
-              {t === 'ALL' ? 'Todos' : t}
+              {type === 'ALL' ? t('pages.gameLibrary.filterAll') : type}
             </button>
           ))}
         </div>
@@ -165,7 +167,7 @@ export function GameLibraryPage() {
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Buscar por nome ou Game ID..."
+            placeholder={t('pages.gameLibrary.searchPlaceholder') ?? ''}
             className="w-full rounded-xl border border-white/10 bg-white/5 py-2 pl-9 pr-4 text-xs text-white placeholder-muted-foreground focus:border-violet-500 focus:outline-none"
           />
         </div>
@@ -177,7 +179,8 @@ export function GameLibraryPage() {
           className="flex items-center gap-2 rounded-xl border border-violet-400/20 bg-violet-500/10 px-4 py-2 text-xs text-violet-100"
           role="status"
         >
-          <LoaderCircle className="size-3.5 animate-spin" /> Atualizando catálogo em segundo plano…
+          <LoaderCircle className="size-3.5 animate-spin" />{' '}
+          {t('pages.gameLibrary.updatingCatalog')}
         </div>
       ) : null}
       {!activeDevice ? (
@@ -193,9 +196,11 @@ export function GameLibraryPage() {
               <span className="absolute inset-0 animate-ping rounded-2xl border border-violet-400/20" />
               <LoaderCircle className="size-8 animate-spin text-violet-300" />
             </div>
-            <h3 className="mt-5 font-semibold text-white">Lendo biblioteca do dispositivo</h3>
+            <h3 className="mt-5 font-semibold text-white">
+              {t('pages.gameLibrary.readingLibrary')}
+            </h3>
             <p className="mt-2 text-sm text-muted-foreground">
-              Verificando DVD, CD, USBExtreme, Game IDs, fragmentação e artes locais…
+              {t('pages.gameLibrary.readingLibraryDescription')}
             </p>
             <div className="mt-6 h-1.5 w-full overflow-hidden rounded-full bg-black/30">
               <div className="h-full w-1/3 animate-[library-scan_1.25s_ease-in-out_infinite] rounded-full bg-gradient-to-r from-violet-500 to-fuchsia-400" />
@@ -207,21 +212,21 @@ export function GameLibraryPage() {
         </div>
       ) : error ? (
         <div className="rounded-3xl border border-red-400/20 bg-red-500/5 p-8 text-center">
-          <p className="font-semibold text-red-200">Não foi possível ler a biblioteca</p>
+          <p className="font-semibold text-red-200">{t('pages.gameLibrary.readError')}</p>
           <p className="mt-2 text-sm text-red-200/70">{error.message}</p>
           <button
             className="mt-4 rounded-xl bg-white/10 px-4 py-2 text-sm text-white"
             onClick={() => void refetch()}
           >
-            Tentar novamente
+            {t('pages.gameLibrary.tryAgain')}
           </button>
         </div>
       ) : filteredItems.length === 0 ? (
         <div className="grid min-h-[300px] place-items-center rounded-3xl border border-dashed border-white/10 bg-white/5 p-8 text-center">
           <Gamepad2 className="size-10 text-muted-foreground mb-2" />
-          <p className="text-sm font-semibold text-white">Nenhum jogo encontrado</p>
+          <p className="text-sm font-semibold text-white">{t('pages.gameLibrary.noGamesFound')}</p>
           <p className="mt-1 text-xs text-muted-foreground">
-            Adicione jogos ISO na pasta DVD/CD do seu dispositivo para começar.
+            {t('pages.gameLibrary.noGamesFoundDescription')}
           </p>
         </div>
       ) : viewMode === 'grid' ? (
@@ -239,12 +244,12 @@ export function GameLibraryPage() {
           <table className="w-full text-left">
             <thead>
               <tr className="border-b border-white/10 text-[11px] font-bold uppercase tracking-wider text-muted-foreground bg-black/20">
-                <th className="py-3 px-4">Jogo</th>
-                <th className="py-3 px-4">Game ID</th>
-                <th className="py-3 px-4">Tipo</th>
-                <th className="py-3 px-4">Região</th>
-                <th className="py-3 px-4">Tamanho</th>
-                <th className="py-3 px-4 text-right">Status OPL</th>
+                <th className="py-3 px-4">{t('pages.gameLibrary.columnGame')}</th>
+                <th className="py-3 px-4">{t('pages.gameLibrary.columnGameId')}</th>
+                <th className="py-3 px-4">{t('pages.gameLibrary.columnType')}</th>
+                <th className="py-3 px-4">{t('pages.gameLibrary.columnRegion')}</th>
+                <th className="py-3 px-4">{t('pages.gameLibrary.columnSize')}</th>
+                <th className="py-3 px-4 text-right">{t('pages.gameLibrary.columnStatus')}</th>
               </tr>
             </thead>
             <tbody>

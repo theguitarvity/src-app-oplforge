@@ -192,6 +192,29 @@
       "runFullScan": "完全スキャンを実行",
       "defaultLocalName": "ローカルライブラリ",
       "localFolderLabel": "ローカルフォルダ"
+    },
+    "gameLibrary": {
+      "title": "ゲームライブラリ",
+      "subtitle": "アクティブなデバイス上のPS2、PS1ゲームとアプリを管理・整理します。",
+      "close": "閉じる",
+      "addGames": "ゲームを追加",
+      "viewGrid": "グリッド",
+      "viewList": "リスト",
+      "filterAll": "すべて",
+      "searchPlaceholder": "名前またはGame IDで検索...",
+      "updatingCatalog": "バックグラウンドでカタログを更新中…",
+      "readingLibrary": "デバイスのライブラリを読み込み中",
+      "readingLibraryDescription": "DVD、CD、USBExtreme、Game ID、断片化、ローカルアートを確認しています…",
+      "readError": "ライブラリを読み込めませんでした",
+      "tryAgain": "再試行",
+      "noGamesFound": "ゲームが見つかりません",
+      "noGamesFoundDescription": "デバイスのDVD/CDフォルダにISOゲームを追加して始めましょう。",
+      "columnGame": "ゲーム",
+      "columnGameId": "Game ID",
+      "columnType": "タイプ",
+      "columnRegion": "リージョン",
+      "columnSize": "サイズ",
+      "columnStatus": "OPLステータス"
     }
   },
   "components": {
@@ -279,6 +302,15 @@
       "successDescription": "OPL構造が作成されました。デバイスのDVD/CDフォルダにゲームをコピーできます。",
       "goToWorkspace": "デバイスワークスペースへ",
       "preparationFailed": "デバイスの準備に失敗しました: {{message}}"
+    },
+    "gameStatus": {
+      "ready": "準備完了",
+      "fragmented": "断片化",
+      "invalidName": "無効な名前",
+      "needsAttention": "要注意"
+    },
+    "gameCard": {
+      "noGameId": "Game IDなし"
     }
   }
 }
