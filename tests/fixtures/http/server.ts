@@ -54,7 +54,9 @@ export async function startFixtureHttpServer(
       headers['Content-Length'] = String(body.length)
       response.writeHead(206, headers)
     } else {
-      headers['Content-Length'] = String(body.length)
+      if (options.disconnectAfterBytes === undefined) {
+        headers['Content-Length'] = String(body.length)
+      }
       response.writeHead(200, headers)
     }
 
