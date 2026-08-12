@@ -1,6 +1,7 @@
 package com.oplforge.mobile.sources
 
 import android.content.Context
+import android.content.SharedPreferences
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKey
 
@@ -10,13 +11,7 @@ class GoogleDriveCredentialStore(context: Context) {
         .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
         .build()
 
-    private val prefs = EncryptedSharedPreferences.create(
-        context,
-        "google_drive_tokens",
-        masterKey,
-        EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
-        EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
-    )
+    private val prefs = createEncryptedPrefs(context, masterKey)
 
     fun saveClientId(clientId: String) {
         prefs.edit().putString(KEY_CLIENT_ID, clientId).apply()
@@ -42,9 +37,35 @@ class GoogleDriveCredentialStore(context: Context) {
     }
 
     companion object {
+        private const val PREFS_NAME = "google_drive_tokens"
         private const val KEY_CLIENT_ID = "client_id"
         private const val KEY_ACCESS_TOKEN = "access_token"
         private const val KEY_REFRESH_TOKEN = "refresh_token"
         private const val KEY_EXPIRES_AT = "expires_at"
+
+        private fun buildPrefs(context: Context, masterKey: MasterKey): SharedPreferences =
+            EncryptedSharedPreferences.create(
+                context,
+                PREFS_NAME,
+                masterKey,
+                EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+                EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
+            )
+
+        /**
+         * If the Keystore-backed master key can no longer decrypt the existing
+         * prefs file (e.g. reinstalled with a different signing key, or the
+         * Keystore entry was invalidated), `create()` throws instead of
+         * returning — crashing the whole app at native-module init, before any
+         * UI can load. The old encrypted data is unrecoverable either way once
+         * that happens, so wipe it and start fresh rather than crash.
+         */
+        private fun createEncryptedPrefs(context: Context, masterKey: MasterKey): SharedPreferences =
+            try {
+                buildPrefs(context, masterKey)
+            } catch (e: Exception) {
+                context.deleteSharedPreferences(PREFS_NAME)
+                buildPrefs(context, masterKey)
+            }
     }
 }
