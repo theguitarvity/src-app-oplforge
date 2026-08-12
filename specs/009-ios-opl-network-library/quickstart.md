@@ -53,14 +53,17 @@ Validation guide for this feature. Assumes a **physical iPhone** (iOS 16+ — th
 
 ## Scenario 5 — Sharing stops cleanly when the app is backgrounded (iOS-specific — NOT a background-survival test, the opposite)
 
-This is the one scenario with no Android equivalent, and it validates the _opposite_ of Android Scenario 5 (which confirms sharing survives backgrounding) — see spec.md Assumptions and research.md R3.
+This is the one scenario with no Android equivalent, and it validates the _opposite_ of Android Scenario 5 (which confirms sharing survives backgrounding) — see spec.md Assumptions/FR-018 and research.md R3.
 
-1. With sharing active and a PS2 connected/browsing, press the iPhone's Home button or switch to another app.
-2. **Expect**: within a few seconds, the app's sharing session transitions to the new `'suspended'` state (data-model.md) — the listener is torn down proactively by the app itself, not left to be silently killed by iOS.
-3. **Expect**: on the PS2 side, the connection drops in a way OPL reports as a clean disconnect/error, not an indefinite hang.
-4. Reopen the app.
-5. **Expect**: the Sharing screen clearly shows that sharing stopped because the app was backgrounded, with an easy action to restart it — never silently showing a stale "connected" state from before backgrounding.
-6. **This scenario passing is a hard requirement, not a nice-to-have** — spec.md FR-008 and SC-004 treat "never show stale connected state" as equally important as the connection working in the first place.
+1. Start sharing and confirm the dedicated full-screen "Compartilhando" view appears (spec.md FR-018).
+2. Leave the iPhone untouched (screen on, app in foreground, no manual lock) for at least 2 minutes — longer than the device's configured auto-lock timeout would normally allow.
+3. **Expect**: the screen does **not** auto-lock — `isIdleTimerDisabled` is working, confirming the accidental-drop mitigation (research.md R3) actually holds.
+4. With sharing still active and a PS2 connected/browsing, now press the iPhone's Home button or switch to another app (a _deliberate_ backgrounding, not an accidental screen-lock).
+5. **Expect**: within a few seconds, the app's sharing session transitions to the new `'suspended'` state (data-model.md) — the listener is torn down proactively by the app itself, not left to be silently killed by iOS.
+6. **Expect**: on the PS2 side, the connection drops in a way OPL reports as a clean disconnect/error, not an indefinite hang.
+7. Reopen the app.
+8. **Expect**: the Sharing screen clearly shows that sharing stopped because the app was backgrounded, with an easy action to restart it — never silently showing a stale "connected" state from before backgrounding.
+9. **Both halves of this scenario are hard requirements, not nice-to-haves**: step 3 (idle timer suppressing accidental drops) and step 8 (never showing stale "connected" state for deliberate backgrounding) are the two ends of spec.md FR-018 and FR-008/SC-004 respectively.
 
 ## Scenario 6 — iCloud on-demand files don't hang a transfer (iOS-specific)
 

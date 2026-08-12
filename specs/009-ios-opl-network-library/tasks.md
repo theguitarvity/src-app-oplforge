@@ -80,6 +80,7 @@ Mirrors `plan.md`'s Structure Decision — one Swift file per Kotlin file it por
 - [ ] T025 [US1] Implement `Sharing/Smb/SmbServer.swift` — `NWListener` on port 1445 (research.md R5), one connection loop per `NWConnection`, dispatches frames to T024
 - [ ] T026 [US1] Implement `Sharing/SharingModule.swift` (registers as `SharingModule`) — `startSharing`/`stopSharing`/`getSession`/`getRecentConnections` per the existing TurboModule spec, credentials via T010, session state machine including the new `'suspended'` value (data-model.md), observes `UIApplication.willResignActiveNotification`/`didBecomeActiveNotification` to tear down T025's listener and emit the state change (research.md R3) — checks a completed catalog snapshot exists (T021) before allowing `startSharing`, mirroring Android's `CATALOG_NOT_READY` guard
 - [ ] T027 [US1] Wire the Tutorial screen's native data source (`getConnectionInstructions()`) to T026's live session state — no new JS-side screen work needed (already cross-platform)
+- [ ] T028 [US1] Implement the full-screen "Compartilhando" view + `UIApplication.shared.isIdleTimerDisabled = true` for the session duration (spec.md FR-018, research.md R3) — shown whenever `SharingModule`'s session state is `running-idle`/`running-connected`, cleared (idle timer re-enabled) on `stopSharing`/`suspended`/`off`
 
 **Checkpoint**: quickstart.md Scenarios 1, 3, 4, 5 pass on a physical iPhone against a real PS2 — sharing works, and backgrounding the app stops it cleanly and visibly rather than silently.
 
@@ -93,13 +94,13 @@ Mirrors `plan.md`'s Structure Decision — one Swift file per Kotlin file it por
 
 ### Tests for User Story 2
 
-- [ ] T028 [P] [US2] XCTest: `DiagnosticsModuleTests.swift` — missing-folder detection, readiness classification, and the 20s timeout guard (research.md/contracts: `Task`+`withThrowingTaskGroup` timeout racing, mirrors Android's `withTimeoutOrNull` fix)
+- [ ] T029 [P] [US2] XCTest: `DiagnosticsModuleTests.swift` — missing-folder detection, readiness classification, and the 20s timeout guard (research.md/contracts: `Task`+`withThrowingTaskGroup` timeout racing, mirrors Android's `withTimeoutOrNull` fix)
 
 ### Implementation for User Story 2
 
-- [ ] T029 [US2] Implement `Diagnostics/DiagnosticsModule.swift` (registers as `DiagnosticsModule`) — checks the 7 mandatory folders (DVD/CD/PS1/APPS/ART/CFG/VMC) and free space via T012's resolved URL, reuses T021's `CatalogScanModule` for the catalog-issue-count input to the readiness classification (mirrors `DiagnosticsModule.kt`'s reuse of `CatalogScanner`), wrapped in the T028-tested timeout guard
-- [ ] T030 [US2] Implement `Diagnostics/ReadinessClassifier.swift` — pure classification logic (`ready`/`ready-with-warnings`/`requires-reorganization`/`incompatible`), direct port of the Kotlin equivalent
-- [ ] T031 [US2] Implement `prepareDeviceStructure()` on `DiagnosticsModule.swift` — creates any missing mandatory folder via `FileManager.createDirectory` under the bookmark-resolved root, then re-runs T029's diagnostic
+- [ ] T030 [US2] Implement `Diagnostics/DiagnosticsModule.swift` (registers as `DiagnosticsModule`) — checks the 7 mandatory folders (DVD/CD/PS1/APPS/ART/CFG/VMC) and free space via T012's resolved URL, reuses T021's `CatalogScanModule` for the catalog-issue-count input to the readiness classification (mirrors `DiagnosticsModule.kt`'s reuse of `CatalogScanner`), wrapped in the T029-tested timeout guard
+- [ ] T031 [US2] Implement `Diagnostics/ReadinessClassifier.swift` — pure classification logic (`ready`/`ready-with-warnings`/`requires-reorganization`/`incompatible`), direct port of the Kotlin equivalent
+- [ ] T032 [US2] Implement `prepareDeviceStructure()` on `DiagnosticsModule.swift` — creates any missing mandatory folder via `FileManager.createDirectory` under the bookmark-resolved root, then re-runs T030's diagnostic
 
 **Checkpoint**: quickstart.md Scenario 2 passes — diagnostics correctly flags missing folders and "Preparar dispositivo" resolves them in one pass.
 
@@ -113,21 +114,21 @@ Mirrors `plan.md`'s Structure Decision — one Swift file per Kotlin file it por
 
 ### Tests for User Story 3
 
-- [ ] T032 [P] [US3] XCTest: `SmartFillPlannerTests.swift` — rating-mode ordering, rating-mode filling remaining budget with lower tiers, random-mode selection, budget-never-exceeded — ported from `SmartFillPlannerTest.kt` (all 6 cases, including the two added when the rating/random mode split landed on Android)
-- [ ] T033 [P] [US3] XCTest: `LibretroArtIndexTests.swift` — the `Named_Boxarts`-subtree-by-sha fetch strategy (research.md/contracts: fetching the whole repo tree 500s on GitHub's API for this 6.3GB repo; only the subtree-by-sha approach is valid — assert the implementation never calls the whole-tree endpoint)
-- [ ] T034 [P] [US3] XCTest: `ZipCentralDirectoryParserTests.swift` — reuse the existing real-byte fixtures (`oplm_art_zip_tail_sample.bin`/`oplm_art_central_dir_sample.bin`) already committed for the Android test suite; same ZIP64 parsing assertions
+- [ ] T033 [P] [US3] XCTest: `SmartFillPlannerTests.swift` — rating-mode ordering, rating-mode filling remaining budget with lower tiers, random-mode selection, budget-never-exceeded — ported from `SmartFillPlannerTest.kt` (all 6 cases, including the two added when the rating/random mode split landed on Android)
+- [ ] T034 [P] [US3] XCTest: `LibretroArtIndexTests.swift` — the `Named_Boxarts`-subtree-by-sha fetch strategy (research.md/contracts: fetching the whole repo tree 500s on GitHub's API for this 6.3GB repo; only the subtree-by-sha approach is valid — assert the implementation never calls the whole-tree endpoint)
+- [ ] T035 [P] [US3] XCTest: `ZipCentralDirectoryParserTests.swift` — reuse the existing real-byte fixtures (`oplm_art_zip_tail_sample.bin`/`oplm_art_central_dir_sample.bin`) already committed for the Android test suite; same ZIP64 parsing assertions
 
 ### Implementation for User Story 3
 
-- [ ] T035 [P] [US3] Port `GameScoring.kt`/`ArchiveFileMapper.kt`-equivalent pure logic → `Essentials/GameScoring.swift` (tier scoring, filename/media-type mapping — no platform dependency)
-- [ ] T036 [US3] Implement `Essentials/EssentialsCatalogClient.swift` — `URLSession`-based Internet Archive metadata fetch + 8-way-bounded concurrent accessibility/art-enrichment pass using a Swift structured-concurrency semaphore (`TaskGroup` batching or an actor-based `AsyncSemaphore` — never a thread-blocking primitive, contracts/native-modules-ios.md's explicit callout of the Android thread-starvation lesson), 24h Room-cache-equivalent freshness check against T011's schema
-- [ ] T037 [US3] Implement `Essentials/LibretroArtIndex.swift` — two-step fetch (root tree for the `Named_Boxarts` sha, then that subtree directly, research.md R2-equivalent GitHub-API finding documented in contracts/native-modules-ios.md), title-similarity matching ported from the Kotlin implementation
-- [ ] T038 [US3] Implement `Essentials/SmartFillPlanner.swift` — rating/random mode selection against a real free-space read via T012, direct port of `SmartFillPlanner.kt`'s greedy-fill logic
-- [ ] T039 [US3] Implement `Essentials/EssentialsModule.swift` (registers as `EssentialsModule`) — `listCatalog`/`refreshCatalog`/`getAvailableSpace`/`createSmartFillPlan`/`confirmAndEnqueue` per the existing TurboModule spec, legal-confirmation-text exact-match gate before enqueueing (mirrors Android's `LEGAL_CONFIRMATION_REQUIRED` check byte-for-byte against the same copy)
-- [ ] T040 [US3] Implement `Transfer/TransferQueueModule.swift` (registers as `TransferModule`) — durable queue persisted via T011, `URLSession` background-configuration downloads for Essentials/Art Sync fetches (contracts/native-modules-ios.md notes this — unlike the SMB listener — has real iOS background-continuation support since it's a bounded system-managed transfer), single-writer enforcement via T008, `onTransferQueueEvent` progress
-- [ ] T041 [P] [US3] Port `ZipCentralDirectoryParser.kt` → `Art/ZipCentralDirectoryParser.swift` (ZIP64 EOCD/locator/central-directory/local-header parsing, pure byte logic, no platform dependency)
-- [ ] T042 [US3] Implement `Art/RemoteZipArtIndex.swift` — HTTP range-request fetch of the ZIP64 index and per-entry art bytes from the archive.org ZIP (`URLSession` with the same generous timeout margin already tuned on Android after a real timeout was hit)
-- [ ] T043 [US3] Implement `Art/ArtSyncModule.swift` (registers as `ArtSyncModule`) — `planArtSync`/`startArtSync` per the existing TurboModule spec, 4-way-bounded concurrent downloads (same structured-concurrency requirement as T036), writes into the `ART` folder via T012
+- [ ] T036 [P] [US3] Port `GameScoring.kt`/`ArchiveFileMapper.kt`-equivalent pure logic → `Essentials/GameScoring.swift` (tier scoring, filename/media-type mapping — no platform dependency)
+- [ ] T037 [US3] Implement `Essentials/EssentialsCatalogClient.swift` — `URLSession`-based Internet Archive metadata fetch + 8-way-bounded concurrent accessibility/art-enrichment pass using a Swift structured-concurrency semaphore (`TaskGroup` batching or an actor-based `AsyncSemaphore` — never a thread-blocking primitive, contracts/native-modules-ios.md's explicit callout of the Android thread-starvation lesson), 24h Room-cache-equivalent freshness check against T011's schema
+- [ ] T038 [US3] Implement `Essentials/LibretroArtIndex.swift` — two-step fetch (root tree for the `Named_Boxarts` sha, then that subtree directly, research.md R2-equivalent GitHub-API finding documented in contracts/native-modules-ios.md), title-similarity matching ported from the Kotlin implementation
+- [ ] T039 [US3] Implement `Essentials/SmartFillPlanner.swift` — rating/random mode selection against a real free-space read via T012, direct port of `SmartFillPlanner.kt`'s greedy-fill logic
+- [ ] T040 [US3] Implement `Essentials/EssentialsModule.swift` (registers as `EssentialsModule`) — `listCatalog`/`refreshCatalog`/`getAvailableSpace`/`createSmartFillPlan`/`confirmAndEnqueue` per the existing TurboModule spec, legal-confirmation-text exact-match gate before enqueueing (mirrors Android's `LEGAL_CONFIRMATION_REQUIRED` check byte-for-byte against the same copy)
+- [ ] T041 [US3] Implement `Transfer/TransferQueueModule.swift` (registers as `TransferModule`) — durable queue persisted via T011, `URLSession` background-configuration downloads for Essentials/Art Sync fetches (contracts/native-modules-ios.md notes this — unlike the SMB listener — has real iOS background-continuation support since it's a bounded system-managed transfer), single-writer enforcement via T008, `onTransferQueueEvent` progress
+- [ ] T042 [P] [US3] Port `ZipCentralDirectoryParser.kt` → `Art/ZipCentralDirectoryParser.swift` (ZIP64 EOCD/locator/central-directory/local-header parsing, pure byte logic, no platform dependency)
+- [ ] T043 [US3] Implement `Art/RemoteZipArtIndex.swift` — HTTP range-request fetch of the ZIP64 index and per-entry art bytes from the archive.org ZIP (`URLSession` with the same generous timeout margin already tuned on Android after a real timeout was hit)
+- [ ] T044 [US3] Implement `Art/ArtSyncModule.swift` (registers as `ArtSyncModule`) — `planArtSync`/`startArtSync` per the existing TurboModule spec, 4-way-bounded concurrent downloads (same structured-concurrency requirement as T037), writes into the `ART` folder via T012
 
 **Checkpoint**: quickstart.md Scenario 7 passes — Essentials browsing, Smart Fill, legal-gated downloads, and Art Sync all work against real data on a physical iPhone.
 
@@ -137,17 +138,17 @@ Mirrors `plan.md`'s Structure Decision — one Swift file per Kotlin file it por
 
 **Purpose**: Repo-wide consistency and the mandatory hardware validation gate — not a new feature, but not optional either (spec.md SC-007).
 
-- [ ] T044 [P] Update `mobile/README.md` with iOS build/run instructions alongside the existing Android instructions
-- [ ] T045 [P] Confirm CI (`.github/workflows/`) builds the iOS target alongside the existing Android debug-APK build, publishing an iOS artifact (unsigned/dev build, matching the existing "not code-signed, for testing" posture of the Android continuous build) — coordinate with whatever the repo's actual CI/signing setup allows; this task's scope is "confirm and wire," not "set up Apple Developer Program enrollment," which is out of this plan's control
-- [ ] T046 Run the full XCTest suite (T014-T020, T028, T032-T034) and confirm all pass before starting quickstart.md's manual scenarios
-- [ ] T047 Execute quickstart.md Scenario 1 (library selection) on a physical iPhone
-- [ ] T048 Execute quickstart.md Scenario 2 (catalog/diagnose/prepare) on a physical iPhone
-- [ ] T049 Execute quickstart.md Scenario 3 (start sharing, real PS2 browse/boot) — **the Hardware Smoke Test's core case**; if it fails at the network-menu stage or at login specifically, check the two carried-over Android regressions first (quickstart.md Scenario 3 steps 7-8) before treating it as a new bug
-- [ ] T050 Execute quickstart.md Scenario 4 (connection state accuracy) on a physical iPhone + real PS2
-- [ ] T051 Execute quickstart.md Scenario 5 (clean stop on backgrounding) — confirm the `'suspended'` state fires and the PS2 sees a clean disconnect, not a hang
-- [ ] T052 Execute quickstart.md Scenario 6 (iCloud on-demand file) with a deliberately-evicted file in a real iCloud Drive-backed library
-- [ ] T053 Execute quickstart.md Scenario 7 (Essentials/Smart Fill/downloads) on a physical iPhone
-- [ ] T054 Record findings from T047-T053 (pass/fail, any new port/permission/timing surprises) in a "Correction found during on-device implementation" note in `research.md`, matching the format Android's own research.md already uses — this is how the next person avoids rediscovering the same bug from scratch
+- [ ] T045 [P] Update `mobile/README.md` with iOS build/run instructions alongside the existing Android instructions
+- [ ] T046 [P] Confirm CI (`.github/workflows/`) builds the iOS target alongside the existing Android debug-APK build, publishing an iOS artifact (unsigned/dev build, matching the existing "not code-signed, for testing" posture of the Android continuous build) — coordinate with whatever the repo's actual CI/signing setup allows; this task's scope is "confirm and wire," not "set up Apple Developer Program enrollment," which is out of this plan's control
+- [ ] T047 Run the full XCTest suite (T014-T020, T029, T033-T035) and confirm all pass before starting quickstart.md's manual scenarios
+- [ ] T048 Execute quickstart.md Scenario 1 (library selection) on a physical iPhone
+- [ ] T049 Execute quickstart.md Scenario 2 (catalog/diagnose/prepare) on a physical iPhone
+- [ ] T050 Execute quickstart.md Scenario 3 (start sharing, real PS2 browse/boot) — **the Hardware Smoke Test's core case**; if it fails at the network-menu stage or at login specifically, check the two carried-over Android regressions first (quickstart.md Scenario 3 steps 7-8) before treating it as a new bug
+- [ ] T051 Execute quickstart.md Scenario 4 (connection state accuracy) on a physical iPhone + real PS2
+- [ ] T052 Execute quickstart.md Scenario 5 (clean stop on backgrounding) — confirm the `'suspended'` state fires and the PS2 sees a clean disconnect, not a hang
+- [ ] T053 Execute quickstart.md Scenario 6 (iCloud on-demand file) with a deliberately-evicted file in a real iCloud Drive-backed library
+- [ ] T054 Execute quickstart.md Scenario 7 (Essentials/Smart Fill/downloads) on a physical iPhone
+- [ ] T055 Record findings from T048-T054 (pass/fail, any new port/permission/timing surprises) in a "Correction found during on-device implementation" note in `research.md`, matching the format Android's own research.md already uses — this is how the next person avoids rediscovering the same bug from scratch
 
 ---
 
@@ -166,7 +167,7 @@ Mirrors `plan.md`'s Structure Decision — one Swift file per Kotlin file it por
 
 - All `[P]`-marked Foundational tasks (T007-T012, T014-T016) touch different files and can run in parallel once T003/T006 (Phase 1) are done.
 - Within US1: T017-T020 (tests) and T022-T023 (pure ports) are `[P]`; T024-T027 have real sequential dependencies (each needs the previous file to exist).
-- US3 is almost entirely parallel-safe internally (T032-T037, T041 are `[P]`) since Essentials and Art Sync are separate subsystems that only share T011/T012/T008 from Foundational.
+- US3 is almost entirely parallel-safe internally (T033-T038, T042 are `[P]`) since Essentials and Art Sync are separate subsystems that only share T011/T012/T008 from Foundational.
 - **US2 and US3 can be staffed in parallel by different contributors** once Phase 2 and (for US2 specifically) T021 are done — they touch entirely disjoint file sets.
 
 ---
@@ -215,4 +216,4 @@ With multiple contributors: one completes Setup + Foundational alone (it's small
 - `[Story]` labels trace every implementation task back to spec.md's prioritized user stories.
 - Every task that "ports" a Kotlin file names its exact source path — this is deliberate: the Kotlin implementation is already hardware-validated wire-format/domain-logic knowledge, and the task is to carry that correctness forward, not to re-derive it.
 - Commit after each task or logical group, per the repo's existing convention (see git history — Android's SMB fixes each landed as their own focused commit with a message explaining the specific bug found).
-- The Hardware Smoke Test (T049 and its surrounding scenarios) is not a formality — per Constitution Principle V and the lesson already learned twice in this repository (desktop spec 005, Android spec 006), no user story here is "done" until it passes on real hardware.
+- The Hardware Smoke Test (T050 and its surrounding scenarios) is not a formality — per Constitution Principle V and the lesson already learned twice in this repository (desktop spec 005, Android spec 006), no user story here is "done" until it passes on real hardware.
