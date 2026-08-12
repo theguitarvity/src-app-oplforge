@@ -35,5 +35,88 @@
     "changedTitle": "Библиотека изменена",
     "changedMessage": "Обнаружено новое устройство/источник библиотеки. Загружаем вашу библиотеку...",
     "loadError": "Не удалось загрузить библиотеку"
+  },
+  "downloadsFab": {
+    "title": "Загрузки",
+    "activeStatus": "Активно: {{count}} · {{progress}}%",
+    "failedStatus": "Требует внимания: {{count}}"
+  },
+  "tutorial": {
+    "title": "Настройка PS2",
+    "notSharing": "Сначала запустите общий доступ, чтобы увидеть данные подключения.",
+    "loading": "Загрузка...",
+    "instructions": "На PS2 перейдите: Настройки → Настройки сети → SMB-сервер и введите:",
+    "emptyValue": "(пусто)",
+    "connected": "PS2 подключена",
+    "waitingConnection": "Ожидание подключения PS2",
+    "wifiHint": "Если PS2 не подключается, убедитесь, что оба устройства в одной Wi-Fi сети."
+  },
+  "home": {
+    "title": "OPL Forge Mobile",
+    "readiness": {
+      "ready": "Библиотека готова",
+      "readyWithWarnings": "Готова, есть предупреждения",
+      "requiresReorganization": "Требуется реорганизация",
+      "incompatible": "Не готова"
+    },
+    "quickActions": {
+      "library": "Библиотека",
+      "essentials": "Каталог Essentials",
+      "sharing": "Общий доступ",
+      "transfers": "Передачи",
+      "diagnostics": "Диагностика",
+      "artSync": "Синхронизация обложек",
+      "sources": "Google Drive"
+    },
+    "setupTutorial": "Руководство по настройке PS2",
+    "ps2Games": "Игры PS2",
+    "ps1Games": "Игры PS1",
+    "apps": "Приложения",
+    "suggestionsTitle": "Рекомендации для вас",
+    "suggestions": {
+      "diagnostics": {
+        "title": "Запустите диагностику",
+        "subtitle": "Проверьте, готова ли ваша библиотека для PS2."
+      },
+      "essentialsEmpty": {
+        "title": "Добавьте свои первые игры",
+        "subtitle": "Просмотрите каталог Essentials, чтобы начать свою библиотеку."
+      },
+      "smartFill": {
+        "title": "Заполните свободное место",
+        "subtitle": "Используйте Smart Fill, чтобы автоматически добавлять игры."
+      }
+    },
+    "quickAccess": "Быстрый доступ",
+    "recentlyCataloged": "Недавно каталогизировано",
+    "seeAll": "Смотреть все",
+    "primaryAction": {
+      "selectLibrary": "Выбрать библиотеку",
+      "catalogLibrary": "Перейти в библиотеку",
+      "goToSharing": "Перейти к общему доступу"
+    }
+  },
+  "sharing": {
+    "title": "Поделиться библиотекой",
+    "subtitle": "Задайте учётные данные, подтвердите доступ на запись и начните — за один шаг.",
+    "connected": "PS2 подключена",
+    "waitingConnection": "Общий доступ включён, ожидание подключения",
+    "nowPlaying": "Сейчас передаётся",
+    "setupTutorialLink": "Посмотреть руководство по настройке PS2",
+    "stopSharing": "Остановить общий доступ",
+    "connectionLog": "Журнал подключений",
+    "clear": "Очистить",
+    "noEvents": "Событий пока нет.",
+    "recentConnections": "Недавние подключения",
+    "credentialsTitle": "Учётные данные общего доступа",
+    "usernamePlaceholder": "Имя пользователя",
+    "passwordPlaceholder": "Пароль",
+    "shareNamePlaceholder": "Имя общего ресурса (по умолчанию: {{defaultName}})",
+    "usernamePasswordRequired": "Имя пользователя и пароль обязательны.",
+    "writeAccessTitle": "Доступ на запись для PS2",
+    "writeAccessBody": "PS2 сможет создавать, изменять и перезаписывать файлы в вашей локальной библиотеке по сети.",
+    "writeAccessConsent": "Я осведомлён и разрешаю",
+    "writeAccessRequired": "Подтвердите доступ на запись перед началом общего доступа.",
+    "startSharing": "Начать общий доступ"
   }
 }

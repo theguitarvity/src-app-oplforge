@@ -35,5 +35,88 @@
     "changedTitle": "Library changed",
     "changedMessage": "We detected a new device/library source. Loading your library...",
     "loadError": "Couldn't load the library"
+  },
+  "downloadsFab": {
+    "title": "Downloads",
+    "activeStatus": "{{count}} active · {{progress}}%",
+    "failedStatus": "{{count}} need attention"
+  },
+  "tutorial": {
+    "title": "Set up the PS2",
+    "notSharing": "Start sharing first to see the connection details.",
+    "loading": "Loading...",
+    "instructions": "On the PS2, go to: Settings → Network Settings → SMB Server, and enter:",
+    "emptyValue": "(empty)",
+    "connected": "PS2 connected",
+    "waitingConnection": "Waiting for PS2 connection",
+    "wifiHint": "If the PS2 does not connect, make sure both devices are on the same Wi-Fi network."
+  },
+  "home": {
+    "title": "OPL Forge Mobile",
+    "readiness": {
+      "ready": "Library ready",
+      "readyWithWarnings": "Ready, with warnings",
+      "requiresReorganization": "Requires reorganization",
+      "incompatible": "Not ready"
+    },
+    "quickActions": {
+      "library": "Library",
+      "essentials": "Essentials Catalog",
+      "sharing": "Share",
+      "transfers": "Transfers",
+      "diagnostics": "Diagnostics",
+      "artSync": "Sync Art",
+      "sources": "Google Drive"
+    },
+    "setupTutorial": "PS2 setup tutorial",
+    "ps2Games": "PS2 games",
+    "ps1Games": "PS1 games",
+    "apps": "Apps",
+    "suggestionsTitle": "Suggestions for you",
+    "suggestions": {
+      "diagnostics": {
+        "title": "Run a diagnostic",
+        "subtitle": "Check whether your library is ready for the PS2."
+      },
+      "essentialsEmpty": {
+        "title": "Add your first games",
+        "subtitle": "Browse the Essentials Catalog to start your library."
+      },
+      "smartFill": {
+        "title": "Fill up the free space",
+        "subtitle": "Use Smart Fill to add games automatically."
+      }
+    },
+    "quickAccess": "Quick access",
+    "recentlyCataloged": "Recently cataloged",
+    "seeAll": "See all",
+    "primaryAction": {
+      "selectLibrary": "Select library",
+      "catalogLibrary": "Go to library",
+      "goToSharing": "Go to sharing"
+    }
+  },
+  "sharing": {
+    "title": "Share library",
+    "subtitle": "Set credentials, confirm write access, and start — in a single step.",
+    "connected": "PS2 connected",
+    "waitingConnection": "Sharing, waiting for connection",
+    "nowPlaying": "Now streaming",
+    "setupTutorialLink": "View PS2 setup tutorial",
+    "stopSharing": "Stop sharing",
+    "connectionLog": "Connection log",
+    "clear": "Clear",
+    "noEvents": "No events yet.",
+    "recentConnections": "Recent connections",
+    "credentialsTitle": "Sharing credentials",
+    "usernamePlaceholder": "Username",
+    "passwordPlaceholder": "Password",
+    "shareNamePlaceholder": "Share name (default: {{defaultName}})",
+    "usernamePasswordRequired": "Username and password are required.",
+    "writeAccessTitle": "PS2 write access",
+    "writeAccessBody": "The PS2 will be able to create, modify, and overwrite files in your local library over the network.",
+    "writeAccessConsent": "I am aware and authorize this",
+    "writeAccessRequired": "Confirm write access before sharing.",
+    "startSharing": "Start sharing"
   }
 }

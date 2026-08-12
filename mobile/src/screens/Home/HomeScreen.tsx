@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { ScrollView, Pressable, StyleSheet, Text, View } from 'react-native'
 import { useNavigation } from '@react-navigation/native'
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack'
+import { useTranslation } from 'react-i18next'
 import MaterialIcons from '@expo/vector-icons/MaterialIcons'
 import { colors, radius, semanticColor, spacing, typography } from '../../design-system/tokens'
 import { deriveHomeState, homeStateColor } from './homeState'
@@ -14,16 +15,9 @@ import type { CatalogEntry } from '../../types'
 import { GameArtThumbnail } from '../../components/GameArtThumbnail'
 import type { RootStackParamList } from '../../app/App'
 
-const READINESS_LABEL: Record<string, string> = {
-  ready: 'Biblioteca pronta',
-  'ready-with-warnings': 'Pronta, com avisos',
-  'requires-reorganization': 'Requer reorganização',
-  incompatible: 'Não pronta'
-}
-
 interface QuickAction {
   key: string
-  label: string
+  labelKey: string
   icon: keyof typeof MaterialIcons.glyphMap
   onPress: (navigation: NativeStackNavigationProp<RootStackParamList>) => void
 }
@@ -31,43 +25,43 @@ interface QuickAction {
 const QUICK_ACTIONS: QuickAction[] = [
   {
     key: 'library',
-    label: 'Biblioteca',
+    labelKey: 'home.quickActions.library',
     icon: 'videogame-asset',
     onPress: (navigation) => navigation.navigate('LibrarySelect')
   },
   {
     key: 'essentials',
-    label: 'Catálogo Essentials',
+    labelKey: 'home.quickActions.essentials',
     icon: 'travel-explore',
     onPress: (navigation) => navigation.navigate('Essentials')
   },
   {
     key: 'sharing',
-    label: 'Compartilhar',
+    labelKey: 'home.quickActions.sharing',
     icon: 'wifi-tethering',
     onPress: (navigation) => navigation.navigate('Sharing')
   },
   {
     key: 'transfers',
-    label: 'Transferências',
+    labelKey: 'home.quickActions.transfers',
     icon: 'downloading',
     onPress: (navigation) => navigation.navigate('Transfers')
   },
   {
     key: 'diagnostics',
-    label: 'Diagnóstico',
+    labelKey: 'home.quickActions.diagnostics',
     icon: 'health-and-safety',
     onPress: (navigation) => navigation.navigate('Diagnostics')
   },
   {
     key: 'artSync',
-    label: 'Sincronizar Artes',
+    labelKey: 'home.quickActions.artSync',
     icon: 'image',
     onPress: (navigation) => navigation.navigate('ArtSync')
   },
   {
     key: 'sources',
-    label: 'Google Drive',
+    labelKey: 'home.quickActions.sources',
     icon: 'cloud',
     onPress: (navigation) => navigation.navigate('Sources')
   }
@@ -80,6 +74,7 @@ const QUICK_ACTIONS: QuickAction[] = [
  * their cover art so the library feels alive rather than a status page.
  */
 export function HomeScreen() {
+  const { t } = useTranslation()
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>()
 
   // Subscribing to each store (no selector) re-renders Home on any relevant
@@ -121,8 +116,8 @@ export function HomeScreen() {
     if (!report) {
       suggestions.push({
         key: 'diagnostics',
-        title: 'Rode um diagnóstico',
-        subtitle: 'Verifique se sua biblioteca está pronta para o PS2.',
+        title: t('home.suggestions.diagnostics.title'),
+        subtitle: t('home.suggestions.diagnostics.subtitle'),
         icon: 'health-and-safety',
         onPress: () => navigation.navigate('Diagnostics')
       })
@@ -130,16 +125,16 @@ export function HomeScreen() {
     if (snapshot?.state === 'completed' && totalGames === 0) {
       suggestions.push({
         key: 'essentials-empty',
-        title: 'Adicione seus primeiros jogos',
-        subtitle: 'Explore o Catálogo Essentials para começar sua biblioteca.',
+        title: t('home.suggestions.essentialsEmpty.title'),
+        subtitle: t('home.suggestions.essentialsEmpty.subtitle'),
         icon: 'travel-explore',
         onPress: () => navigation.navigate('Essentials')
       })
     } else if (snapshot?.state === 'completed' && totalGames > 0) {
       suggestions.push({
         key: 'smart-fill',
-        title: 'Preencha o espaço livre',
-        subtitle: 'Use o Smart Fill para adicionar jogos automaticamente.',
+        title: t('home.suggestions.smartFill.title'),
+        subtitle: t('home.suggestions.smartFill.subtitle'),
         icon: 'auto-awesome',
         onPress: () => navigation.navigate('Essentials')
       })
@@ -162,7 +157,7 @@ export function HomeScreen() {
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      <Text style={styles.title}>OPL Forge Mobile</Text>
+      <Text style={styles.title}>{t('home.title')}</Text>
 
       <View style={[styles.card, { borderColor: color }]}>
         <Text style={[styles.cardTitle, { color }]}>{view.title}</Text>
@@ -170,7 +165,7 @@ export function HomeScreen() {
         <View style={styles.heroActionsRow}>
           {view.primaryAction !== 'none' ? (
             <Pressable style={[styles.primaryButton, { backgroundColor: color }]} onPress={handlePrimaryAction}>
-              <Text style={styles.primaryButtonText}>{primaryActionLabel(view.primaryAction)}</Text>
+              <Text style={styles.primaryButtonText}>{primaryActionLabel(t, view.primaryAction)}</Text>
             </Pressable>
           ) : null}
           {report ? (
@@ -179,7 +174,7 @@ export function HomeScreen() {
               onPress={() => navigation.navigate('Diagnostics')}
             >
               <Text style={[styles.readinessText, { color: readinessCardColor(report.readiness) }]}>
-                {READINESS_LABEL[report.readiness] ?? report.readiness}
+                {readinessLabel(t, report.readiness)}
               </Text>
             </Pressable>
           ) : null}
@@ -188,7 +183,7 @@ export function HomeScreen() {
 
       {view.state === 'sharing-on-idle' || view.state === 'ps2-connected' ? (
         <Pressable style={styles.secondaryButton} onPress={() => navigation.navigate('Tutorial')}>
-          <Text style={styles.secondaryButtonText}>Tutorial de configuração do PS2</Text>
+          <Text style={styles.secondaryButtonText}>{t('home.setupTutorial')}</Text>
         </Pressable>
       ) : null}
 
@@ -196,7 +191,7 @@ export function HomeScreen() {
         <View style={styles.countsGrid}>
           <Pressable style={styles.countTile} onPress={() => navigation.navigate('LibrarySelect')}>
             <View style={styles.countHeaderRow}>
-              <Text style={styles.countLabel}>Jogos PS2</Text>
+              <Text style={styles.countLabel}>{t('home.ps2Games')}</Text>
               <View style={[styles.countIconWrap, { backgroundColor: `${colors.primary}33` }]}>
                 <MaterialIcons name="sports-esports" size={18} color={colors.primary} />
               </View>
@@ -205,7 +200,7 @@ export function HomeScreen() {
           </Pressable>
           <Pressable style={styles.countTile} onPress={() => navigation.navigate('LibrarySelect')}>
             <View style={styles.countHeaderRow}>
-              <Text style={styles.countLabel}>Jogos PS1</Text>
+              <Text style={styles.countLabel}>{t('home.ps1Games')}</Text>
               <View style={[styles.countIconWrap, { backgroundColor: `${colors.fuchsia}33` }]}>
                 <MaterialIcons name="auto-awesome" size={18} color={colors.fuchsia} />
               </View>
@@ -214,7 +209,7 @@ export function HomeScreen() {
           </Pressable>
           <Pressable style={styles.countTile} onPress={() => navigation.navigate('LibrarySelect')}>
             <View style={styles.countHeaderRow}>
-              <Text style={styles.countLabel}>Apps</Text>
+              <Text style={styles.countLabel}>{t('home.apps')}</Text>
               <View style={[styles.countIconWrap, { backgroundColor: `${colors.cyan}33` }]}>
                 <MaterialIcons name="widgets" size={18} color={colors.cyan} />
               </View>
@@ -226,7 +221,7 @@ export function HomeScreen() {
 
       {suggestions.length > 0 ? (
         <>
-          <Text style={styles.sectionTitle}>Sugestões para você</Text>
+          <Text style={styles.sectionTitle}>{t('home.suggestionsTitle')}</Text>
           {suggestions.map((suggestion) => (
             <Pressable key={suggestion.key} style={styles.suggestionCard} onPress={suggestion.onPress}>
               <View style={styles.suggestionIconWrap}>
@@ -242,7 +237,7 @@ export function HomeScreen() {
         </>
       ) : null}
 
-      <Text style={styles.sectionTitle}>Acesso rápido</Text>
+      <Text style={styles.sectionTitle}>{t('home.quickAccess')}</Text>
       <View style={styles.actionsGrid}>
         {QUICK_ACTIONS.map((action) => (
           <Pressable key={action.key} style={styles.actionTile} onPress={() => action.onPress(navigation)}>
@@ -250,7 +245,7 @@ export function HomeScreen() {
               <MaterialIcons name={action.icon} size={26} color={colors.primary} />
             </View>
             <Text style={styles.actionLabel} numberOfLines={2}>
-              {action.label}
+              {t(action.labelKey)}
             </Text>
           </Pressable>
         ))}
@@ -259,9 +254,9 @@ export function HomeScreen() {
       {preview.length > 0 ? (
         <>
           <View style={styles.sectionHeaderRow}>
-            <Text style={styles.sectionTitle}>Catalogados recentemente</Text>
+            <Text style={styles.sectionTitle}>{t('home.recentlyCataloged')}</Text>
             <Pressable onPress={() => navigation.navigate('LibrarySelect')}>
-              <Text style={styles.sectionLink}>Ver tudo</Text>
+              <Text style={styles.sectionLink}>{t('home.seeAll')}</Text>
             </Pressable>
           </View>
           <View style={styles.gamesGrid}>
@@ -291,16 +286,31 @@ function readinessCardColor(readiness: string): string {
   }
 }
 
-function primaryActionLabel(action: string): string {
+function primaryActionLabel(t: (key: string) => string, action: string): string {
   switch (action) {
     case 'select-library':
-      return 'Selecionar biblioteca'
+      return t('home.primaryAction.selectLibrary')
     case 'catalog-library':
-      return 'Ir para biblioteca'
+      return t('home.primaryAction.catalogLibrary')
     case 'go-to-sharing':
-      return 'Ir para compartilhamento'
+      return t('home.primaryAction.goToSharing')
     default:
       return ''
+  }
+}
+
+function readinessLabel(t: (key: string) => string, readiness: string): string {
+  switch (readiness) {
+    case 'ready':
+      return t('home.readiness.ready')
+    case 'ready-with-warnings':
+      return t('home.readiness.readyWithWarnings')
+    case 'requires-reorganization':
+      return t('home.readiness.requiresReorganization')
+    case 'incompatible':
+      return t('home.readiness.incompatible')
+    default:
+      return readiness
   }
 }
 

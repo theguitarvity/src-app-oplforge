@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { ScrollView, StyleSheet, Text, View } from 'react-native'
+import { useTranslation } from 'react-i18next'
 import { colors, radius, semanticColor, spacing, typography } from '../../design-system/tokens'
 import { useSharingStore } from '../../stores/sharing-store'
 import * as SharingModule from '../../native/SharingModule'
@@ -10,6 +11,7 @@ import type { ConnectionTutorialStep } from '../../types'
  * small-screen-friendly, ordered to match OPL's own "Servidor SMB" menu.
  */
 export function TutorialScreen() {
+  const { t } = useTranslation()
   const { session } = useSharingStore()
   const [steps, setSteps] = useState<ConnectionTutorialStep[]>([])
   const [loading, setLoading] = useState(true)
@@ -34,21 +36,17 @@ export function TutorialScreen() {
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      <Text style={styles.title}>Configurar o PS2</Text>
+      <Text style={styles.title}>{t('tutorial.title')}</Text>
 
       {!isSharing ? (
         <View style={styles.card}>
-          <Text style={styles.body}>
-            Inicie o compartilhamento primeiro para ver os dados de conexão.
-          </Text>
+          <Text style={styles.body}>{t('tutorial.notSharing')}</Text>
         </View>
       ) : loading ? (
-        <Text style={styles.body}>Carregando...</Text>
+        <Text style={styles.body}>{t('tutorial.loading')}</Text>
       ) : (
         <>
-          <Text style={styles.subtitle}>
-            No PS2, acesse: Configurações → Configurações de Rede → Servidor SMB, e digite:
-          </Text>
+          <Text style={styles.subtitle}>{t('tutorial.instructions')}</Text>
           {steps.map((step) => (
             <View key={step.order} style={styles.stepCard}>
               <View style={styles.stepBadge}>
@@ -56,20 +54,17 @@ export function TutorialScreen() {
               </View>
               <View style={styles.stepContent}>
                 <Text style={styles.stepField}>{step.field}</Text>
-                <Text style={styles.stepValue}>{step.value || '(vazio)'}</Text>
+                <Text style={styles.stepValue}>{step.value || t('tutorial.emptyValue')}</Text>
               </View>
             </View>
           ))}
 
           <View style={[styles.card, isConnected && { borderColor: semanticColor('active') }]}>
             <Text style={[styles.label, isConnected && { color: semanticColor('active') }]}>
-              {isConnected ? 'PS2 conectado' : 'Aguardando conexão do PS2'}
+              {isConnected ? t('tutorial.connected') : t('tutorial.waitingConnection')}
             </Text>
             {!isConnected ? (
-              <Text style={styles.body}>
-                Se o PS2 não conectar, confirme que ambos os dispositivos estão na mesma rede
-                Wi-Fi.
-              </Text>
+              <Text style={styles.body}>{t('tutorial.wifiHint')}</Text>
             ) : null}
           </View>
         </>

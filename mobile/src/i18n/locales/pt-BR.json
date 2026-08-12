@@ -35,5 +35,88 @@
     "changedTitle": "Biblioteca alterada",
     "changedMessage": "Detectamos um novo dispositivo/origem de biblioteca. Carregando sua biblioteca...",
     "loadError": "Não foi possível carregar a biblioteca"
+  },
+  "downloadsFab": {
+    "title": "Downloads",
+    "activeStatus": "{{count}} ativo(s) · {{progress}}%",
+    "failedStatus": "{{count}} requer atenção"
+  },
+  "tutorial": {
+    "title": "Configurar o PS2",
+    "notSharing": "Inicie o compartilhamento primeiro para ver os dados de conexão.",
+    "loading": "Carregando...",
+    "instructions": "No PS2, acesse: Configurações → Configurações de Rede → Servidor SMB, e digite:",
+    "emptyValue": "(vazio)",
+    "connected": "PS2 conectado",
+    "waitingConnection": "Aguardando conexão do PS2",
+    "wifiHint": "Se o PS2 não conectar, confirme que ambos os dispositivos estão na mesma rede Wi-Fi."
+  },
+  "home": {
+    "title": "OPL Forge Mobile",
+    "readiness": {
+      "ready": "Biblioteca pronta",
+      "readyWithWarnings": "Pronta, com avisos",
+      "requiresReorganization": "Requer reorganização",
+      "incompatible": "Não pronta"
+    },
+    "quickActions": {
+      "library": "Biblioteca",
+      "essentials": "Catálogo Essentials",
+      "sharing": "Compartilhar",
+      "transfers": "Transferências",
+      "diagnostics": "Diagnóstico",
+      "artSync": "Sincronizar Artes",
+      "sources": "Google Drive"
+    },
+    "setupTutorial": "Tutorial de configuração do PS2",
+    "ps2Games": "Jogos PS2",
+    "ps1Games": "Jogos PS1",
+    "apps": "Apps",
+    "suggestionsTitle": "Sugestões para você",
+    "suggestions": {
+      "diagnostics": {
+        "title": "Rode um diagnóstico",
+        "subtitle": "Verifique se sua biblioteca está pronta para o PS2."
+      },
+      "essentialsEmpty": {
+        "title": "Adicione seus primeiros jogos",
+        "subtitle": "Explore o Catálogo Essentials para começar sua biblioteca."
+      },
+      "smartFill": {
+        "title": "Preencha o espaço livre",
+        "subtitle": "Use o Smart Fill para adicionar jogos automaticamente."
+      }
+    },
+    "quickAccess": "Acesso rápido",
+    "recentlyCataloged": "Catalogados recentemente",
+    "seeAll": "Ver tudo",
+    "primaryAction": {
+      "selectLibrary": "Selecionar biblioteca",
+      "catalogLibrary": "Ir para biblioteca",
+      "goToSharing": "Ir para compartilhamento"
+    }
+  },
+  "sharing": {
+    "title": "Compartilhar biblioteca",
+    "subtitle": "Defina as credenciais, confirme o acesso de escrita e comece — em um único passo.",
+    "connected": "PS2 conectado",
+    "waitingConnection": "Compartilhando, aguardando conexão",
+    "nowPlaying": "Transmitindo agora",
+    "setupTutorialLink": "Ver tutorial de configuração do PS2",
+    "stopSharing": "Parar compartilhamento",
+    "connectionLog": "Log de conexão",
+    "clear": "Limpar",
+    "noEvents": "Nenhum evento ainda.",
+    "recentConnections": "Últimas conexões",
+    "credentialsTitle": "Credenciais do compartilhamento",
+    "usernamePlaceholder": "Usuário",
+    "passwordPlaceholder": "Senha",
+    "shareNamePlaceholder": "Nome do compartilhamento (padrão: {{defaultName}})",
+    "usernamePasswordRequired": "Usuário e senha são obrigatórios.",
+    "writeAccessTitle": "Acesso de escrita do PS2",
+    "writeAccessBody": "O PS2 poderá criar, modificar e sobrescrever arquivos na sua biblioteca local pela rede.",
+    "writeAccessConsent": "Estou ciente e autorizo",
+    "writeAccessRequired": "Confirme o acesso de escrita antes de compartilhar.",
+    "startSharing": "Iniciar compartilhamento"
   }
 }

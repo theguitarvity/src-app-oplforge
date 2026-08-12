@@ -35,5 +35,88 @@
     "changedTitle": "ライブラリが変更されました",
     "changedMessage": "新しいデバイス/ライブラリのソースを検出しました。ライブラリを読み込んでいます...",
     "loadError": "ライブラリを読み込めませんでした"
+  },
+  "downloadsFab": {
+    "title": "ダウンロード",
+    "activeStatus": "{{count}} 件処理中 · {{progress}}%",
+    "failedStatus": "{{count}} 件が要対応"
+  },
+  "tutorial": {
+    "title": "PS2をセットアップ",
+    "notSharing": "接続情報を表示するには、先に共有を開始してください。",
+    "loading": "読み込み中...",
+    "instructions": "PS2で「設定 → ネットワーク設定 → SMBサーバー」を開き、以下を入力してください:",
+    "emptyValue": "(空欄)",
+    "connected": "PS2が接続されました",
+    "waitingConnection": "PS2の接続を待っています",
+    "wifiHint": "PS2が接続できない場合は、両方の端末が同じWi-Fiネットワークにあることを確認してください。"
+  },
+  "home": {
+    "title": "OPL Forge Mobile",
+    "readiness": {
+      "ready": "ライブラリの準備完了",
+      "readyWithWarnings": "準備完了（警告あり）",
+      "requiresReorganization": "再編成が必要",
+      "incompatible": "準備未完了"
+    },
+    "quickActions": {
+      "library": "ライブラリ",
+      "essentials": "Essentialsカタログ",
+      "sharing": "共有",
+      "transfers": "転送",
+      "diagnostics": "診断",
+      "artSync": "アートワーク同期",
+      "sources": "Google ドライブ"
+    },
+    "setupTutorial": "PS2セットアップチュートリアル",
+    "ps2Games": "PS2ゲーム",
+    "ps1Games": "PS1ゲーム",
+    "apps": "アプリ",
+    "suggestionsTitle": "おすすめ",
+    "suggestions": {
+      "diagnostics": {
+        "title": "診断を実行",
+        "subtitle": "ライブラリがPS2で使える状態か確認します。"
+      },
+      "essentialsEmpty": {
+        "title": "最初のゲームを追加",
+        "subtitle": "Essentialsカタログを見てライブラリを始めましょう。"
+      },
+      "smartFill": {
+        "title": "空き容量を埋める",
+        "subtitle": "スマートフィルでゲームを自動的に追加します。"
+      }
+    },
+    "quickAccess": "クイックアクセス",
+    "recentlyCataloged": "最近カタログ化された項目",
+    "seeAll": "すべて見る",
+    "primaryAction": {
+      "selectLibrary": "ライブラリを選択",
+      "catalogLibrary": "ライブラリへ移動",
+      "goToSharing": "共有へ移動"
+    }
+  },
+  "sharing": {
+    "title": "ライブラリを共有",
+    "subtitle": "認証情報を設定し、書き込みアクセスを確認して開始 — すべて1ステップで。",
+    "connected": "PS2が接続されました",
+    "waitingConnection": "共有中、接続を待っています",
+    "nowPlaying": "再生中",
+    "setupTutorialLink": "PS2セットアップチュートリアルを見る",
+    "stopSharing": "共有を停止",
+    "connectionLog": "接続ログ",
+    "clear": "クリア",
+    "noEvents": "まだイベントはありません。",
+    "recentConnections": "最近の接続",
+    "credentialsTitle": "共有の認証情報",
+    "usernamePlaceholder": "ユーザー名",
+    "passwordPlaceholder": "パスワード",
+    "shareNamePlaceholder": "共有名 (デフォルト: {{defaultName}})",
+    "usernamePasswordRequired": "ユーザー名とパスワードは必須です。",
+    "writeAccessTitle": "PS2の書き込みアクセス",
+    "writeAccessBody": "PS2はネットワーク経由でローカルライブラリのファイルを作成、変更、上書きできるようになります。",
+    "writeAccessConsent": "内容を理解し、許可します",
+    "writeAccessRequired": "共有する前に書き込みアクセスを確認してください。",
+    "startSharing": "共有を開始"
   }
 }

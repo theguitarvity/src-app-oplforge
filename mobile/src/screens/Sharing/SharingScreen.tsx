@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Animated, ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native'
 import { useNavigation } from '@react-navigation/native'
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack'
+import { useTranslation } from 'react-i18next'
 import MaterialIcons from '@expo/vector-icons/MaterialIcons'
 import { colors, radius, semanticColor, spacing, typography } from '../../design-system/tokens'
 import { useSharingStore } from '../../stores/sharing-store'
@@ -61,6 +62,7 @@ function NetworkHero({ isRunning, isConnected }: { isRunning: boolean; isConnect
  * centered network hero that lights up green once the PS2 actually connects.
  */
 export function SharingScreen() {
+  const { t } = useTranslation()
   const {
     session,
     status,
@@ -131,7 +133,7 @@ export function SharingScreen() {
         <NetworkHero isRunning={isRunning} isConnected={isConnected} />
         <View style={[styles.card, { borderColor: isConnected ? semanticColor('active') : colors.border }]}>
           <Text style={[styles.label, isConnected ? { color: semanticColor('active') } : null]}>
-            {isConnected ? 'PS2 conectado' : 'Compartilhando, aguardando conexão'}
+            {isConnected ? t('sharing.connected') : t('sharing.waitingConnection')}
           </Text>
           <View style={styles.infoRow}>
             <MaterialIcons name="lan" size={16} color={colors.mutedForeground} />
@@ -146,7 +148,7 @@ export function SharingScreen() {
           <View style={[styles.card, styles.nowPlayingCard]}>
             <View style={styles.infoRow}>
               <MaterialIcons name="sports-esports" size={16} color={semanticColor('active')} />
-              <Text style={styles.nowPlayingLabel}>Transmitindo agora</Text>
+              <Text style={styles.nowPlayingLabel}>{t('sharing.nowPlaying')}</Text>
             </View>
             <Text style={styles.nowPlayingTitle} numberOfLines={2}>
               {currentFile}
@@ -155,24 +157,24 @@ export function SharingScreen() {
         ) : null}
         <Pressable style={styles.secondaryButton} onPress={() => navigation.navigate('Tutorial')}>
           <MaterialIcons name="help-outline" size={18} color={colors.foreground} />
-          <Text style={styles.secondaryButtonText}>Ver tutorial de configuração do PS2</Text>
+          <Text style={styles.secondaryButtonText}>{t('sharing.setupTutorialLink')}</Text>
         </Pressable>
         <Pressable style={styles.dangerButton} onPress={() => void stopSharing()} disabled={isBusy}>
           <MaterialIcons name="stop-circle" size={18} color={colors.destructiveForeground} />
-          <Text style={styles.dangerButtonText}>Parar compartilhamento</Text>
+          <Text style={styles.dangerButtonText}>{t('sharing.stopSharing')}</Text>
         </Pressable>
 
         <View style={styles.logsHeader}>
-          <Text style={styles.logsTitle}>Log de conexão</Text>
+          <Text style={styles.logsTitle}>{t('sharing.connectionLog')}</Text>
           {logs.length > 0 ? (
             <Pressable onPress={clearLogs} hitSlop={8}>
-              <Text style={styles.logsClear}>Limpar</Text>
+              <Text style={styles.logsClear}>{t('sharing.clear')}</Text>
             </Pressable>
           ) : null}
         </View>
         <View style={styles.logsCard}>
           {logs.length === 0 ? (
-            <Text style={styles.logsEmpty}>Nenhum evento ainda.</Text>
+            <Text style={styles.logsEmpty}>{t('sharing.noEvents')}</Text>
           ) : (
             logs.map((entry) => (
               <View key={entry.id} style={styles.logRow}>
@@ -192,12 +194,12 @@ export function SharingScreen() {
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <NetworkHero isRunning={false} isConnected={false} />
-      <Text style={styles.title}>Compartilhar biblioteca</Text>
-      <Text style={styles.subtitle}>Defina as credenciais, confirme o acesso de escrita e comece — em um único passo.</Text>
+      <Text style={styles.title}>{t('sharing.title')}</Text>
+      <Text style={styles.subtitle}>{t('sharing.subtitle')}</Text>
 
       {recentConnections.length > 0 ? (
         <View style={styles.recentCard}>
-          <Text style={styles.label}>Últimas conexões</Text>
+          <Text style={styles.label}>{t('sharing.recentConnections')}</Text>
           {recentConnections.map((entry) => (
             <Pressable
               key={`${entry.username}:${entry.shareName}`}
@@ -217,12 +219,12 @@ export function SharingScreen() {
 
       <Animated.View style={{ transform: [{ translateX: shakeTranslate }] }}>
         <View style={styles.card}>
-          <Text style={styles.label}>Credenciais do compartilhamento</Text>
+          <Text style={styles.label}>{t('sharing.credentialsTitle')}</Text>
           <View style={[styles.inputWrap, usernameInvalid ? styles.inputWrapInvalid : null]}>
             <MaterialIcons name="person" size={18} color={usernameInvalid ? semanticColor('error') : colors.mutedForeground} />
             <TextInput
               style={styles.input}
-              placeholder="Usuário"
+              placeholder={t('sharing.usernamePlaceholder')}
               placeholderTextColor={colors.mutedForeground}
               value={username}
               onChangeText={setUsername}
@@ -233,7 +235,7 @@ export function SharingScreen() {
             <MaterialIcons name="lock" size={18} color={passwordInvalid ? semanticColor('error') : colors.mutedForeground} />
             <TextInput
               style={styles.input}
-              placeholder="Senha"
+              placeholder={t('sharing.passwordPlaceholder')}
               placeholderTextColor={colors.mutedForeground}
               value={password}
               onChangeText={setPassword}
@@ -245,7 +247,7 @@ export function SharingScreen() {
             <MaterialIcons name="folder-shared" size={18} color={colors.mutedForeground} />
             <TextInput
               style={styles.input}
-              placeholder={`Nome do compartilhamento (padrão: ${DEFAULT_SHARE_NAME})`}
+              placeholder={t('sharing.shareNamePlaceholder', { defaultName: DEFAULT_SHARE_NAME })}
               placeholderTextColor={colors.mutedForeground}
               value={shareName}
               onChangeText={setShareName}
@@ -253,16 +255,14 @@ export function SharingScreen() {
             />
           </View>
           {usernameInvalid || passwordInvalid ? (
-            <Text style={styles.fieldErrorText}>Usuário e senha são obrigatórios.</Text>
+            <Text style={styles.fieldErrorText}>{t('sharing.usernamePasswordRequired')}</Text>
           ) : null}
         </View>
 
         {/* Write-access consent is a distinct step from credentials (FR-018) */}
         <View style={[styles.card, styles.warningCard, writeAccessInvalid ? styles.cardInvalid : null]}>
-          <Text style={styles.label}>Acesso de escrita do PS2</Text>
-          <Text style={styles.body}>
-            O PS2 poderá criar, modificar e sobrescrever arquivos na sua biblioteca local pela rede.
-          </Text>
+          <Text style={styles.label}>{t('sharing.writeAccessTitle')}</Text>
+          <Text style={styles.body}>{t('sharing.writeAccessBody')}</Text>
           <Pressable style={styles.checkboxRow} onPress={() => setWriteAccessRequested(!writeAccessRequested)}>
             <View
               style={[
@@ -273,10 +273,10 @@ export function SharingScreen() {
             >
               {writeAccessRequested ? <MaterialIcons name="check" size={14} color={colors.primaryForeground} /> : null}
             </View>
-            <Text style={styles.body}>Estou ciente e autorizo</Text>
+            <Text style={styles.body}>{t('sharing.writeAccessConsent')}</Text>
           </Pressable>
           {writeAccessInvalid ? (
-            <Text style={styles.fieldErrorText}>Confirme o acesso de escrita antes de compartilhar.</Text>
+            <Text style={styles.fieldErrorText}>{t('sharing.writeAccessRequired')}</Text>
           ) : null}
         </View>
       </Animated.View>
@@ -293,7 +293,7 @@ export function SharingScreen() {
         ) : (
           <>
             <MaterialIcons name="wifi-tethering" size={20} color={colors.primaryForeground} />
-            <Text style={styles.primaryButtonText}>Iniciar compartilhamento</Text>
+            <Text style={styles.primaryButtonText}>{t('sharing.startSharing')}</Text>
           </>
         )}
       </Pressable>

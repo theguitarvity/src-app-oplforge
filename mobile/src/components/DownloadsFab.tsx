@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Pressable, StyleSheet, Text, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import { useTranslation } from 'react-i18next'
 import MaterialIcons from '@expo/vector-icons/MaterialIcons'
 import { colors, radius, spacing, typography } from '../design-system/tokens'
 import { useTransferStore } from '../stores/transfer-store'
@@ -20,6 +21,7 @@ import { navigationRef } from '../app/navigationRef'
  * rather than staying hidden forever after one dismissal.
  */
 export function DownloadsFab() {
+  const { t } = useTranslation()
   const items = useTransferStore((state) => state.items)
   const insets = useSafeAreaInsets()
   const [dismissedKey, setDismissedKey] = useState<string | undefined>(undefined)
@@ -54,11 +56,11 @@ export function DownloadsFab() {
         {activeDownloads.length > 0 ? <View style={styles.pulseDot} /> : null}
       </View>
       <View style={styles.textWrap}>
-        <Text style={styles.title}>Downloads</Text>
+        <Text style={styles.title}>{t('downloadsFab.title')}</Text>
         <Text style={styles.subtitle}>
           {activeDownloads.length > 0
-            ? `${activeDownloads.length} ativo(s) · ${averageProgress}%`
-            : `${failedDownloads.length} requer atenção`}
+            ? t('downloadsFab.activeStatus', { count: activeDownloads.length, progress: averageProgress })
+            : t('downloadsFab.failedStatus', { count: failedDownloads.length })}
         </Text>
       </View>
       {activeDownloads.length > 0 ? (

@@ -35,5 +35,88 @@
     "changedTitle": "Bibliothek geändert",
     "changedMessage": "Wir haben ein neues Gerät/eine neue Bibliotheksquelle erkannt. Deine Bibliothek wird geladen...",
     "loadError": "Bibliothek konnte nicht geladen werden"
+  },
+  "downloadsFab": {
+    "title": "Downloads",
+    "activeStatus": "{{count}} aktiv · {{progress}}%",
+    "failedStatus": "{{count}} erfordert Aufmerksamkeit"
+  },
+  "tutorial": {
+    "title": "PS2 einrichten",
+    "notSharing": "Starte zuerst die Freigabe, um die Verbindungsdaten zu sehen.",
+    "loading": "Wird geladen...",
+    "instructions": "Gehe auf der PS2 zu: Einstellungen → Netzwerkeinstellungen → SMB-Server und gib Folgendes ein:",
+    "emptyValue": "(leer)",
+    "connected": "PS2 verbunden",
+    "waitingConnection": "Warte auf PS2-Verbindung",
+    "wifiHint": "Falls sich die PS2 nicht verbindet, stelle sicher, dass beide Geräte im selben WLAN sind."
+  },
+  "home": {
+    "title": "OPL Forge Mobile",
+    "readiness": {
+      "ready": "Bibliothek bereit",
+      "readyWithWarnings": "Bereit, mit Warnungen",
+      "requiresReorganization": "Erfordert Reorganisation",
+      "incompatible": "Nicht bereit"
+    },
+    "quickActions": {
+      "library": "Bibliothek",
+      "essentials": "Essentials-Katalog",
+      "sharing": "Teilen",
+      "transfers": "Übertragungen",
+      "diagnostics": "Diagnose",
+      "artSync": "Cover synchronisieren",
+      "sources": "Google Drive"
+    },
+    "setupTutorial": "PS2-Einrichtungstutorial",
+    "ps2Games": "PS2-Spiele",
+    "ps1Games": "PS1-Spiele",
+    "apps": "Apps",
+    "suggestionsTitle": "Vorschläge für dich",
+    "suggestions": {
+      "diagnostics": {
+        "title": "Führe eine Diagnose aus",
+        "subtitle": "Prüfe, ob deine Bibliothek bereit für die PS2 ist."
+      },
+      "essentialsEmpty": {
+        "title": "Füge deine ersten Spiele hinzu",
+        "subtitle": "Durchsuche den Essentials-Katalog, um deine Bibliothek zu starten."
+      },
+      "smartFill": {
+        "title": "Fülle den freien Speicherplatz",
+        "subtitle": "Nutze Smart Fill, um automatisch Spiele hinzuzufügen."
+      }
+    },
+    "quickAccess": "Schnellzugriff",
+    "recentlyCataloged": "Kürzlich katalogisiert",
+    "seeAll": "Alle anzeigen",
+    "primaryAction": {
+      "selectLibrary": "Bibliothek auswählen",
+      "catalogLibrary": "Zur Bibliothek",
+      "goToSharing": "Zur Freigabe"
+    }
+  },
+  "sharing": {
+    "title": "Bibliothek teilen",
+    "subtitle": "Lege die Zugangsdaten fest, bestätige den Schreibzugriff und starte — in einem einzigen Schritt.",
+    "connected": "PS2 verbunden",
+    "waitingConnection": "Freigabe aktiv, warte auf Verbindung",
+    "nowPlaying": "Jetzt wird übertragen",
+    "setupTutorialLink": "PS2-Einrichtungstutorial ansehen",
+    "stopSharing": "Freigabe beenden",
+    "connectionLog": "Verbindungsprotokoll",
+    "clear": "Leeren",
+    "noEvents": "Noch keine Ereignisse.",
+    "recentConnections": "Letzte Verbindungen",
+    "credentialsTitle": "Freigabe-Zugangsdaten",
+    "usernamePlaceholder": "Benutzername",
+    "passwordPlaceholder": "Passwort",
+    "shareNamePlaceholder": "Freigabename (Standard: {{defaultName}})",
+    "usernamePasswordRequired": "Benutzername und Passwort sind erforderlich.",
+    "writeAccessTitle": "PS2-Schreibzugriff",
+    "writeAccessBody": "Die PS2 kann über das Netzwerk Dateien in deiner lokalen Bibliothek erstellen, ändern und überschreiben.",
+    "writeAccessConsent": "Ich bin mir dessen bewusst und erlaube es",
+    "writeAccessRequired": "Bestätige den Schreibzugriff, bevor du freigibst.",
+    "startSharing": "Freigabe starten"
   }
 }

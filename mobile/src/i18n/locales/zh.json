@@ -35,5 +35,88 @@
     "changedTitle": "游戏库已更改",
     "changedMessage": "检测到新的设备/游戏库来源。正在加载您的游戏库...",
     "loadError": "无法加载游戏库"
+  },
+  "downloadsFab": {
+    "title": "下载",
+    "activeStatus": "{{count}} 个进行中 · {{progress}}%",
+    "failedStatus": "{{count}} 个需要处理"
+  },
+  "tutorial": {
+    "title": "设置 PS2",
+    "notSharing": "请先开始共享以查看连接信息。",
+    "loading": "加载中...",
+    "instructions": "在 PS2 上依次进入：设置 → 网络设置 → SMB 服务器，然后输入：",
+    "emptyValue": "（空）",
+    "connected": "PS2 已连接",
+    "waitingConnection": "等待 PS2 连接",
+    "wifiHint": "如果 PS2 无法连接，请确认两台设备处于同一 Wi-Fi 网络。"
+  },
+  "home": {
+    "title": "OPL Forge Mobile",
+    "readiness": {
+      "ready": "资料库已就绪",
+      "readyWithWarnings": "已就绪，但有警告",
+      "requiresReorganization": "需要重新整理",
+      "incompatible": "尚未就绪"
+    },
+    "quickActions": {
+      "library": "资料库",
+      "essentials": "Essentials 目录",
+      "sharing": "共享",
+      "transfers": "传输",
+      "diagnostics": "诊断",
+      "artSync": "同步封面",
+      "sources": "Google Drive"
+    },
+    "setupTutorial": "PS2 设置教程",
+    "ps2Games": "PS2 游戏",
+    "ps1Games": "PS1 游戏",
+    "apps": "应用",
+    "suggestionsTitle": "为你推荐",
+    "suggestions": {
+      "diagnostics": {
+        "title": "运行诊断",
+        "subtitle": "检查你的资料库是否已就绪，可用于 PS2。"
+      },
+      "essentialsEmpty": {
+        "title": "添加你的第一批游戏",
+        "subtitle": "浏览 Essentials 目录，开始建立你的资料库。"
+      },
+      "smartFill": {
+        "title": "填满剩余空间",
+        "subtitle": "使用智能填充自动添加游戏。"
+      }
+    },
+    "quickAccess": "快速访问",
+    "recentlyCataloged": "最近编目",
+    "seeAll": "查看全部",
+    "primaryAction": {
+      "selectLibrary": "选择资料库",
+      "catalogLibrary": "前往资料库",
+      "goToSharing": "前往共享"
+    }
+  },
+  "sharing": {
+    "title": "共享资料库",
+    "subtitle": "设置凭据、确认写入权限并开始 —— 一步完成。",
+    "connected": "PS2 已连接",
+    "waitingConnection": "正在共享，等待连接",
+    "nowPlaying": "正在传输",
+    "setupTutorialLink": "查看 PS2 设置教程",
+    "stopSharing": "停止共享",
+    "connectionLog": "连接日志",
+    "clear": "清除",
+    "noEvents": "暂无事件。",
+    "recentConnections": "最近的连接",
+    "credentialsTitle": "共享凭据",
+    "usernamePlaceholder": "用户名",
+    "passwordPlaceholder": "密码",
+    "shareNamePlaceholder": "共享名称（默认：{{defaultName}}）",
+    "usernamePasswordRequired": "用户名和密码为必填项。",
+    "writeAccessTitle": "PS2 写入权限",
+    "writeAccessBody": "PS2 将能够通过网络在你的本地资料库中创建、修改和覆盖文件。",
+    "writeAccessConsent": "我已知晓并授权",
+    "writeAccessRequired": "共享前请确认写入权限。",
+    "startSharing": "开始共享"
   }
 }
