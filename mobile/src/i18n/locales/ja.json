@@ -126,7 +126,8 @@
     "writeAccessBody": "PS2はネットワーク経由でローカルライブラリのファイルを作成、変更、上書きできるようになります。",
     "writeAccessConsent": "内容を理解し、許可します",
     "writeAccessRequired": "共有する前に書き込みアクセスを確認してください。",
-    "startSharing": "共有を開始"
+    "startSharing": "共有を開始",
+    "writeAccessConfirmError": "共有する前にPS2の書き込みアクセスを確認してください。"
   },
   "artSync": {
     "title": "アートワークを同期",
@@ -208,7 +209,8 @@
       "message": "まだ存在しないOPL必須フォルダ（DVD、CD、PS1、APPS、ART、CFG、VMC）を作成し、ルートにREADMEを書き込みます。既存のデータは削除されません。続行しますか？",
       "cancel": "キャンセル",
       "confirm": "準備する"
-    }
+    },
+    "screenTitle": "診断"
   },
   "sources": {
     "title": "Google ドライブ",
@@ -230,7 +232,10 @@
     "downloadDone": {
       "title": "完了",
       "message": "「{{name}}」をライブラリにダウンロードしました。"
-    }
+    },
+    "authCanceledOrInvalid": "認証がキャンセルされたか無効です。",
+    "authTimeout": "Googleの認証待ちがタイムアウトしました。",
+    "authInvalidResponse": "認証レスポンスが無効です。"
   },
   "librarySelect": {
     "title": "設定",
@@ -373,5 +378,36 @@
       "smartFill": "Smart Fill",
       "downloads": "ダウンロード"
     }
+  },
+  "homeState": {
+    "noLibrary": {
+      "title": "ライブラリが設定されていません",
+      "subtitle": "開始するには、OPLライブラリを表すフォルダを選択してください。"
+    },
+    "libraryIssues": {
+      "title": "ライブラリに問題があります",
+      "subtitle_one": "{{count}} 件の項目に注意が必要です。",
+      "subtitle_other": "{{count}} 件の項目に注意が必要です。"
+    },
+    "ps2Connected": {
+      "title": "PS2が接続されました",
+      "subtitle": "ライブラリは {{address}} で利用可能です。"
+    },
+    "sharingOnIdle": {
+      "title": "共有中、接続を待っています",
+      "subtitle": "ライブラリに接続するようPS2を設定してください。"
+    },
+    "readyToShare": {
+      "title": "ライブラリの準備完了",
+      "subtitle": "PS2と共有する前にライブラリをカタログ化してください。"
+    },
+    "sharingOff": {
+      "title": "共有はオフです",
+      "subtitle": "{{count}} 件のゲームがカタログ化されています。"
+    }
+  },
+  "connectionToast": {
+    "connected": "PS2がライブラリに接続されました。",
+    "disconnected": "PS2との接続が終了しました。"
   }
 }

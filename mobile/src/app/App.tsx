@@ -153,12 +153,12 @@ export default function App() {
             component={LibrarySelectScreen}
             options={{ title: t('nav.library') }}
           />
-          <Stack.Screen name="Tutorial" component={TutorialScreen} options={{ title: 'Configurar PS2' }} />
-          <Stack.Screen name="Essentials" component={EssentialsScreen} options={{ title: 'Catálogo Essentials' }} />
-          <Stack.Screen name="Diagnostics" component={DiagnosticsScreen} options={{ title: 'Diagnóstico' }} />
-          <Stack.Screen name="Transfers" component={TransfersScreen} options={{ title: 'Transferências' }} />
-          <Stack.Screen name="ArtSync" component={ArtSyncScreen} options={{ title: 'Sincronizar Artes' }} />
-          <Stack.Screen name="Sources" component={SourcesScreen} options={{ title: 'Google Drive' }} />
+          <Stack.Screen name="Tutorial" component={TutorialScreen} options={{ title: t('tutorial.title') }} />
+          <Stack.Screen name="Essentials" component={EssentialsScreen} options={{ title: t('essentialsCatalogTab.title') }} />
+          <Stack.Screen name="Diagnostics" component={DiagnosticsScreen} options={{ title: t('diagnostics.screenTitle') }} />
+          <Stack.Screen name="Transfers" component={TransfersScreen} options={{ title: t('essentialsScreen.tabs.downloads') }} />
+          <Stack.Screen name="ArtSync" component={ArtSyncScreen} options={{ title: t('artSync.title') }} />
+          <Stack.Screen name="Sources" component={SourcesScreen} options={{ title: t('sources.title') }} />
         </Stack.Navigator>
         <DownloadsFab />
         <ConnectionToast />

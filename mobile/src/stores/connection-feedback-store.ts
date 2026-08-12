@@ -1,5 +1,6 @@
 import { create } from 'zustand'
 import { useSharingStore } from './sharing-store'
+import i18n from '../i18n'
 
 interface ConnectionFeedbackState {
   toast?: { id: number; message: string; kind: 'connected' | 'disconnected' }
@@ -28,14 +29,14 @@ useSharingStore.subscribe((state) => {
 
   if (isConnected && !wasConnected) {
     useConnectionFeedbackStore.setState({
-      toast: { id: Date.now(), message: 'O PS2 se conectou à biblioteca.', kind: 'connected' }
+      toast: { id: Date.now(), message: i18n.t('connectionToast.connected'), kind: 'connected' }
     })
   } else if (wasConnected && !isConnected) {
     // Fires whether the PS2 itself dropped off the network or sharing was
     // stopped locally — the server-side event doesn't distinguish the two,
     // on either platform, so the message stays neutral rather than guessing.
     useConnectionFeedbackStore.setState({
-      toast: { id: Date.now(), message: 'Conexão com o PS2 encerrada.', kind: 'disconnected' }
+      toast: { id: Date.now(), message: i18n.t('connectionToast.disconnected'), kind: 'disconnected' }
     })
   }
 })

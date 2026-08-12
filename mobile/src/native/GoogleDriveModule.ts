@@ -1,6 +1,7 @@
 import { Linking } from 'react-native'
 import NativeGoogleDriveModule from './specs/NativeGoogleDriveModule'
 import type { SerializableError } from '../types'
+import i18n from '../i18n'
 
 /** Typed wrapper over the Codegen'd GoogleDriveModule TurboModule. */
 
@@ -86,7 +87,7 @@ export async function connect(): Promise<void> {
         const returnedState = params.state
         const error = params.error
         if (error || !code || !returnedState) {
-          reject(new GoogleDriveModuleError({ code: 'AUTH_FAILED', message: error || 'Autorização cancelada ou inválida.' }))
+          reject(new GoogleDriveModuleError({ code: 'AUTH_FAILED', message: error || i18n.t('sources.authCanceledOrInvalid') }))
           return
         }
         resolve({ code, state: returnedState })
@@ -94,14 +95,14 @@ export async function connect(): Promise<void> {
       // Bound wait — if the user abandons the browser tab, don't hang forever.
       setTimeout(() => {
         subscription.remove()
-        reject(new GoogleDriveModuleError({ code: 'AUTH_TIMEOUT', message: 'Tempo esgotado aguardando a autorização do Google.' }))
+        reject(new GoogleDriveModuleError({ code: 'AUTH_TIMEOUT', message: i18n.t('sources.authTimeout') }))
       }, 5 * 60_000)
     })
 
     await Linking.openURL(url)
     const { code, state: returnedState } = await redirectPromise
     if (returnedState !== state) {
-      throw new GoogleDriveModuleError({ code: 'AUTH_FAILED', message: 'Resposta de autorização inválida.' })
+      throw new GoogleDriveModuleError({ code: 'AUTH_FAILED', message: i18n.t('sources.authInvalidResponse') })
     }
     await NativeGoogleDriveModule.completeAuthorization(code, returnedState)
   } catch (error) {

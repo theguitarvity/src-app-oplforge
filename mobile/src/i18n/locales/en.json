@@ -126,7 +126,8 @@
     "writeAccessBody": "The PS2 will be able to create, modify, and overwrite files in your local library over the network.",
     "writeAccessConsent": "I am aware and authorize this",
     "writeAccessRequired": "Confirm write access before sharing.",
-    "startSharing": "Start sharing"
+    "startSharing": "Start sharing",
+    "writeAccessConfirmError": "Confirm the PS2 write access before sharing."
   },
   "artSync": {
     "title": "Sync Art",
@@ -208,7 +209,8 @@
       "message": "This will create the required OPL folders (DVD, CD, PS1, APPS, ART, CFG, VMC) that don’t exist yet, and write a README at the root. Nothing existing will be deleted. Continue?",
       "cancel": "Cancel",
       "confirm": "Prepare"
-    }
+    },
+    "screenTitle": "Diagnostics"
   },
   "sources": {
     "title": "Google Drive",
@@ -230,7 +232,10 @@
     "downloadDone": {
       "title": "Done",
       "message": "\"{{name}}\" was downloaded to the library."
-    }
+    },
+    "authCanceledOrInvalid": "Authorization canceled or invalid.",
+    "authTimeout": "Timed out waiting for Google authorization.",
+    "authInvalidResponse": "Invalid authorization response."
   },
   "librarySelect": {
     "title": "Settings",
@@ -373,5 +378,36 @@
       "smartFill": "Smart Fill",
       "downloads": "Downloads"
     }
+  },
+  "homeState": {
+    "noLibrary": {
+      "title": "No library configured",
+      "subtitle": "Select the folder that represents your OPL library to get started."
+    },
+    "libraryIssues": {
+      "title": "Library has issues",
+      "subtitle_one": "{{count}} item needs attention.",
+      "subtitle_other": "{{count}} items need attention."
+    },
+    "ps2Connected": {
+      "title": "PS2 connected",
+      "subtitle": "Library available at {{address}}."
+    },
+    "sharingOnIdle": {
+      "title": "Sharing, waiting for connection",
+      "subtitle": "Set up the PS2 to connect to the library."
+    },
+    "readyToShare": {
+      "title": "Library ready",
+      "subtitle": "Catalog the library before sharing with the PS2."
+    },
+    "sharingOff": {
+      "title": "Sharing off",
+      "subtitle": "{{count}} games cataloged."
+    }
+  },
+  "connectionToast": {
+    "connected": "The PS2 connected to the library.",
+    "disconnected": "Connection to the PS2 ended."
   }
 }

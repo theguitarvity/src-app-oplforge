@@ -126,7 +126,8 @@
     "writeAccessBody": "Die PS2 kann über das Netzwerk Dateien in deiner lokalen Bibliothek erstellen, ändern und überschreiben.",
     "writeAccessConsent": "Ich bin mir dessen bewusst und erlaube es",
     "writeAccessRequired": "Bestätige den Schreibzugriff, bevor du freigibst.",
-    "startSharing": "Freigabe starten"
+    "startSharing": "Freigabe starten",
+    "writeAccessConfirmError": "Bestätige den PS2-Schreibzugriff, bevor du freigibst."
   },
   "artSync": {
     "title": "Cover synchronisieren",
@@ -208,7 +209,8 @@
       "message": "Dadurch werden die erforderlichen OPL-Ordner (DVD, CD, PS1, APPS, ART, CFG, VMC), die noch nicht existieren, erstellt und eine README im Stammverzeichnis geschrieben. Vorhandenes wird nicht gelöscht. Fortfahren?",
       "cancel": "Abbrechen",
       "confirm": "Vorbereiten"
-    }
+    },
+    "screenTitle": "Diagnose"
   },
   "sources": {
     "title": "Google Drive",
@@ -230,7 +232,10 @@
     "downloadDone": {
       "title": "Fertig",
       "message": "„{{name}}“ wurde in die Bibliothek heruntergeladen."
-    }
+    },
+    "authCanceledOrInvalid": "Autorisierung abgebrochen oder ungültig.",
+    "authTimeout": "Zeitüberschreitung beim Warten auf die Google-Autorisierung.",
+    "authInvalidResponse": "Ungültige Autorisierungsantwort."
   },
   "librarySelect": {
     "title": "Einstellungen",
@@ -373,5 +378,36 @@
       "smartFill": "Smart Fill",
       "downloads": "Downloads"
     }
+  },
+  "homeState": {
+    "noLibrary": {
+      "title": "Keine Bibliothek konfiguriert",
+      "subtitle": "Wähle den Ordner, der deine OPL-Bibliothek darstellt, um zu beginnen."
+    },
+    "libraryIssues": {
+      "title": "Bibliothek hat Probleme",
+      "subtitle_one": "{{count}} Element erfordert Aufmerksamkeit.",
+      "subtitle_other": "{{count}} Elemente erfordern Aufmerksamkeit."
+    },
+    "ps2Connected": {
+      "title": "PS2 verbunden",
+      "subtitle": "Bibliothek verfügbar unter {{address}}."
+    },
+    "sharingOnIdle": {
+      "title": "Freigabe aktiv, warte auf Verbindung",
+      "subtitle": "Richte die PS2 ein, um sich mit der Bibliothek zu verbinden."
+    },
+    "readyToShare": {
+      "title": "Bibliothek bereit",
+      "subtitle": "Katalogisiere die Bibliothek, bevor du sie mit der PS2 teilst."
+    },
+    "sharingOff": {
+      "title": "Freigabe ausgeschaltet",
+      "subtitle": "{{count}} Spiele katalogisiert."
+    }
+  },
+  "connectionToast": {
+    "connected": "Die PS2 hat sich mit der Bibliothek verbunden.",
+    "disconnected": "Die Verbindung zur PS2 wurde beendet."
   }
 }

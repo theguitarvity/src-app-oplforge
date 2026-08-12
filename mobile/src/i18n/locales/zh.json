@@ -126,7 +126,8 @@
     "writeAccessBody": "PS2 将能够通过网络在你的本地资料库中创建、修改和覆盖文件。",
     "writeAccessConsent": "我已知晓并授权",
     "writeAccessRequired": "共享前请确认写入权限。",
-    "startSharing": "开始共享"
+    "startSharing": "开始共享",
+    "writeAccessConfirmError": "共享前请确认 PS2 的写入权限。"
   },
   "artSync": {
     "title": "同步封面",
@@ -208,7 +209,8 @@
       "message": "这将创建尚不存在的 OPL 必需文件夹（DVD、CD、PS1、APPS、ART、CFG、VMC），并在根目录写入 README。不会删除任何现有内容。是否继续？",
       "cancel": "取消",
       "confirm": "准备"
-    }
+    },
+    "screenTitle": "诊断"
   },
   "sources": {
     "title": "Google Drive",
@@ -230,7 +232,10 @@
     "downloadDone": {
       "title": "已完成",
       "message": "“{{name}}”已下载到资料库。"
-    }
+    },
+    "authCanceledOrInvalid": "授权已取消或无效。",
+    "authTimeout": "等待 Google 授权超时。",
+    "authInvalidResponse": "授权响应无效。"
   },
   "librarySelect": {
     "title": "设置",
@@ -373,5 +378,36 @@
       "smartFill": "Smart Fill",
       "downloads": "下载"
     }
+  },
+  "homeState": {
+    "noLibrary": {
+      "title": "尚未配置资料库",
+      "subtitle": "选择代表你 OPL 资料库的文件夹以开始使用。"
+    },
+    "libraryIssues": {
+      "title": "资料库存在问题",
+      "subtitle_one": "{{count}} 个项目需要注意。",
+      "subtitle_other": "{{count}} 个项目需要注意。"
+    },
+    "ps2Connected": {
+      "title": "PS2 已连接",
+      "subtitle": "资料库可通过 {{address}} 访问。"
+    },
+    "sharingOnIdle": {
+      "title": "正在共享，等待连接",
+      "subtitle": "设置 PS2 以连接到资料库。"
+    },
+    "readyToShare": {
+      "title": "资料库已就绪",
+      "subtitle": "在与 PS2 共享之前请先编目资料库。"
+    },
+    "sharingOff": {
+      "title": "共享已关闭",
+      "subtitle": "已编目 {{count}} 个游戏。"
+    }
+  },
+  "connectionToast": {
+    "connected": "PS2 已连接到资料库。",
+    "disconnected": "与 PS2 的连接已结束。"
   }
 }

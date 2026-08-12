@@ -2,6 +2,7 @@ import { useLibraryStore } from '../../stores/library-store'
 import { useCatalogStore } from '../../stores/catalog-store'
 import { useSharingStore } from '../../stores/sharing-store'
 import { semanticColor, type SemanticStatus } from '../../design-system/tokens'
+import i18n from '../../i18n'
 
 /**
  * FR-025 — the six Home states the user must be able to distinguish at a
@@ -33,8 +34,8 @@ export function deriveHomeState(): HomeStatusView {
   if (!library.library || !library.library.accessValid) {
     return {
       state: 'no-library',
-      title: 'Nenhuma biblioteca configurada',
-      subtitle: 'Selecione a pasta que representa sua biblioteca OPL para começar.',
+      title: i18n.t('homeState.noLibrary.title'),
+      subtitle: i18n.t('homeState.noLibrary.subtitle'),
       status: 'neutral',
       primaryAction: 'select-library'
     }
@@ -43,8 +44,8 @@ export function deriveHomeState(): HomeStatusView {
   if (catalog.snapshot && catalog.snapshot.issueCount > 0) {
     return {
       state: 'library-issues',
-      title: 'Biblioteca com problemas',
-      subtitle: `${catalog.snapshot.issueCount} item(ns) precisam de atenção.`,
+      title: i18n.t('homeState.libraryIssues.title'),
+      subtitle: i18n.t('homeState.libraryIssues.subtitle', { count: catalog.snapshot.issueCount }),
       status: 'warning',
       primaryAction: 'catalog-library'
     }
@@ -53,8 +54,8 @@ export function deriveHomeState(): HomeStatusView {
   if (sharing.session?.state === 'running-connected') {
     return {
       state: 'ps2-connected',
-      title: 'PS2 conectado',
-      subtitle: `Biblioteca disponível em ${sharing.session.boundAddress}.`,
+      title: i18n.t('homeState.ps2Connected.title'),
+      subtitle: i18n.t('homeState.ps2Connected.subtitle', { address: sharing.session.boundAddress }),
       status: 'active',
       primaryAction: 'go-to-sharing'
     }
@@ -63,8 +64,8 @@ export function deriveHomeState(): HomeStatusView {
   if (sharing.session?.state === 'running-idle' || sharing.session?.state === 'starting') {
     return {
       state: 'sharing-on-idle',
-      title: 'Compartilhando, aguardando conexão',
-      subtitle: 'Configure o PS2 para se conectar à biblioteca.',
+      title: i18n.t('homeState.sharingOnIdle.title'),
+      subtitle: i18n.t('homeState.sharingOnIdle.subtitle'),
       status: 'success',
       primaryAction: 'go-to-sharing'
     }
@@ -73,8 +74,8 @@ export function deriveHomeState(): HomeStatusView {
   if (!catalog.snapshot || catalog.snapshot.state !== 'completed') {
     return {
       state: 'ready-to-share',
-      title: 'Biblioteca pronta',
-      subtitle: 'Catalogue a biblioteca antes de compartilhar com o PS2.',
+      title: i18n.t('homeState.readyToShare.title'),
+      subtitle: i18n.t('homeState.readyToShare.subtitle'),
       status: 'neutral',
       primaryAction: 'catalog-library'
     }
@@ -82,8 +83,14 @@ export function deriveHomeState(): HomeStatusView {
 
   return {
     state: 'sharing-off',
-    title: 'Compartilhamento desligado',
-    subtitle: `${catalog.snapshot.countsByType.dvd + catalog.snapshot.countsByType.cd + catalog.snapshot.countsByType.ps1 + catalog.snapshot.countsByType.app} jogos catalogados.`,
+    title: i18n.t('homeState.sharingOff.title'),
+    subtitle: i18n.t('homeState.sharingOff.subtitle', {
+      count:
+        catalog.snapshot.countsByType.dvd +
+        catalog.snapshot.countsByType.cd +
+        catalog.snapshot.countsByType.ps1 +
+        catalog.snapshot.countsByType.app
+    }),
     status: 'neutral',
     primaryAction: 'go-to-sharing'
   }

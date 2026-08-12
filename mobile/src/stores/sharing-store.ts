@@ -3,6 +3,7 @@ import type { SharingSession } from '../types'
 import * as SharingModule from '../native/SharingModule'
 import type { RecentConnection } from '../native/SharingModule'
 import { registerBootstrapStep } from '../app/bootstrap'
+import i18n from '../i18n'
 
 export interface SharingLogEntry {
   id: number
@@ -95,11 +96,11 @@ export const useSharingStore = create<SharingStoreState>((set) => ({
   activate: async (username, password, shareName, writeAccessAcknowledged) => {
     set({ status: 'busy', errorMessage: undefined })
     if (!writeAccessAcknowledged) {
-      set({ status: 'error', errorMessage: 'Confirme o acesso de escrita do PS2 antes de compartilhar.' })
+      set({ status: 'error', errorMessage: i18n.t('sharing.writeAccessConfirmError') })
       return
     }
     if (!username || !password) {
-      set({ status: 'error', errorMessage: 'Usuário e senha são obrigatórios.' })
+      set({ status: 'error', errorMessage: i18n.t('sharing.usernamePasswordRequired') })
       return
     }
     try {
