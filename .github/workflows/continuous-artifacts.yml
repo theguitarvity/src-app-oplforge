@@ -63,7 +63,12 @@ jobs:
         run: pnpm build
 
       - name: Package ${{ matrix.platform }}
-        run: ${{ matrix.package_command }}
+        run: |
+          for attempt in 1 2 3; do
+            ${{ matrix.package_command }} && break
+            echo "Attempt $attempt failed, retrying in 15s..."
+            sleep 15
+          done
 
       - name: Upload ${{ matrix.platform }}
         uses: actions/upload-artifact@v6
