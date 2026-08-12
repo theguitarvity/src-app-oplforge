@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { MonitorPlay } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { EmptyState } from '@/components/EmptyState'
 import { CheckpointPanel } from '@/components/validation/CheckpointPanel'
 import { Button } from '@/components/ui/button'
@@ -14,6 +15,7 @@ import type { ReadinessReport } from '@/types/opl'
 import { ReadinessReportView } from '@/components/validation/ReadinessReportView'
 
 export function ValidationPage() {
+  const { t } = useTranslation()
   const device = useDeviceStore((state) => state.activeDevice)
   const profiles = useQuery({ queryKey: ['opl-profiles'], queryFn: oplApi.listOplProfiles })
   const [snapshot, setSnapshot] = useState<CatalogSnapshot>()
@@ -62,39 +64,42 @@ export function ValidationPage() {
     if (!oplUpdatePlanId || !patchedCardPath) return
     const value = await oplApi.confirmOplUpdate({
       planId: oplUpdatePlanId,
+      // Literal confirmation phrase expected by the backend — not localized (Constitution Principle I).
       confirmation: 'ATUALIZAR OPL',
       patchedImagePath: patchedCardPath
     })
-    setOplUpdateResult(`Imagem anterior preservada em ${basename(value.backupPath)}`)
+    setOplUpdateResult(t('pages.validation.oplUpdateBackup', { path: basename(value.backupPath) }))
     setOplUpdatePlanId('')
   }
   if (!device)
     return (
       <EmptyState
         icon={MonitorPlay}
-        title="Selecione um dispositivo"
-        description="A validação usa clone e perfil isolado; nunca altera os arquivos reais."
+        title={t('pages.validation.selectDeviceTitle')}
+        description={t('pages.validation.selectDeviceDescription')}
       />
     )
   return (
     <Card>
-      <h2 className="text-2xl font-semibold text-white">Validação PCSX2 isolada</h2>
+      <h2 className="text-2xl font-semibold text-white">{t('pages.validation.title')}</h2>
       <div className="my-4 rounded-xl border border-amber-400/20 p-3">
-        <p className="text-sm text-amber-100">Atualização confirmada do OPL no memory card</p>
+        <p className="text-sm text-amber-100">{t('pages.validation.oplUpdateTitle')}</p>
         <div className="mt-2 flex flex-wrap gap-2">
           <Button variant="secondary" onClick={() => void pick(setPatchedCardPath, ['ps2', 'mcd'])}>
-            Imagem preparada: {patchedCardPath ? basename(patchedCardPath) : 'selecionar'}
+            {t('pages.validation.preparedImage', {
+              value: patchedCardPath ? basename(patchedCardPath) : t('pages.validation.select')
+            })}
           </Button>
           <Button
             variant="secondary"
             onClick={() => void planOplUpdate()}
             disabled={!profileId || !cardPath}
           >
-            Revisar atualização
+            {t('pages.validation.reviewUpdate')}
           </Button>
           {oplUpdatePlanId ? (
             <Button onClick={() => void confirmOplUpdate()} disabled={!patchedCardPath}>
-              Confirmar ATUALIZAR OPL
+              {t('pages.validation.confirmUpdate')}
             </Button>
           ) : null}
         </div>
@@ -102,25 +107,28 @@ export function ValidationPage() {
           <p className="mt-2 text-xs text-emerald-300">{oplUpdateResult}</p>
         ) : null}
       </div>
-      <p className="mb-4 text-sm text-muted-foreground">
-        Selecione sua própria BIOS legalmente extraída. Ela não será baixada, copiada para o
-        relatório ou distribuída.
-      </p>
+      <p className="mb-4 text-sm text-muted-foreground">{t('pages.validation.biosHint')}</p>
       <div className="grid gap-3 md:grid-cols-2">
         <Button
           variant="secondary"
           onClick={() => void pick(setPcsx2Path, ['AppImage', 'exe', '*'])}
         >
-          PCSX2: {pcsx2Path ? basename(pcsx2Path) : 'selecionar'}
+          {t('pages.validation.pcsx2Label', {
+            value: pcsx2Path ? basename(pcsx2Path) : t('pages.validation.select')
+          })}
         </Button>
         <Button variant="secondary" onClick={() => void pick(setBiosPath, ['bin', 'rom'])}>
-          BIOS: {biosPath ? basename(biosPath) : 'selecionar arquivo próprio'}
+          {t('pages.validation.biosLabel', {
+            value: biosPath ? basename(biosPath) : t('pages.validation.selectOwnFile')
+          })}
         </Button>
         <Button variant="secondary" onClick={() => void pick(setCardPath, ['ps2', 'mcd'])}>
-          Memory card: {cardPath ? basename(cardPath) : 'selecionar imagem'}
+          {t('pages.validation.memoryCardLabel', {
+            value: cardPath ? basename(cardPath) : t('pages.validation.selectImage')
+          })}
         </Button>
         <Select value={profileId} onChange={(event) => setProfileId(event.target.value)}>
-          <option value="">Perfil OPL exato</option>
+          <option value="">{t('pages.validation.exactProfile')}</option>
           {profiles.data?.map((profile) => (
             <option key={profile.id} value={profile.id}>
               {profile.version} · {profile.elfSha256.slice(0, 12)}
@@ -130,11 +138,11 @@ export function ValidationPage() {
       </div>
       <div className="mt-4 flex flex-wrap gap-2">
         <Button variant="secondary" onClick={() => catalog.mutate()}>
-          Carregar jogos
+          {t('pages.validation.loadGames')}
         </Button>
         {snapshot ? (
           <Select value={itemId} onChange={(event) => setItemId(event.target.value)}>
-            <option value="">Jogo de teste</option>
+            <option value="">{t('pages.validation.testGame')}</option>
             {snapshot.items
               .filter((item) => item.kind === 'game')
               .map((item) => (
@@ -148,9 +156,11 @@ export function ValidationPage() {
           onClick={() => plan.mutate()}
           disabled={!itemId || !profileId || !pcsx2Path || !biosPath || !cardPath}
         >
-          Preparar ambiente
+          {t('pages.validation.prepareEnvironment')}
         </Button>
-        {planId ? <Button onClick={() => start.mutate()}>Iniciar PCSX2</Button> : null}
+        {planId ? (
+          <Button onClick={() => start.mutate()}>{t('pages.validation.startPcsx2')}</Button>
+        ) : null}
         {snapshot && profileId ? (
           <Button
             variant="secondary"
@@ -165,7 +175,7 @@ export function ValidationPage() {
                 .then(setReport)
             }
           >
-            Gerar relatório
+            {t('pages.validation.generateReport')}
           </Button>
         ) : null}
       </div>
@@ -188,11 +198,9 @@ export function ValidationPage() {
             }}
           />
           <Button className="mt-4" onClick={() => void oplApi.stopValidation(run.id).then(setRun)}>
-            Encerrar e consolidar
+            {t('pages.validation.endAndConsolidate')}
           </Button>
-          <p className="mt-2">
-            Resultado emulado: {run.status}. Isso não garante funcionamento no hardware real.
-          </p>
+          <p className="mt-2">{t('pages.validation.emulatedResult', { status: run.status })}</p>
         </div>
       ) : null}
       {report ? <ReadinessReportView report={report} onChange={setReport} /> : null}

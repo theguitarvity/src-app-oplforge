@@ -285,6 +285,31 @@
       "preparing": "Preparando…",
       "fixSelected": "Corrigir nomes selecionados ({{count}})",
       "noneSelected": "Nenhum nome corrigível está selecionado."
+    },
+    "validation": {
+      "selectDeviceTitle": "Selecione um dispositivo",
+      "selectDeviceDescription": "A validação usa clone e perfil isolado; nunca altera os arquivos reais.",
+      "title": "Validação PCSX2 isolada",
+      "oplUpdateTitle": "Atualização confirmada do OPL no memory card",
+      "preparedImage": "Imagem preparada: {{value}}",
+      "select": "selecionar",
+      "reviewUpdate": "Revisar atualização",
+      "confirmUpdate": "Confirmar ATUALIZAR OPL",
+      "oplUpdateBackup": "Imagem anterior preservada em {{path}}",
+      "biosHint": "Selecione sua própria BIOS legalmente extraída. Ela não será baixada, copiada para o relatório ou distribuída.",
+      "pcsx2Label": "PCSX2: {{value}}",
+      "biosLabel": "BIOS: {{value}}",
+      "selectOwnFile": "selecionar arquivo próprio",
+      "memoryCardLabel": "Memory card: {{value}}",
+      "selectImage": "selecionar imagem",
+      "exactProfile": "Perfil OPL exato",
+      "loadGames": "Carregar jogos",
+      "testGame": "Jogo de teste",
+      "prepareEnvironment": "Preparar ambiente",
+      "startPcsx2": "Iniciar PCSX2",
+      "generateReport": "Gerar relatório",
+      "endAndConsolidate": "Encerrar e consolidar",
+      "emulatedResult": "Resultado emulado: {{status}}. Isso não garante funcionamento no hardware real."
     }
   },
   "components": {

@@ -285,6 +285,31 @@
       "preparing": "Подготовка…",
       "fixSelected": "Исправить выбранные имена ({{count}})",
       "noneSelected": "Не выбрано ни одного исправляемого имени."
+    },
+    "validation": {
+      "selectDeviceTitle": "Выберите устройство",
+      "selectDeviceDescription": "Валидация использует клон и изолированный профиль; реальные файлы никогда не изменяются.",
+      "title": "Изолированная валидация PCSX2",
+      "oplUpdateTitle": "Подтверждённое обновление OPL на карте памяти",
+      "preparedImage": "Подготовленный образ: {{value}}",
+      "select": "выбрать",
+      "reviewUpdate": "Проверить обновление",
+      "confirmUpdate": "Подтвердить ОБНОВЛЕНИЕ OPL",
+      "oplUpdateBackup": "Предыдущий образ сохранён в {{path}}",
+      "biosHint": "Выберите собственный, легально извлечённый BIOS. Он не будет загружен, скопирован в отчёт или распространён.",
+      "pcsx2Label": "PCSX2: {{value}}",
+      "biosLabel": "BIOS: {{value}}",
+      "selectOwnFile": "выбрать собственный файл",
+      "memoryCardLabel": "Карта памяти: {{value}}",
+      "selectImage": "выбрать образ",
+      "exactProfile": "Точный профиль OPL",
+      "loadGames": "Загрузить игры",
+      "testGame": "Тестовая игра",
+      "prepareEnvironment": "Подготовить окружение",
+      "startPcsx2": "Запустить PCSX2",
+      "generateReport": "Создать отчёт",
+      "endAndConsolidate": "Завершить и объединить",
+      "emulatedResult": "Эмулированный результат: {{status}}. Это не гарантирует работу на реальном оборудовании."
     }
   },
   "components": {

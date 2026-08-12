@@ -285,6 +285,31 @@
       "preparing": "準備中…",
       "fixSelected": "選択した名前を修正 ({{count}})",
       "noneSelected": "修正可能な名前が選択されていません。"
+    },
+    "validation": {
+      "selectDeviceTitle": "デバイスを選択",
+      "selectDeviceDescription": "検証にはクローンと隔離されたプロファイルを使用します。実際のファイルが変更されることはありません。",
+      "title": "隔離されたPCSX2検証",
+      "oplUpdateTitle": "メモリーカード上のOPLアップデートを確認",
+      "preparedImage": "準備済みイメージ: {{value}}",
+      "select": "選択",
+      "reviewUpdate": "アップデートを確認",
+      "confirmUpdate": "OPLアップデートを確認",
+      "oplUpdateBackup": "以前のイメージは {{path}} に保存されました",
+      "biosHint": "合法的に抽出したご自身のBIOSを選択してください。ダウンロード、レポートへのコピー、配布は行われません。",
+      "pcsx2Label": "PCSX2: {{value}}",
+      "biosLabel": "BIOS: {{value}}",
+      "selectOwnFile": "自分のファイルを選択",
+      "memoryCardLabel": "メモリーカード: {{value}}",
+      "selectImage": "イメージを選択",
+      "exactProfile": "正確なOPLプロファイル",
+      "loadGames": "ゲームを読み込む",
+      "testGame": "テストゲーム",
+      "prepareEnvironment": "環境を準備",
+      "startPcsx2": "PCSX2を起動",
+      "generateReport": "レポートを生成",
+      "endAndConsolidate": "終了して統合",
+      "emulatedResult": "エミュレート結果: {{status}}。実機での動作を保証するものではありません。"
     }
   },
   "components": {

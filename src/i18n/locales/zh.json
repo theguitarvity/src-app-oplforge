@@ -285,6 +285,31 @@
       "preparing": "准备中…",
       "fixSelected": "修正已选名称（{{count}}）",
       "noneSelected": "未选择任何可修正的名称。"
+    },
+    "validation": {
+      "selectDeviceTitle": "选择设备",
+      "selectDeviceDescription": "验证使用克隆和隔离配置文件；不会更改真实文件。",
+      "title": "隔离式 PCSX2 验证",
+      "oplUpdateTitle": "已确认记忆卡上的 OPL 更新",
+      "preparedImage": "已准备的镜像：{{value}}",
+      "select": "选择",
+      "reviewUpdate": "查看更新",
+      "confirmUpdate": "确认更新 OPL",
+      "oplUpdateBackup": "先前的镜像已保留在 {{path}}",
+      "biosHint": "请选择您自己合法提取的 BIOS。不会被下载、复制到报告中或分发。",
+      "pcsx2Label": "PCSX2：{{value}}",
+      "biosLabel": "BIOS：{{value}}",
+      "selectOwnFile": "选择您自己的文件",
+      "memoryCardLabel": "记忆卡：{{value}}",
+      "selectImage": "选择镜像",
+      "exactProfile": "精确的 OPL 配置文件",
+      "loadGames": "加载游戏",
+      "testGame": "测试游戏",
+      "prepareEnvironment": "准备环境",
+      "startPcsx2": "启动 PCSX2",
+      "generateReport": "生成报告",
+      "endAndConsolidate": "结束并整合",
+      "emulatedResult": "模拟结果：{{status}}。这并不保证在真实硬件上正常运行。"
     }
   },
   "components": {
