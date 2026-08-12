@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link, NavLink } from 'react-router-dom'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useTranslation } from 'react-i18next'
 import {
   Download,
   HardDrive,
@@ -17,16 +18,16 @@ import { useDeviceStore } from '@/stores/device-store'
 import { cn } from '@/utils/cn'
 import { useDownloadStore } from '@/stores/download-store'
 
-const primaryItems = [
-  { to: '/', label: 'Home', icon: Home, end: true },
-  { to: '/devices', label: 'Dispositivos', icon: HardDrive },
-  { to: '/library', label: 'Biblioteca', icon: LibraryBig },
-  { to: '/catalog', label: 'Catálogo', icon: Search },
-  { to: '/tools', label: 'Ferramentas', icon: Wrench },
-  { to: '/settings', label: 'Configurações', icon: Settings }
-]
-
 export function Sidebar() {
+  const { t } = useTranslation()
+  const primaryItems = [
+    { to: '/', label: t('nav.home'), icon: Home, end: true },
+    { to: '/devices', label: t('nav.devices'), icon: HardDrive },
+    { to: '/library', label: t('nav.library'), icon: LibraryBig },
+    { to: '/catalog', label: t('nav.catalog'), icon: Search },
+    { to: '/tools', label: t('nav.tools'), icon: Wrench },
+    { to: '/settings', label: t('nav.settings'), icon: Settings }
+  ]
   const queryClient = useQueryClient()
   const activeDevice = useDeviceStore((state) => state.activeDevice)
   const devices = useDeviceStore((state) => state.devices)

@@ -7,11 +7,14 @@ import { SafeAreaProvider } from 'react-native-safe-area-context'
 import * as Font from 'expo-font'
 import * as SplashScreen from 'expo-splash-screen'
 import MaterialIcons from '@expo/vector-icons/MaterialIcons'
+import { useTranslation } from 'react-i18next'
+import '../i18n'
 import { colors, spacing, typography } from '../design-system/tokens'
 import appConfig from '../../app.json'
 import { runBootstrap } from './bootstrap'
 import { RootNavigator } from '../navigation/RootNavigator'
 import { LibrarySelectScreen } from '../screens/LibrarySelect/LibrarySelectScreen'
+import { LanguageSelectScreen } from '../screens/LanguageSelect/LanguageSelectScreen'
 import { TutorialScreen } from '../screens/Tutorial/TutorialScreen'
 import { EssentialsScreen } from '../screens/Essentials/EssentialsScreen'
 import { DiagnosticsScreen } from '../screens/Diagnostics/DiagnosticsScreen'
@@ -21,11 +24,14 @@ import { SourcesScreen } from '../screens/Sources/SourcesScreen'
 import { DownloadsFab } from '../components/DownloadsFab'
 import { ConnectionToast } from '../components/ConnectionToast'
 import { navigationRef } from './navigationRef'
+import { SplashProgress } from '../components/splash/SplashProgress'
+import { useSettingsStore } from '../stores/settings-store'
 
 void SplashScreen.preventAutoHideAsync()
 
 export type RootStackParamList = {
   Tabs: undefined
+  LanguageSelect: undefined
   LibrarySelect: undefined
   Sharing: undefined
   Tutorial: undefined
@@ -48,15 +54,14 @@ const APP_VERSION = appConfig.expo.version ?? '—'
  * thing anyone sees, including anyone reviewing what the app is for.
  */
 function SplashOverlay() {
+  const { t } = useTranslation()
   return (
     <View style={splashStyles.container}>
       <Image source={require('../../assets/logo-mark.png')} style={splashStyles.logo} resizeMode="contain" />
-      <Text style={splashStyles.name}>OPL Forge</Text>
+      <Text style={splashStyles.name}>{t('common.appName')}</Text>
       <Text style={splashStyles.version}>v{APP_VERSION}</Text>
-      <Text style={splashStyles.disclaimer}>
-        Use apenas com jogos que você possui legalmente. Este app não distribui nem hospeda conteúdo protegido por
-        direitos autorais.
-      </Text>
+      <Text style={splashStyles.disclaimer}>{t('splash.disclaimer')}</Text>
+      <SplashProgress />
     </View>
   )
 }
@@ -104,9 +109,12 @@ const MIN_SPLASH_MS = 1500
 export default function App() {
   const [fontsReady, setFontsReady] = useState(false)
   const [minDurationElapsed, setMinDurationElapsed] = useState(false)
+  const [bootstrapReady, setBootstrapReady] = useState(false)
+  const languageSource = useSettingsStore((state) => state.languageSource)
+  const { t } = useTranslation()
 
   useEffect(() => {
-    void runBootstrap()
+    void runBootstrap().finally(() => setBootstrapReady(true))
   }, [])
 
   useEffect(() => {
@@ -118,14 +126,16 @@ export default function App() {
     return () => clearTimeout(timer)
   }, [])
 
-  if (!fontsReady || !minDurationElapsed) return <SplashOverlay />
+  // Splash stays visible for the real bootstrap duration (FR-014/SC-005),
+  // not just the fixed MIN_SPLASH_MS — whichever finishes last.
+  if (!fontsReady || !minDurationElapsed || !bootstrapReady) return <SplashOverlay />
 
   return (
     <SafeAreaProvider>
       <NavigationContainer ref={navigationRef} theme={oplForgeNavigationTheme}>
         <StatusBar style="light" />
         <Stack.Navigator
-          initialRouteName="Tabs"
+          initialRouteName={languageSource === 'user' ? 'Tabs' : 'LanguageSelect'}
           screenOptions={{
             headerStyle: { backgroundColor: colors.card },
             headerTintColor: colors.foreground,
@@ -134,9 +144,14 @@ export default function App() {
         >
           <Stack.Screen name="Tabs" component={RootNavigator} options={{ headerShown: false }} />
           <Stack.Screen
+            name="LanguageSelect"
+            component={LanguageSelectScreen}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
             name="LibrarySelect"
             component={LibrarySelectScreen}
-            options={{ title: 'Biblioteca' }}
+            options={{ title: t('nav.library') }}
           />
           <Stack.Screen name="Tutorial" component={TutorialScreen} options={{ title: 'Configurar PS2' }} />
           <Stack.Screen name="Essentials" component={EssentialsScreen} options={{ title: 'Catálogo Essentials' }} />

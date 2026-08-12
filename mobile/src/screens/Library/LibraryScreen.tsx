@@ -5,6 +5,7 @@ import * as CatalogModule from '../../native/CatalogModule'
 import type { CatalogContentType, CatalogEntry } from '../../types'
 import { GameArtThumbnail } from '../../components/GameArtThumbnail'
 import { GameDetailSheet } from './GameDetailSheet'
+import { LibraryChangedOverlay } from '../../components/library/LibraryChangedOverlay'
 
 const GRID_COLUMNS = 3
 
@@ -112,6 +113,8 @@ export function LibraryScreen() {
         onClose={() => setSelected(undefined)}
         onDeleted={(entryId) => setEntries((prev) => prev.filter((entry) => entry.id !== entryId))}
       />
+
+      <LibraryChangedOverlay />
     </View>
   )
 }

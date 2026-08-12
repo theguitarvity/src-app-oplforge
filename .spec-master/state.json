@@ -1,0 +1,267 @@
+{
+  "version": 1,
+  "context": ".spec-master/context/input-i18n-update-library-sync.md",
+  "workflow": "trunk",
+  "status": "INITIALIZED",
+  "constitution": {
+    "status": "VALIDATED",
+    "note": "Constituicao existente (v1.0.0) ja cobre esta feature via Principio II (isolamento/menor privilegio, aplicavel a qualquer novo IPC de update) e Principio IV (integridade/rastreabilidade). Nenhum principio novo necessario; constitution diff nao executado por ausencia de mudanca proposta."
+  },
+  "features": [
+    {
+      "id": "i18n-android-update-library-sync",
+      "name": "Internacionalizacao, atualizacao Android e sincronizacao de biblioteca",
+      "description": "i18n completo (7 idiomas) em desktop e Android com selecao no primeiro launch e em Configuracoes; verificacao/atualizacao de versao no Android via Configuracoes; deteccao de troca de dispositivo/biblioteca com popup de carregamento e loading na splash screen.",
+      "source_requirements": [
+        "app-features.md#feature-1",
+        "app-features.md#feature-2",
+        "app-features.md#feature-3"
+      ],
+      "acceptance_criteria": [
+        "Selecao de idioma entre 7 opcoes no primeiro launch e em Configuracoes (desktop + Android)",
+        "Troca de idioma aplica sem reiniciar o app",
+        "Nenhum texto hardcoded remanescente nas telas migradas",
+        "Idioma persiste entre sessoes",
+        "Fallback para pt-BR quando falta chave de traducao",
+        "Checagem automatica de nova versao ao abrir o app Android",
+        "Acao de atualizacao visivel em Configuracoes no Android",
+        "Falha de checagem de update nao bloqueia o uso do app",
+        "Popup de carregamento ao detectar troca de dispositivo/biblioteca",
+        "Splash screen exibe indicador de loading"
+      ],
+      "dependencies": [],
+      "branch": null,
+      "status": "PARTIAL",
+      "spec_directory": "specs/010-i18n-android-update-library-sync",
+      "analyze_repair_cycles": 1,
+      "phases": {
+        "specify": "PASSED",
+        "clarify": "PASSED",
+        "plan": "PASSED",
+        "tasks": "PASSED",
+        "analyze": "PASSED",
+        "implement": "PASSED",
+        "validate": "PASSED"
+      }
+    }
+  ],
+  "quality_gates": [
+    {
+      "name": "build (node)",
+      "command": "pnpm run build",
+      "result": "PASS",
+      "blocking": true
+    },
+    {
+      "name": "lint (node)",
+      "command": "pnpm run lint",
+      "result": "PASS",
+      "blocking": false
+    },
+    {
+      "name": "test (node)",
+      "command": "pnpm run test:run",
+      "result": "PASS_WITH_KNOWN_PREEXISTING_FAILURES",
+      "blocking": true,
+      "note": "6 failures confirmed identical on unmodified master via git stash (macOS /private/var symlink resolution, FTP port-21 permission) - unrelated to this feature, not introduced by it."
+    },
+    {
+      "name": "mobile typecheck",
+      "command": "cd mobile && npx tsc --noEmit",
+      "result": "PASS",
+      "blocking": true
+    },
+    {
+      "name": "mobile test",
+      "command": "cd mobile && npx jest",
+      "result": "PASS_WITH_KNOWN_PREEXISTING_FAILURE",
+      "blocking": true,
+      "note": "1 failure (Library.test.tsx, missing expo-asset peer dep) confirmed identical on unmodified master - unrelated to this feature."
+    },
+    {
+      "name": "mobile lint",
+      "command": "cd mobile && npx eslint .",
+      "result": "FAIL_PREEXISTING_CONFIG_BROKEN",
+      "blocking": false,
+      "note": "Repo-wide broken @typescript-eslint plugin resolution, confirmed identical on unmodified master - not introduced by this feature."
+    }
+  ],
+  "fingerprint": {
+    "input-i18n-update-library-sync.md": "f74f4964c33d3cc52b5760655f5cd221e4f52a1bda2f08729987aa97c74dd505",
+    "app-features.md": "73e424d65c0601d5fcbac54ebc2ce286177a3009e7081b080c85357a249ebdf2",
+    "project-goals.md": "2510bf55e15a654eed582e10a3f464f5afae5980458f02c606ff6be195ce84f6",
+    "tech-stack.md": "561bdb0d0f42a11bf5a14371e203dcde53fc7683c54672c7f8b8c08b778d0c74"
+  },
+  "traceability": [
+    {
+      "requirement": "FR-016 mecanismo de update Android",
+      "source": "speckit-clarify Q1 (2026-08-12)",
+      "feature": "i18n-android-update-library-sync",
+      "spec": "specs/010-i18n-android-update-library-sync/spec.md",
+      "plan": "",
+      "task": "",
+      "test": "",
+      "status": "CLARIFIED"
+    },
+    {
+      "requirement": "FR-017 criterio de troca de dispositivo/biblioteca",
+      "source": "speckit-clarify Q2 (2026-08-12)",
+      "feature": "i18n-android-update-library-sync",
+      "spec": "specs/010-i18n-android-update-library-sync/spec.md",
+      "plan": "",
+      "task": "",
+      "test": "",
+      "status": "CLARIFIED"
+    },
+    {
+      "requirement": "FR-001 i18n 7 idiomas",
+      "source": "tasks.md",
+      "feature": "i18n-android-update-library-sync",
+      "spec": "specs/010-i18n-android-update-library-sync/spec.md",
+      "plan": "specs/010-i18n-android-update-library-sync/plan.md",
+      "task": "specs/010-i18n-android-update-library-sync/tasks.md",
+      "test": "",
+      "status": "IMPLEMENTED_PARTIAL (Settings/nav/first-launch only)"
+    },
+    {
+      "requirement": "FR-002 selecao primeiro launch",
+      "source": "tasks.md",
+      "feature": "i18n-android-update-library-sync",
+      "spec": "specs/010-i18n-android-update-library-sync/spec.md",
+      "plan": "specs/010-i18n-android-update-library-sync/plan.md",
+      "task": "specs/010-i18n-android-update-library-sync/tasks.md",
+      "test": "",
+      "status": "IMPLEMENTED"
+    },
+    {
+      "requirement": "FR-003 troca em Configuracoes",
+      "source": "tasks.md",
+      "feature": "i18n-android-update-library-sync",
+      "spec": "specs/010-i18n-android-update-library-sync/spec.md",
+      "plan": "specs/010-i18n-android-update-library-sync/plan.md",
+      "task": "specs/010-i18n-android-update-library-sync/tasks.md",
+      "test": "",
+      "status": "IMPLEMENTED"
+    },
+    {
+      "requirement": "FR-004 aplica sem reiniciar",
+      "source": "tasks.md",
+      "feature": "i18n-android-update-library-sync",
+      "spec": "specs/010-i18n-android-update-library-sync/spec.md",
+      "plan": "specs/010-i18n-android-update-library-sync/plan.md",
+      "task": "specs/010-i18n-android-update-library-sync/tasks.md",
+      "test": "",
+      "status": "IMPLEMENTED_VERIFIED"
+    },
+    {
+      "requirement": "FR-005 persiste entre sessoes",
+      "source": "tasks.md",
+      "feature": "i18n-android-update-library-sync",
+      "spec": "specs/010-i18n-android-update-library-sync/spec.md",
+      "plan": "specs/010-i18n-android-update-library-sync/plan.md",
+      "task": "specs/010-i18n-android-update-library-sync/tasks.md",
+      "test": "",
+      "status": "IMPLEMENTED_VERIFIED"
+    },
+    {
+      "requirement": "FR-006 sem texto hardcoded",
+      "source": "tasks.md",
+      "feature": "i18n-android-update-library-sync",
+      "spec": "specs/010-i18n-android-update-library-sync/spec.md",
+      "plan": "specs/010-i18n-android-update-library-sync/plan.md",
+      "task": "specs/010-i18n-android-update-library-sync/tasks.md",
+      "test": "",
+      "status": "IMPLEMENTED_PARTIAL"
+    },
+    {
+      "requirement": "FR-007 fallback pt-BR",
+      "source": "tasks.md",
+      "feature": "i18n-android-update-library-sync",
+      "spec": "specs/010-i18n-android-update-library-sync/spec.md",
+      "plan": "specs/010-i18n-android-update-library-sync/plan.md",
+      "task": "specs/010-i18n-android-update-library-sync/tasks.md",
+      "test": "",
+      "status": "IMPLEMENTED_TESTED"
+    },
+    {
+      "requirement": "FR-008 checagem automatica update Android",
+      "source": "tasks.md",
+      "feature": "i18n-android-update-library-sync",
+      "spec": "specs/010-i18n-android-update-library-sync/spec.md",
+      "plan": "specs/010-i18n-android-update-library-sync/plan.md",
+      "task": "specs/010-i18n-android-update-library-sync/tasks.md",
+      "test": "",
+      "status": "IMPLEMENTED_TESTED"
+    },
+    {
+      "requirement": "FR-009 acao update em Configuracoes",
+      "source": "tasks.md",
+      "feature": "i18n-android-update-library-sync",
+      "spec": "specs/010-i18n-android-update-library-sync/spec.md",
+      "plan": "specs/010-i18n-android-update-library-sync/plan.md",
+      "task": "specs/010-i18n-android-update-library-sync/tasks.md",
+      "test": "",
+      "status": "IMPLEMENTED"
+    },
+    {
+      "requirement": "FR-010 falha update nao bloqueia",
+      "source": "tasks.md",
+      "feature": "i18n-android-update-library-sync",
+      "spec": "specs/010-i18n-android-update-library-sync/spec.md",
+      "plan": "specs/010-i18n-android-update-library-sync/plan.md",
+      "task": "specs/010-i18n-android-update-library-sync/tasks.md",
+      "test": "",
+      "status": "IMPLEMENTED_TESTED"
+    },
+    {
+      "requirement": "FR-011 deteccao troca dispositivo",
+      "source": "tasks.md",
+      "feature": "i18n-android-update-library-sync",
+      "spec": "specs/010-i18n-android-update-library-sync/spec.md",
+      "plan": "specs/010-i18n-android-update-library-sync/plan.md",
+      "task": "specs/010-i18n-android-update-library-sync/tasks.md",
+      "test": "",
+      "status": "IMPLEMENTED_TESTED"
+    },
+    {
+      "requirement": "FR-012 popup ate carregar",
+      "source": "tasks.md",
+      "feature": "i18n-android-update-library-sync",
+      "spec": "specs/010-i18n-android-update-library-sync/spec.md",
+      "plan": "specs/010-i18n-android-update-library-sync/plan.md",
+      "task": "specs/010-i18n-android-update-library-sync/tasks.md",
+      "test": "",
+      "status": "IMPLEMENTED"
+    },
+    {
+      "requirement": "FR-013 sem popup quando nao mudou",
+      "source": "tasks.md",
+      "feature": "i18n-android-update-library-sync",
+      "spec": "specs/010-i18n-android-update-library-sync/spec.md",
+      "plan": "specs/010-i18n-android-update-library-sync/plan.md",
+      "task": "specs/010-i18n-android-update-library-sync/tasks.md",
+      "test": "",
+      "status": "IMPLEMENTED_TESTED"
+    },
+    {
+      "requirement": "FR-014 loading na splash",
+      "source": "tasks.md",
+      "feature": "i18n-android-update-library-sync",
+      "spec": "specs/010-i18n-android-update-library-sync/spec.md",
+      "plan": "specs/010-i18n-android-update-library-sync/plan.md",
+      "task": "specs/010-i18n-android-update-library-sync/tasks.md",
+      "test": "",
+      "status": "IMPLEMENTED"
+    },
+    {
+      "requirement": "FR-015 escolha explicita prevalece sobre SO",
+      "source": "tasks.md",
+      "feature": "i18n-android-update-library-sync",
+      "spec": "specs/010-i18n-android-update-library-sync/spec.md",
+      "plan": "specs/010-i18n-android-update-library-sync/plan.md",
+      "task": "specs/010-i18n-android-update-library-sync/tasks.md",
+      "test": "",
+      "status": "IMPLEMENTED"
+    }
+  ]
+}

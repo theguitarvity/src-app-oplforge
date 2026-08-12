@@ -1,0 +1,39 @@
+{
+  "common": {
+    "appName": "OPL Forge",
+    "continue": "Continue",
+    "cancel": "Cancel",
+    "retry": "Retry"
+  },
+  "nav": {
+    "home": "Home",
+    "library": "Library",
+    "essentials": "Essentials",
+    "sharing": "Share",
+    "settings": "Settings"
+  },
+  "splash": {
+    "disclaimer": "Use only with games you legally own. This app does not distribute or host copyrighted content.",
+    "loading": "Loading..."
+  },
+  "languageStep": {
+    "title": "Choose your language",
+    "subtitle": "Select the OPL Forge interface language. You can change this anytime in Settings.",
+    "continue": "Continue"
+  },
+  "settings": {
+    "title": "Settings",
+    "language": "Language",
+    "updateSection": "Updates",
+    "currentVersion": "Installed version",
+    "updateAvailable": "New version available",
+    "updateUpToDate": "You're on the latest version",
+    "updateCheckFailed": "Couldn't check for updates right now",
+    "updateAction": "Update"
+  },
+  "library": {
+    "changedTitle": "Library changed",
+    "changedMessage": "We detected a new device/library source. Loading your library...",
+    "loadError": "Couldn't load the library"
+  }
+}

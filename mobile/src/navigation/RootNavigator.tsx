@@ -1,13 +1,14 @@
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs'
 import { Image, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import { useTranslation } from 'react-i18next'
 import MaterialIcons from '@expo/vector-icons/MaterialIcons'
 import { colors, spacing } from '../design-system/tokens'
 import { HomeScreen } from '../screens/Home/HomeScreen'
 import { LibraryScreen } from '../screens/Library/LibraryScreen'
 import { SharingScreen } from '../screens/Sharing/SharingScreen'
-import { LibrarySelectScreen } from '../screens/LibrarySelect/LibrarySelectScreen'
 import { EssentialsScreen } from '../screens/Essentials/EssentialsScreen'
+import { SettingsScreen } from '../screens/Settings/SettingsScreen'
 
 export type TabParamList = {
   Home: undefined
@@ -62,6 +63,7 @@ function TabIcon({ name, focused }: { name: keyof typeof MaterialIcons.glyphMap;
  * reached from any tab (e.g. Home's "select library" action).
  */
 export function RootNavigator() {
+  const { t } = useTranslation()
   const insets = useSafeAreaInsets()
   const bottomInset = Math.max(insets.bottom, spacing.md) + spacing.sm
 
@@ -85,11 +87,11 @@ export function RootNavigator() {
         tabBarIcon: ({ focused }) => <TabIcon name={TAB_ICON[route.name as keyof TabParamList]} focused={focused} />
       })}
     >
-      <Tab.Screen name="Home" component={HomeScreen} options={{ title: 'OPL Forge', tabBarLabel: 'Início' }} />
-      <Tab.Screen name="Library" component={LibraryScreen} options={{ title: 'Biblioteca' }} />
-      <Tab.Screen name="Essentials" component={EssentialsScreen} options={{ title: 'Catálogo Essentials', tabBarLabel: 'Essentials' }} />
-      <Tab.Screen name="Sharing" component={SharingScreen} options={{ title: 'Compartilhar' }} />
-      <Tab.Screen name="Settings" component={LibrarySelectScreen} options={{ title: 'Configurações' }} />
+      <Tab.Screen name="Home" component={HomeScreen} options={{ title: 'OPL Forge', tabBarLabel: t('nav.home') }} />
+      <Tab.Screen name="Library" component={LibraryScreen} options={{ title: t('nav.library') }} />
+      <Tab.Screen name="Essentials" component={EssentialsScreen} options={{ title: t('nav.essentials'), tabBarLabel: t('nav.essentials') }} />
+      <Tab.Screen name="Sharing" component={SharingScreen} options={{ title: t('nav.sharing') }} />
+      <Tab.Screen name="Settings" component={SettingsScreen} options={{ title: t('nav.settings') }} />
     </Tab.Navigator>
   )
 }

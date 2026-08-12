@@ -1,0 +1,47 @@
+{
+  "common": {
+    "appName": "OPL Forge",
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "close": "Cerrar",
+    "continue": "Continuar"
+  },
+  "nav": {
+    "home": "Inicio",
+    "devices": "Dispositivos",
+    "library": "Biblioteca",
+    "catalog": "Catálogo",
+    "tools": "Herramientas",
+    "settings": "Configuración"
+  },
+  "languageStep": {
+    "title": "Elige tu idioma",
+    "subtitle": "Selecciona el idioma de la interfaz de OPL Forge. Puedes cambiarlo en cualquier momento en Configuración.",
+    "continue": "Continuar"
+  },
+  "settings": {
+    "tabs": {
+      "general": "General",
+      "sources": "Fuentes de Descarga",
+      "network": "Red"
+    },
+    "general": {
+      "title": "Configuración",
+      "subtitle": "Preferencias locales listas para persistencia en JSON y futura migración a SQLite.",
+      "theme": "Tema",
+      "themeDark": "Oscuro por defecto",
+      "themeSystem": "Sistema",
+      "defaultDirectory": "Directorio predeterminado",
+      "defaultDirectoryPlaceholder": "Selecciona un directorio predeterminado para importaciones",
+      "logLevel": "Nivel de registros",
+      "language": "Idioma",
+      "updates": "Actualizaciones",
+      "updatesManual": "Manual",
+      "updatesNotify": "Notificar cuando haya una actualización",
+      "experimentalTitle": "Funciones Experimentales",
+      "experimentalDescription": "Proveedores remotos, SQLite y un flujo visual de formateo están preparados como extensiones futuras.",
+      "designTitle": "Diseño oscuro moderno",
+      "designDescription": "Interfaz inspirada en Rocketseat, Linear, Raycast y Arc, con glassmorphism sutil, degradados discretos y una barra lateral elegante."
+    }
+  }
+}

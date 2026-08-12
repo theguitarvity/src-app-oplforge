@@ -1,0 +1,47 @@
+{
+  "common": {
+    "appName": "OPL Forge",
+    "save": "Сохранить",
+    "cancel": "Отмена",
+    "close": "Закрыть",
+    "continue": "Продолжить"
+  },
+  "nav": {
+    "home": "Главная",
+    "devices": "Устройства",
+    "library": "Библиотека",
+    "catalog": "Каталог",
+    "tools": "Инструменты",
+    "settings": "Настройки"
+  },
+  "languageStep": {
+    "title": "Выберите язык",
+    "subtitle": "Выберите язык интерфейса OPL Forge. Вы можете изменить его в любой момент в настройках.",
+    "continue": "Продолжить"
+  },
+  "settings": {
+    "tabs": {
+      "general": "Общие",
+      "sources": "Источники загрузки",
+      "network": "Сеть"
+    },
+    "general": {
+      "title": "Настройки",
+      "subtitle": "Локальные настройки, подготовленные для хранения в JSON и будущей миграции на SQLite.",
+      "theme": "Тема",
+      "themeDark": "Тёмная по умолчанию",
+      "themeSystem": "Системная",
+      "defaultDirectory": "Каталог по умолчанию",
+      "defaultDirectoryPlaceholder": "Выберите каталог по умолчанию для импорта",
+      "logLevel": "Уровень логирования",
+      "language": "Язык",
+      "updates": "Обновления",
+      "updatesManual": "Вручную",
+      "updatesNotify": "Уведомлять о доступных обновлениях",
+      "experimentalTitle": "Экспериментальные функции",
+      "experimentalDescription": "Удалённые провайдеры, SQLite и визуальный процесс форматирования подготовлены как будущие расширения.",
+      "designTitle": "Современный тёмный дизайн",
+      "designDescription": "Интерфейс вдохновлён Rocketseat, Linear, Raycast и Arc, с лёгким глассморфизмом, сдержанными градиентами и элегантной боковой панелью."
+    }
+  }
+}

@@ -9,6 +9,7 @@ import { DevicesPage } from '@/pages/DevicesPage'
 import { GameLibraryPage } from '@/pages/GameLibraryPage'
 import { SettingsPage } from '@/pages/SettingsPage'
 import { ToolsPage } from '@/pages/ToolsPage'
+import '@/i18n'
 import '@/styles/globals.css'
 
 const queryClient = new QueryClient()

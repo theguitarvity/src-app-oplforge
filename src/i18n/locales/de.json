@@ -1,0 +1,47 @@
+{
+  "common": {
+    "appName": "OPL Forge",
+    "save": "Speichern",
+    "cancel": "Abbrechen",
+    "close": "Schließen",
+    "continue": "Weiter"
+  },
+  "nav": {
+    "home": "Start",
+    "devices": "Geräte",
+    "library": "Bibliothek",
+    "catalog": "Katalog",
+    "tools": "Werkzeuge",
+    "settings": "Einstellungen"
+  },
+  "languageStep": {
+    "title": "Sprache wählen",
+    "subtitle": "Wähle die Sprache der OPL-Forge-Oberfläche. Du kannst dies jederzeit in den Einstellungen ändern.",
+    "continue": "Weiter"
+  },
+  "settings": {
+    "tabs": {
+      "general": "Allgemein",
+      "sources": "Download-Quellen",
+      "network": "Netzwerk"
+    },
+    "general": {
+      "title": "Einstellungen",
+      "subtitle": "Lokale Einstellungen, vorbereitet für JSON-Persistenz und zukünftige Migration zu SQLite.",
+      "theme": "Design",
+      "themeDark": "Standardmäßig dunkel",
+      "themeSystem": "System",
+      "defaultDirectory": "Standardverzeichnis",
+      "defaultDirectoryPlaceholder": "Standardverzeichnis für Importe auswählen",
+      "logLevel": "Protokollstufe",
+      "language": "Sprache",
+      "updates": "Updates",
+      "updatesManual": "Manuell",
+      "updatesNotify": "Benachrichtigen, wenn ein Update verfügbar ist",
+      "experimentalTitle": "Experimentelle Funktionen",
+      "experimentalDescription": "Remote-Provider, SQLite und ein visueller Formatierungs-Workflow sind als zukünftige Erweiterungen vorbereitet.",
+      "designTitle": "Modernes dunkles Design",
+      "designDescription": "Inspiriert von Rocketseat, Linear, Raycast und Arc, mit leichtem Glassmorphism, dezenten Verläufen und einer eleganten Seitenleiste."
+    }
+  }
+}

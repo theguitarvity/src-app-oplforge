@@ -1,0 +1,39 @@
+{
+  "common": {
+    "appName": "OPL Forge",
+    "continue": "继续",
+    "cancel": "取消",
+    "retry": "重试"
+  },
+  "nav": {
+    "home": "主页",
+    "library": "游戏库",
+    "essentials": "Essentials",
+    "sharing": "分享",
+    "settings": "设置"
+  },
+  "splash": {
+    "disclaimer": "仅可用于您合法拥有的游戏。本应用不分发也不托管受版权保护的内容。",
+    "loading": "加载中..."
+  },
+  "languageStep": {
+    "title": "选择您的语言",
+    "subtitle": "选择 OPL Forge 界面语言。您可以随时在设置中更改。",
+    "continue": "继续"
+  },
+  "settings": {
+    "title": "设置",
+    "language": "语言",
+    "updateSection": "更新",
+    "currentVersion": "已安装版本",
+    "updateAvailable": "有新版本可用",
+    "updateUpToDate": "您使用的是最新版本",
+    "updateCheckFailed": "暂时无法检查更新",
+    "updateAction": "更新"
+  },
+  "library": {
+    "changedTitle": "游戏库已更改",
+    "changedMessage": "检测到新的设备/游戏库来源。正在加载您的游戏库...",
+    "loadError": "无法加载游戏库"
+  }
+}

@@ -1,0 +1,47 @@
+{
+  "common": {
+    "appName": "OPL Forge",
+    "save": "保存",
+    "cancel": "取消",
+    "close": "关闭",
+    "continue": "继续"
+  },
+  "nav": {
+    "home": "主页",
+    "devices": "设备",
+    "library": "游戏库",
+    "catalog": "目录",
+    "tools": "工具",
+    "settings": "设置"
+  },
+  "languageStep": {
+    "title": "选择您的语言",
+    "subtitle": "选择 OPL Forge 界面语言。您可以随时在设置中更改。",
+    "continue": "继续"
+  },
+  "settings": {
+    "tabs": {
+      "general": "常规",
+      "sources": "下载来源",
+      "network": "网络"
+    },
+    "general": {
+      "title": "设置",
+      "subtitle": "本地偏好设置，已准备好用于 JSON 持久化，未来将迁移至 SQLite。",
+      "theme": "主题",
+      "themeDark": "默认深色",
+      "themeSystem": "跟随系统",
+      "defaultDirectory": "默认目录",
+      "defaultDirectoryPlaceholder": "选择导入的默认目录",
+      "logLevel": "日志级别",
+      "language": "语言",
+      "updates": "更新",
+      "updatesManual": "手动",
+      "updatesNotify": "有更新时通知",
+      "experimentalTitle": "实验性功能",
+      "experimentalDescription": "远程提供商、SQLite 和可视化格式化流程已作为未来扩展功能准备就绪。",
+      "designTitle": "现代深色设计",
+      "designDescription": "灵感来自 Rocketseat、Linear、Raycast 和 Arc，具有轻量玻璃拟态效果、低调渐变和优雅的侧边栏。"
+    }
+  }
+}

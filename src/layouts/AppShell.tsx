@@ -7,6 +7,7 @@ import { Sidebar } from '@/components/Sidebar'
 import { useElectronEvents } from '@/hooks/use-electron-events'
 import { DownloadToast } from '@/components/downloads/DownloadToast'
 import { DownloadLifecycleMonitor } from '@/components/downloads/DownloadLifecycleMonitor'
+import { LanguageStep } from '@/components/setup/LanguageStep'
 
 export function AppShell() {
   useElectronEvents()
@@ -38,6 +39,7 @@ export function AppShell() {
       <ProgressModal />
       <DownloadToast />
       <DownloadLifecycleMonitor />
+      <LanguageStep />
     </div>
   )
 }

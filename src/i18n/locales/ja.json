@@ -1,0 +1,47 @@
+{
+  "common": {
+    "appName": "OPL Forge",
+    "save": "保存",
+    "cancel": "キャンセル",
+    "close": "閉じる",
+    "continue": "続ける"
+  },
+  "nav": {
+    "home": "ホーム",
+    "devices": "デバイス",
+    "library": "ライブラリ",
+    "catalog": "カタログ",
+    "tools": "ツール",
+    "settings": "設定"
+  },
+  "languageStep": {
+    "title": "言語を選択",
+    "subtitle": "OPL Forge のインターフェース言語を選択してください。設定からいつでも変更できます。",
+    "continue": "続ける"
+  },
+  "settings": {
+    "tabs": {
+      "general": "一般",
+      "sources": "ダウンロード元",
+      "network": "ネットワーク"
+    },
+    "general": {
+      "title": "設定",
+      "subtitle": "JSON永続化と将来のSQLite移行に対応したローカル設定です。",
+      "theme": "テーマ",
+      "themeDark": "ダークファースト",
+      "themeSystem": "システム",
+      "defaultDirectory": "デフォルトディレクトリ",
+      "defaultDirectoryPlaceholder": "インポート用のデフォルトディレクトリを選択",
+      "logLevel": "ログレベル",
+      "language": "言語",
+      "updates": "アップデート",
+      "updatesManual": "手動",
+      "updatesNotify": "アップデートがある場合に通知",
+      "experimentalTitle": "実験的機能",
+      "experimentalDescription": "リモートプロバイダー、SQLite、ビジュアルフォーマットフローは将来の拡張機能として準備されています。",
+      "designTitle": "モダンなダークデザイン",
+      "designDescription": "Rocketseat、Linear、Raycast、Arcにインスパイアされたインターフェースで、控えめなグラスモーフィズム、さりげないグラデーション、洗練されたサイドバーを備えています。"
+    }
+  }
+}
