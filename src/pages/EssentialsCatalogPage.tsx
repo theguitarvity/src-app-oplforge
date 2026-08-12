@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Download, FolderOpen, FolderPlus, RefreshCw, Search, Upload, UserPlus } from 'lucide-react'
 import { useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { CatalogGameCard } from '@/components/catalog/CatalogGameCard'
 import { DownloadPlanModal } from '@/components/catalog/DownloadPlanModal'
 import { LegalConfirmationModal } from '@/components/catalog/LegalConfirmationModal'
@@ -25,6 +26,7 @@ import type {
 import { formatBytes } from '@/utils/format'
 
 export function EssentialsCatalogPage() {
+  const { t } = useTranslation()
   const activeDevice = useDeviceStore((state) => state.activeDevice)
   const upsertTask = useDownloadStore((state) => state.upsertTask)
   const queryClient = useQueryClient()
@@ -88,7 +90,9 @@ export function EssentialsCatalogPage() {
       void queryClient.invalidateQueries({ queryKey: ['custom-essentials-catalog'] })
     },
     onError: (err) =>
-      setManualError(err instanceof Error ? err.message : 'Não foi possível adicionar.')
+      setManualError(
+        err instanceof Error ? err.message : t('pages.essentialsCatalog.addEntryError')
+      )
   })
   const importCsvMutation = useMutation({
     mutationFn: async () => {
@@ -123,7 +127,7 @@ export function EssentialsCatalogPage() {
   const addMutation = useMutation({
     mutationFn: async (confirmation: string) => {
       if (targetKind === 'local-folder') {
-        if (!localFolder) throw new Error('Selecione uma pasta local.')
+        if (!localFolder) throw new Error(t('pages.essentialsCatalog.selectLocalFolderError') ?? '')
         await Promise.all(
           selected.map((game) =>
             oplApi.enqueueDownload({
@@ -146,7 +150,7 @@ export function EssentialsCatalogPage() {
         )
         return []
       }
-      if (!activeDevice) throw new Error('Selecione um dispositivo OPL.')
+      if (!activeDevice) throw new Error(t('pages.essentialsCatalog.selectOplDeviceError') ?? '')
       return oplApi.addCatalogGamesToQueue({
         devicePath: activeDevice.path,
         games: selected,
@@ -155,7 +159,7 @@ export function EssentialsCatalogPage() {
     },
     onSuccess: async (tasks) => {
       notifyDownload(
-        `${selected.length} jogo(s) adicionado(s). Clique em Downloads para acompanhar.`,
+        t('pages.essentialsCatalog.downloadStartedNotification', { count: selected.length }),
         'started'
       )
       tasks.forEach(upsertTask)
@@ -208,7 +212,7 @@ export function EssentialsCatalogPage() {
       setShowSubfolder(false)
     } catch (error) {
       setDestinationError(
-        error instanceof Error ? error.message : 'Não foi possível criar a pasta.'
+        error instanceof Error ? error.message : t('pages.essentialsCatalog.createFolderError')
       )
     }
   }
@@ -226,10 +230,11 @@ export function EssentialsCatalogPage() {
       <Card>
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
-            <h2 className="text-2xl font-semibold text-white">Essentials Catalog</h2>
+            <h2 className="text-2xl font-semibold text-white">
+              {t('pages.essentialsCatalog.title')}
+            </h2>
             <p className="mt-1 text-sm text-muted-foreground">
-              Fontes pré-configuradas: Internet Archive - PlayStation 2 Essentials (Partes 1 e 2),
-              reunidas em uma única lista.
+              {t('pages.essentialsCatalog.subtitle')}
             </p>
           </div>
           <div className="flex gap-2">
@@ -240,7 +245,7 @@ export function EssentialsCatalogPage() {
                   disabled={refreshLinksMutation.isPending}
                   onClick={() => refreshLinksMutation.mutate()}
                 >
-                  <RefreshCw className="size-4" /> Verificar links
+                  <RefreshCw className="size-4" /> {t('pages.essentialsCatalog.checkLinks')}
                 </Button>
                 <SmartFillButton
                   disabled={!activeDevice || smartFillMutation.isPending}
@@ -250,14 +255,14 @@ export function EssentialsCatalogPage() {
             ) : (
               <>
                 <Button variant="secondary" onClick={() => setShowManualForm((value) => !value)}>
-                  <UserPlus className="size-4" /> Adicionar manualmente
+                  <UserPlus className="size-4" /> {t('pages.essentialsCatalog.addManually')}
                 </Button>
                 <Button
                   variant="secondary"
                   disabled={importCsvMutation.isPending}
                   onClick={() => importCsvMutation.mutate()}
                 >
-                  <Upload className="size-4" /> Importar CSV
+                  <Upload className="size-4" /> {t('pages.essentialsCatalog.importCsv')}
                 </Button>
               </>
             )}
@@ -265,7 +270,7 @@ export function EssentialsCatalogPage() {
               disabled={selected.length === 0 || (targetKind === 'opl-device' && !activeDevice)}
               onClick={() => void beginSelectedDownload()}
             >
-              <Download className="size-4" /> Adicionar selecionados
+              <Download className="size-4" /> {t('pages.essentialsCatalog.addSelected')}
             </Button>
           </div>
         </div>
@@ -279,7 +284,7 @@ export function EssentialsCatalogPage() {
               setSelected([])
             }}
           >
-            Catálogo oficial
+            {t('pages.essentialsCatalog.officialCatalog')}
           </button>
           <button
             type="button"
@@ -289,14 +294,14 @@ export function EssentialsCatalogPage() {
               setSelected([])
             }}
           >
-            Minha lista
+            {t('pages.essentialsCatalog.myList')}
           </button>
         </div>
 
         {source === 'custom' && showManualForm && (
           <div className="mt-4 grid gap-3 rounded-xl border border-violet-400/20 bg-violet-500/5 p-4 md:grid-cols-2">
             <div className="space-y-2">
-              <Label>Título</Label>
+              <Label>{t('pages.essentialsCatalog.titleLabel')}</Label>
               <Input
                 value={manualEntry.title}
                 onChange={(event) =>
@@ -305,17 +310,17 @@ export function EssentialsCatalogPage() {
               />
             </div>
             <div className="space-y-2">
-              <Label>Nome do arquivo</Label>
+              <Label>{t('pages.essentialsCatalog.fileNameLabel')}</Label>
               <Input
                 value={manualEntry.fileName}
                 onChange={(event) =>
                   setManualEntry((current) => ({ ...current, fileName: event.target.value }))
                 }
-                placeholder="Ex.: Meu Jogo.iso"
+                placeholder={t('pages.essentialsCatalog.fileNamePlaceholder') ?? ''}
               />
             </div>
             <div className="space-y-2 md:col-span-2">
-              <Label>URL</Label>
+              <Label>{t('pages.essentialsCatalog.urlLabel')}</Label>
               <Input
                 value={manualEntry.url}
                 onChange={(event) =>
@@ -325,7 +330,7 @@ export function EssentialsCatalogPage() {
               />
             </div>
             <div className="space-y-2">
-              <Label>Tamanho (bytes, opcional)</Label>
+              <Label>{t('pages.essentialsCatalog.sizeLabel')}</Label>
               <Input
                 type="number"
                 value={manualEntry.sizeBytes}
@@ -335,7 +340,7 @@ export function EssentialsCatalogPage() {
               />
             </div>
             <div className="space-y-2">
-              <Label>Tipo de mídia</Label>
+              <Label>{t('pages.essentialsCatalog.mediaTypeLabel')}</Label>
               <Select
                 value={manualEntry.mediaType}
                 onChange={(event) =>
@@ -345,9 +350,9 @@ export function EssentialsCatalogPage() {
                   }))
                 }
               >
-                <option value="ps2-dvd">PS2 DVD</option>
-                <option value="ps2-cd">PS2 CD</option>
-                <option value="ps1">PS1</option>
+                <option value="ps2-dvd">{t('pages.essentialsCatalog.mediaPs2Dvd')}</option>
+                <option value="ps2-cd">{t('pages.essentialsCatalog.mediaPs2Cd')}</option>
+                <option value="ps1">{t('pages.essentialsCatalog.mediaPs1')}</option>
               </Select>
             </div>
             {manualError ? (
@@ -363,14 +368,14 @@ export function EssentialsCatalogPage() {
                 }
                 onClick={() => addManualEntryMutation.mutate()}
               >
-                Adicionar à minha lista
+                {t('pages.essentialsCatalog.addToMyList')}
               </Button>
             </div>
           </div>
         )}
         {source === 'custom' && csvErrors.length > 0 && (
           <div className="mt-4 rounded-xl border border-amber-400/20 bg-amber-500/10 p-3 text-sm text-amber-200">
-            <p className="font-medium">Algumas linhas do CSV não foram importadas:</p>
+            <p className="font-medium">{t('pages.essentialsCatalog.csvErrorsTitle')}</p>
             <ul className="mt-1 list-disc pl-5">
               {csvErrors.map((err) => (
                 <li key={err}>{err}</li>
@@ -381,19 +386,19 @@ export function EssentialsCatalogPage() {
 
         <div className="mt-4 grid items-end gap-3 rounded-xl border border-white/10 bg-black/20 p-4 md:grid-cols-3">
           <div className="space-y-2">
-            <Label>Baixar para</Label>
+            <Label>{t('pages.essentialsCatalog.downloadToLabel')}</Label>
             <Select
               value={targetKind}
               onChange={(event) => setTargetKind(event.target.value as typeof targetKind)}
             >
-              <option value="opl-device">Dispositivo OPL</option>
-              <option value="local-folder">Este computador</option>
+              <option value="opl-device">{t('pages.essentialsCatalog.targetOplDevice')}</option>
+              <option value="local-folder">{t('pages.essentialsCatalog.targetLocalFolder')}</option>
             </Select>
           </div>
           {targetKind === 'local-folder' && (
             <>
               <div className="min-w-0 space-y-2">
-                <Label>Pasta autorizada</Label>
+                <Label>{t('pages.essentialsCatalog.authorizedFolderLabel')}</Label>
                 <div className="flex gap-2">
                   <Button
                     variant="secondary"
@@ -403,13 +408,14 @@ export function EssentialsCatalogPage() {
                   >
                     <FolderOpen className="size-4 shrink-0 text-violet-300" />
                     <span className="truncate">
-                      {localFolder?.displayLabel || 'Selecionar pasta de destino'}
+                      {localFolder?.displayLabel ||
+                        t('pages.essentialsCatalog.selectDestinationFolder')}
                     </span>
                   </Button>
                   <Button
                     variant="secondary"
                     className="size-11 shrink-0 px-0"
-                    title="Criar subpasta de destino"
+                    title={t('pages.essentialsCatalog.createSubfolderTitle') ?? ''}
                     onClick={() => setShowSubfolder((value) => !value)}
                   >
                     <FolderPlus className="size-4 text-violet-300" />
@@ -417,15 +423,15 @@ export function EssentialsCatalogPage() {
                 </div>
               </div>
               <div className="space-y-2">
-                <Label>Se o arquivo existir</Label>
+                <Label>{t('pages.essentialsCatalog.ifFileExistsLabel')}</Label>
                 <Select
                   value={collisionPolicy}
                   onChange={(event) =>
                     setCollisionPolicy(event.target.value as typeof collisionPolicy)
                   }
                 >
-                  <option value="rename">Renomear com sufixo</option>
-                  <option value="fail">Não substituir</option>
+                  <option value="rename">{t('pages.essentialsCatalog.renameWithSuffix')}</option>
+                  <option value="fail">{t('pages.essentialsCatalog.doNotReplace')}</option>
                 </Select>
               </div>
             </>
@@ -435,42 +441,45 @@ export function EssentialsCatalogPage() {
           <div className="mt-3 flex items-end gap-2 rounded-xl border border-violet-400/20 bg-violet-500/5 p-3">
             <div className="min-w-0 flex-1 space-y-2">
               <Label>
-                Nova subpasta dentro de {localFolder?.displayLabel || 'um local a escolher'}
+                {t('pages.essentialsCatalog.newSubfolderIn', {
+                  location:
+                    localFolder?.displayLabel || t('pages.essentialsCatalog.locationToChoose')
+                })}
               </Label>
               <Input
                 value={subfolderName}
                 onChange={(event) => setSubfolderName(event.target.value)}
-                placeholder="Ex.: RPG, Pendentes ou PS2"
+                placeholder={t('pages.essentialsCatalog.subfolderPlaceholder') ?? ''}
               />
             </div>
             <Button
               disabled={!subfolderName.trim()}
               onClick={() => void createDestinationSubfolder()}
             >
-              Criar e usar
+              {t('pages.essentialsCatalog.createAndUse')}
             </Button>
           </div>
         ) : null}
         {targetKind === 'local-folder' && localFolder ? (
           <p className="mt-2 text-xs text-emerald-300">
-            Os arquivos deste lote serão salvos diretamente em “{localFolder.displayLabel}”.
+            {t('pages.essentialsCatalog.filesSavedIn', { location: localFolder.displayLabel })}
           </p>
         ) : null}
         {destinationError ? <p className="mt-2 text-xs text-red-300">{destinationError}</p> : null}
         <div className="mt-5 grid gap-3 md:grid-cols-[1fr_150px_170px_180px_auto]">
           <div className="space-y-2">
-            <Label>Busca</Label>
+            <Label>{t('pages.essentialsCatalog.searchLabel')}</Label>
             <Input
               value={query.search ?? ''}
               onChange={(event) =>
                 setQuery((current) => ({ ...current, search: event.target.value }))
               }
-              placeholder="Buscar jogo"
+              placeholder={t('pages.essentialsCatalog.searchPlaceholder') ?? ''}
             />
           </div>
           {source === 'official' && (
             <div className="space-y-2">
-              <Label>Tier</Label>
+              <Label>{t('pages.essentialsCatalog.tierLabel')}</Label>
               <Select
                 value={query.tier}
                 onChange={(event) =>
@@ -480,7 +489,7 @@ export function EssentialsCatalogPage() {
                   }))
                 }
               >
-                <option value="all">Todos</option>
+                <option value="all">{t('pages.essentialsCatalog.tierAll')}</option>
                 <option value="S">S</option>
                 <option value="A">A</option>
                 <option value="B">B</option>
@@ -490,7 +499,7 @@ export function EssentialsCatalogPage() {
             </div>
           )}
           <div className="space-y-2">
-            <Label>Mídia</Label>
+            <Label>{t('pages.essentialsCatalog.mediaLabel')}</Label>
             <Select
               value={query.mediaType}
               onChange={(event) =>
@@ -500,14 +509,14 @@ export function EssentialsCatalogPage() {
                 }))
               }
             >
-              <option value="all">Todas</option>
+              <option value="all">{t('pages.essentialsCatalog.mediaAll')}</option>
               <option value="ps2-dvd">PS2 DVD</option>
               <option value="ps2-cd">PS2 CD</option>
             </Select>
           </div>
           {source === 'official' && (
             <div className="space-y-2">
-              <Label>Prioridade</Label>
+              <Label>{t('pages.essentialsCatalog.priorityLabel')}</Label>
               <Select
                 value={query.priority}
                 onChange={(event) =>
@@ -517,21 +526,30 @@ export function EssentialsCatalogPage() {
                   }))
                 }
               >
-                <option value="all">Todas</option>
-                <option value="must-have">Must-have</option>
-                <option value="recommended">Recommended</option>
-                <option value="unrated">Unrated</option>
+                <option value="all">{t('pages.essentialsCatalog.priorityAll')}</option>
+                <option value="must-have">{t('pages.essentialsCatalog.priorityMustHave')}</option>
+                <option value="recommended">
+                  {t('pages.essentialsCatalog.priorityRecommended')}
+                </option>
+                <option value="unrated">{t('pages.essentialsCatalog.priorityUnrated')}</option>
               </Select>
             </div>
           )}
           <Button variant="secondary" onClick={() => void catalogQuery.refetch()}>
-            <Search className="size-4" /> Atualizar
+            <Search className="size-4" /> {t('pages.essentialsCatalog.refresh')}
           </Button>
         </div>
         <div className="mt-4 rounded-xl border border-white/10 bg-black/20 px-4 py-3 text-sm text-muted-foreground">
-          Selecionados: {selected.length} - espaço estimado: {formatBytes(totalSelected)}
+          {t('pages.essentialsCatalog.selectedSummary', {
+            count: selected.length,
+            size: formatBytes(totalSelected)
+          })}
           {refreshLinksMutation.data
-            ? ` - links acessíveis: ${refreshLinksMutation.data.links.filter((link) => link.accessible).length}/${refreshLinksMutation.data.links.length}`
+            ? t('pages.essentialsCatalog.accessibleLinks', {
+                accessible: refreshLinksMutation.data.links.filter((link) => link.accessible)
+                  .length,
+                total: refreshLinksMutation.data.links.length
+              })
             : ''}
         </div>
         {addMutation.isError ? (
@@ -542,24 +560,22 @@ export function EssentialsCatalogPage() {
       {!activeDevice && targetKind === 'opl-device' ? (
         <EmptyState
           icon={Download}
-          title="Selecione um dispositivo"
-          description="Escolha um HD/USB ativo para gerar plano e adicionar downloads à fila."
+          title={t('pages.essentialsCatalog.selectDeviceTitle')}
+          description={t('pages.essentialsCatalog.selectDeviceDescription')}
         />
       ) : null}
       {catalogQuery.isLoading ? (
         <Card>
           <p className="text-sm text-muted-foreground">
             {source === 'official'
-              ? 'Carregando catálogo do Internet Archive...'
-              : 'Carregando sua lista...'}
+              ? t('pages.essentialsCatalog.loadingOfficialCatalog')
+              : t('pages.essentialsCatalog.loadingCustomCatalog')}
           </p>
         </Card>
       ) : null}
       {catalogQuery.isError ? (
         <Card className="border-red-400/20 bg-red-500/10">
-          <p className="text-sm text-red-200">
-            Não foi possível carregar o catálogo. Verifique a conexão e tente “Atualizar”.
-          </p>
+          <p className="text-sm text-red-200">{t('pages.essentialsCatalog.loadError')}</p>
         </Card>
       ) : null}
       {!catalogQuery.isLoading &&
@@ -567,11 +583,11 @@ export function EssentialsCatalogPage() {
       (catalogQuery.data ?? []).length === 0 ? (
         <EmptyState
           icon={Search}
-          title="Nenhum jogo encontrado"
+          title={t('pages.essentialsCatalog.noGamesFoundTitle')}
           description={
             source === 'official'
-              ? 'Tente limpar os filtros ou clique em Verificar links para regenerar o índice local.'
-              : 'Adicione itens manualmente ou importe um CSV (colunas: title,fileName,url,sizeBytes,mediaType).'
+              ? t('pages.essentialsCatalog.noGamesOfficialHint')
+              : t('pages.essentialsCatalog.noGamesCustomHint')
           }
         />
       ) : null}
