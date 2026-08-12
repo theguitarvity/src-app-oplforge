@@ -185,5 +185,107 @@
     "emptyQueue": "Nenhuma transferência na fila.",
     "retry": "Tentar novamente",
     "cancel": "Cancelar"
+  },
+  "diagnostics": {
+    "readiness": {
+      "ready": "Pronta",
+      "readyWithWarnings": "Pronta, com avisos",
+      "requiresReorganization": "Requer reorganização",
+      "incompatible": "Não pronta"
+    },
+    "unknownSize": "Desconhecido",
+    "freeSpace": "{{gb}} GB livres",
+    "freeSpaceLabel": "Espaço livre",
+    "requiredFolders": "Pastas obrigatórias",
+    "allFoldersPresent": "Todas as pastas presentes",
+    "missingFolders": "Faltando: {{folders}}",
+    "prepareDeviceButton": "Preparar dispositivo",
+    "lastCheck": "Última verificação: {{date}}",
+    "noDiagnosticsYet": "Nenhum diagnóstico executado ainda.",
+    "runDiagnosticsButton": "Executar diagnóstico",
+    "prepareConfirm": {
+      "title": "Preparar dispositivo",
+      "message": "Isso vai criar as pastas obrigatórias do OPL (DVD, CD, PS1, APPS, ART, CFG, VMC) que ainda não existem e gravar um README na raiz. Nada existente será apagado. Continuar?",
+      "cancel": "Cancelar",
+      "confirm": "Preparar"
+    }
+  },
+  "sources": {
+    "title": "Google Drive",
+    "subtitle": "Conecte sua própria conta para importar backups direto do seu Google Drive — acesso somente leitura.",
+    "clientIdLabel": "Client ID do Google (OAuth, tipo \"Android\")",
+    "clientIdHelp": "Crie um projeto no Google Cloud Console, ative a Drive API e gere um Client ID tipo \"Android\" (pacote com.oplforge.mobile + SHA-1 de assinatura) — nenhum client secret é necessário.",
+    "save": "Salvar",
+    "connect": "Conectar ao Google Drive",
+    "connected": "Conectado",
+    "listFiles": "Listar arquivos",
+    "disconnect": "Desconectar",
+    "emptyFilesHint": "Toque em \"Listar arquivos\" para ver seus backups no Drive.",
+    "downloadConfirm": {
+      "title": "Baixar jogo",
+      "message": "Baixar \"{{name}}\" para a pasta DVD da biblioteca?",
+      "cancel": "Cancelar",
+      "confirm": "Baixar"
+    },
+    "downloadDone": {
+      "title": "Concluído",
+      "message": "\"{{name}}\" foi baixado para a biblioteca."
+    }
+  },
+  "librarySelect": {
+    "title": "Configurações",
+    "subtitle": "Gerencie a pasta da sua biblioteca OPL.",
+    "activeLibrary": "Biblioteca ativa",
+    "source": "Origem: {{source}}",
+    "changeLibrary": "Trocar biblioteca",
+    "accessLost": "Acesso perdido",
+    "accessLostMessage": "\"{{name}}\" não está mais disponível.",
+    "selectAgain": "Selecionar biblioteca novamente",
+    "noLibraryConfigured": "Nenhuma biblioteca configurada",
+    "noLibraryHint": "Selecione a pasta que representa sua biblioteca OPL (armazenamento interno, cartão SD ou um dispositivo USB conectado) para começar.",
+    "selectLibrary": "Selecionar biblioteca",
+    "dangerZone": "Zona de risco",
+    "clearAppData": "Limpar dados do app",
+    "sourceKind": {
+      "internal": "Armazenamento interno",
+      "sdCard": "Cartão SD",
+      "usbOtg": "Dispositivo USB",
+      "externalStorage": "Armazenamento externo",
+      "unknown": "Desconhecida"
+    },
+    "clearConfirm": {
+      "title": "Limpar dados do app",
+      "message": "Isso apaga a biblioteca selecionada, credenciais salvas, catálogo em cache e a fila de transferências. O app vai reiniciar. Esta ação não pode ser desfeita.",
+      "cancel": "Cancelar",
+      "confirm": "Limpar dados"
+    }
+  },
+  "catalogScanView": {
+    "scanningProgress": "Catalogando... {{count}} itens encontrados até agora.",
+    "cancel": "Cancelar",
+    "scanFailed": "Falha ao catalogar a biblioteca.",
+    "retry": "Tentar novamente",
+    "noGamesFound": "Nenhum jogo reconhecido. Verifique se a pasta contém as pastas DVD, CD, PS1 ou APPS.",
+    "catalogedLibrary": "Biblioteca catalogada",
+    "countsSummary": "DVD: {{dvd}} · CD: {{cd}} · PS1: {{ps1}} · Apps: {{apps}}",
+    "issuesFound_one": "{{count}} item precisa de atenção",
+    "issuesFound_other": "{{count}} itens precisam de atenção",
+    "noIssuesFound": "Nenhum problema encontrado",
+    "actions": "Ações",
+    "shareWithPs2": "Compartilhar com o PS2",
+    "addGames": "Adicionar jogos",
+    "essentialsCatalog": "Catálogo Essentials",
+    "deviceDiagnostics": "Diagnóstico do dispositivo",
+    "rescan": "Catalogar novamente",
+    "notCatalogedYet": "A biblioteca ainda não foi catalogada.",
+    "catalogLibrary": "Catalogar biblioteca"
+  },
+  "importGameButton": {
+    "addGames": "Adicionar jogos",
+    "localFile": "Arquivo local",
+    "duplicateTitle": "Título já existe",
+    "duplicateMessage": "\"{{fileName}}\" já está na biblioteca. Sobrescrever substitui o arquivo existente permanentemente.",
+    "cancel": "Cancelar",
+    "overwrite": "Sobrescrever"
   }
 }

@@ -185,5 +185,107 @@
     "emptyQueue": "В очереди нет передач.",
     "retry": "Повторить",
     "cancel": "Отмена"
+  },
+  "diagnostics": {
+    "readiness": {
+      "ready": "Готова",
+      "readyWithWarnings": "Готова, есть предупреждения",
+      "requiresReorganization": "Требуется реорганизация",
+      "incompatible": "Не готова"
+    },
+    "unknownSize": "Неизвестно",
+    "freeSpace": "Свободно {{gb}} ГБ",
+    "freeSpaceLabel": "Свободное место",
+    "requiredFolders": "Обязательные папки",
+    "allFoldersPresent": "Все папки присутствуют",
+    "missingFolders": "Отсутствуют: {{folders}}",
+    "prepareDeviceButton": "Подготовить устройство",
+    "lastCheck": "Последняя проверка: {{date}}",
+    "noDiagnosticsYet": "Диагностика ещё не выполнялась.",
+    "runDiagnosticsButton": "Запустить диагностику",
+    "prepareConfirm": {
+      "title": "Подготовить устройство",
+      "message": "Будут созданы обязательные папки OPL (DVD, CD, PS1, APPS, ART, CFG, VMC), которых ещё нет, и в корне будет записан файл README. Существующие данные не будут удалены. Продолжить?",
+      "cancel": "Отмена",
+      "confirm": "Подготовить"
+    }
+  },
+  "sources": {
+    "title": "Google Drive",
+    "subtitle": "Подключите свой аккаунт, чтобы импортировать резервные копии прямо из Google Drive — доступ только для чтения.",
+    "clientIdLabel": "Client ID Google (OAuth, тип «Android»)",
+    "clientIdHelp": "Создайте проект в Google Cloud Console, включите Drive API и создайте Client ID типа «Android» (пакет com.oplforge.mobile + SHA-1 подписи) — client secret не требуется.",
+    "save": "Сохранить",
+    "connect": "Подключить Google Drive",
+    "connected": "Подключено",
+    "listFiles": "Показать файлы",
+    "disconnect": "Отключить",
+    "emptyFilesHint": "Нажмите «Показать файлы», чтобы увидеть резервные копии на Drive.",
+    "downloadConfirm": {
+      "title": "Скачать игру",
+      "message": "Скачать «{{name}}» в папку DVD библиотеки?",
+      "cancel": "Отмена",
+      "confirm": "Скачать"
+    },
+    "downloadDone": {
+      "title": "Готово",
+      "message": "«{{name}}» скачан в библиотеку."
+    }
+  },
+  "librarySelect": {
+    "title": "Настройки",
+    "subtitle": "Управляйте папкой вашей библиотеки OPL.",
+    "activeLibrary": "Активная библиотека",
+    "source": "Источник: {{source}}",
+    "changeLibrary": "Сменить библиотеку",
+    "accessLost": "Доступ утерян",
+    "accessLostMessage": "«{{name}}» больше недоступна.",
+    "selectAgain": "Выбрать библиотеку снова",
+    "noLibraryConfigured": "Библиотека не настроена",
+    "noLibraryHint": "Выберите папку, представляющую вашу библиотеку OPL (внутреннее хранилище, SD-карту или подключённое USB-устройство), чтобы начать.",
+    "selectLibrary": "Выбрать библиотеку",
+    "dangerZone": "Опасная зона",
+    "clearAppData": "Очистить данные приложения",
+    "sourceKind": {
+      "internal": "Внутреннее хранилище",
+      "sdCard": "SD-карта",
+      "usbOtg": "USB-устройство",
+      "externalStorage": "Внешнее хранилище",
+      "unknown": "Неизвестно"
+    },
+    "clearConfirm": {
+      "title": "Очистить данные приложения",
+      "message": "Это удалит выбранную библиотеку, сохранённые учётные данные, кэшированный каталог и очередь передач. Приложение перезапустится. Это действие нельзя отменить.",
+      "cancel": "Отмена",
+      "confirm": "Очистить данные"
+    }
+  },
+  "catalogScanView": {
+    "scanningProgress": "Каталогизация... Пока найдено элементов: {{count}}.",
+    "cancel": "Отмена",
+    "scanFailed": "Не удалось каталогизировать библиотеку.",
+    "retry": "Повторить",
+    "noGamesFound": "Игры не распознаны. Проверьте, содержит ли папка подпапки DVD, CD, PS1 или APPS.",
+    "catalogedLibrary": "Библиотека каталогизирована",
+    "countsSummary": "DVD: {{dvd}} · CD: {{cd}} · PS1: {{ps1}} · Приложения: {{apps}}",
+    "issuesFound_one": "{{count}} элемент требует внимания",
+    "issuesFound_other": "{{count}} элементов требуют внимания",
+    "noIssuesFound": "Проблем не найдено",
+    "actions": "Действия",
+    "shareWithPs2": "Поделиться с PS2",
+    "addGames": "Добавить игры",
+    "essentialsCatalog": "Каталог Essentials",
+    "deviceDiagnostics": "Диагностика устройства",
+    "rescan": "Каталогизировать снова",
+    "notCatalogedYet": "Библиотека ещё не каталогизирована.",
+    "catalogLibrary": "Каталогизировать библиотеку"
+  },
+  "importGameButton": {
+    "addGames": "Добавить игры",
+    "localFile": "Локальный файл",
+    "duplicateTitle": "Игра уже существует",
+    "duplicateMessage": "«{{fileName}}» уже есть в библиотеке. Перезапись безвозвратно заменит существующий файл.",
+    "cancel": "Отмена",
+    "overwrite": "Перезаписать"
   }
 }

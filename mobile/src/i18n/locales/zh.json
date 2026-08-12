@@ -185,5 +185,107 @@
     "emptyQueue": "队列中没有传输任务。",
     "retry": "重试",
     "cancel": "取消"
+  },
+  "diagnostics": {
+    "readiness": {
+      "ready": "已就绪",
+      "readyWithWarnings": "已就绪，但有警告",
+      "requiresReorganization": "需要重新整理",
+      "incompatible": "尚未就绪"
+    },
+    "unknownSize": "未知",
+    "freeSpace": "剩余 {{gb}} GB",
+    "freeSpaceLabel": "可用空间",
+    "requiredFolders": "必需文件夹",
+    "allFoldersPresent": "所有文件夹均存在",
+    "missingFolders": "缺少：{{folders}}",
+    "prepareDeviceButton": "准备设备",
+    "lastCheck": "上次检查：{{date}}",
+    "noDiagnosticsYet": "尚未运行诊断。",
+    "runDiagnosticsButton": "运行诊断",
+    "prepareConfirm": {
+      "title": "准备设备",
+      "message": "这将创建尚不存在的 OPL 必需文件夹（DVD、CD、PS1、APPS、ART、CFG、VMC），并在根目录写入 README。不会删除任何现有内容。是否继续？",
+      "cancel": "取消",
+      "confirm": "准备"
+    }
+  },
+  "sources": {
+    "title": "Google Drive",
+    "subtitle": "连接你自己的账号，直接从 Google Drive 导入备份 —— 仅限只读访问。",
+    "clientIdLabel": "Google 客户端 ID（OAuth，“Android”类型）",
+    "clientIdHelp": "在 Google Cloud Console 中创建项目，启用 Drive API，并生成“Android”类型的客户端 ID（包名 com.oplforge.mobile + 签名 SHA-1）—— 不需要客户端密钥。",
+    "save": "保存",
+    "connect": "连接 Google Drive",
+    "connected": "已连接",
+    "listFiles": "列出文件",
+    "disconnect": "断开连接",
+    "emptyFilesHint": "点击“列出文件”查看你在 Drive 上的备份。",
+    "downloadConfirm": {
+      "title": "下载游戏",
+      "message": "要将“{{name}}”下载到资料库的 DVD 文件夹吗？",
+      "cancel": "取消",
+      "confirm": "下载"
+    },
+    "downloadDone": {
+      "title": "已完成",
+      "message": "“{{name}}”已下载到资料库。"
+    }
+  },
+  "librarySelect": {
+    "title": "设置",
+    "subtitle": "管理你的 OPL 资料库文件夹。",
+    "activeLibrary": "当前资料库",
+    "source": "来源：{{source}}",
+    "changeLibrary": "更换资料库",
+    "accessLost": "访问权限丢失",
+    "accessLostMessage": "“{{name}}”已不再可用。",
+    "selectAgain": "重新选择资料库",
+    "noLibraryConfigured": "尚未配置资料库",
+    "noLibraryHint": "选择代表你 OPL 资料库的文件夹（内部存储、SD 卡或已连接的 USB 设备）以开始使用。",
+    "selectLibrary": "选择资料库",
+    "dangerZone": "危险区域",
+    "clearAppData": "清除应用数据",
+    "sourceKind": {
+      "internal": "内部存储",
+      "sdCard": "SD 卡",
+      "usbOtg": "USB 设备",
+      "externalStorage": "外部存储",
+      "unknown": "未知"
+    },
+    "clearConfirm": {
+      "title": "清除应用数据",
+      "message": "这将删除已选资料库、已保存的凭据、缓存的目录以及传输队列。应用将重新启动。此操作无法撤销。",
+      "cancel": "取消",
+      "confirm": "清除数据"
+    }
+  },
+  "catalogScanView": {
+    "scanningProgress": "编目中...目前已找到 {{count}} 个项目。",
+    "cancel": "取消",
+    "scanFailed": "资料库编目失败。",
+    "retry": "重试",
+    "noGamesFound": "未识别到任何游戏。请检查文件夹中是否包含 DVD、CD、PS1 或 APPS 文件夹。",
+    "catalogedLibrary": "资料库已编目",
+    "countsSummary": "DVD：{{dvd}} · CD：{{cd}} · PS1：{{ps1}} · 应用：{{apps}}",
+    "issuesFound_one": "{{count}} 个项目需要注意",
+    "issuesFound_other": "{{count}} 个项目需要注意",
+    "noIssuesFound": "未发现问题",
+    "actions": "操作",
+    "shareWithPs2": "与 PS2 共享",
+    "addGames": "添加游戏",
+    "essentialsCatalog": "Essentials 目录",
+    "deviceDiagnostics": "设备诊断",
+    "rescan": "重新编目",
+    "notCatalogedYet": "资料库尚未编目。",
+    "catalogLibrary": "编目资料库"
+  },
+  "importGameButton": {
+    "addGames": "添加游戏",
+    "localFile": "本地文件",
+    "duplicateTitle": "标题已存在",
+    "duplicateMessage": "“{{fileName}}”已存在于资料库中。覆盖将永久替换现有文件。",
+    "cancel": "取消",
+    "overwrite": "覆盖"
   }
 }

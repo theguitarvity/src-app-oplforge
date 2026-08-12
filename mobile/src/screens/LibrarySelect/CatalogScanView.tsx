@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native'
 import { useNavigation } from '@react-navigation/native'
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack'
+import { useTranslation } from 'react-i18next'
 import { colors, radius, semanticColor, spacing, typography } from '../../design-system/tokens'
 import { useCatalogStore } from '../../stores/catalog-store'
 import type { RootStackParamList } from '../../app/App'
@@ -15,6 +16,7 @@ import { ImportGameButton } from './ImportGameButton'
  * quick access/suggestions, not plain outlined buttons.
  */
 export function CatalogScanView() {
+  const { t } = useTranslation()
   const { snapshot, status, errorMessage, startScan, cancelScan, loadLatest } = useCatalogStore()
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>()
 
@@ -32,9 +34,9 @@ export function CatalogScanView() {
     return (
       <View style={styles.card}>
         <ActivityIndicator color={colors.primary} />
-        <Text style={styles.body}>Catalogando... {total} itens encontrados até agora.</Text>
+        <Text style={styles.body}>{t('catalogScanView.scanningProgress', { count: total })}</Text>
         <Pressable style={styles.secondaryButton} onPress={() => void cancelScan()}>
-          <Text style={styles.secondaryButtonText}>Cancelar</Text>
+          <Text style={styles.secondaryButtonText}>{t('catalogScanView.cancel')}</Text>
         </Pressable>
       </View>
     )
@@ -43,9 +45,9 @@ export function CatalogScanView() {
   if (status === 'error') {
     return (
       <View style={[styles.card, { borderColor: semanticColor('error') }]}>
-        <Text style={styles.body}>{errorMessage ?? 'Falha ao catalogar a biblioteca.'}</Text>
+        <Text style={styles.body}>{errorMessage ?? t('catalogScanView.scanFailed')}</Text>
         <Pressable style={styles.primaryButton} onPress={() => void startScan()}>
-          <Text style={styles.primaryButtonText}>Tentar novamente</Text>
+          <Text style={styles.primaryButtonText}>{t('catalogScanView.retry')}</Text>
         </Pressable>
       </View>
     )
@@ -58,51 +60,53 @@ export function CatalogScanView() {
       <View style={styles.section}>
         <View style={styles.card}>
           {total === 0 ? (
-            <Text style={styles.body}>
-              Nenhum jogo reconhecido. Verifique se a pasta contém as pastas DVD, CD, PS1 ou APPS.
-            </Text>
+            <Text style={styles.body}>{t('catalogScanView.noGamesFound')}</Text>
           ) : (
             <>
-              <Text style={styles.label}>Biblioteca catalogada</Text>
+              <Text style={styles.label}>{t('catalogScanView.catalogedLibrary')}</Text>
               <Text style={styles.body}>
-                DVD: {countsByType.dvd} · CD: {countsByType.cd} · PS1: {countsByType.ps1} · Apps:{' '}
-                {countsByType.app}
+                {t('catalogScanView.countsSummary', {
+                  dvd: countsByType.dvd,
+                  cd: countsByType.cd,
+                  ps1: countsByType.ps1,
+                  apps: countsByType.app
+                })}
               </Text>
               {issueCount > 0 ? (
                 <Text style={[styles.body, { color: semanticColor('warning') }]}>
-                  {issueCount} item(ns) precisam de atenção
+                  {t('catalogScanView.issuesFound', { count: issueCount })}
                 </Text>
               ) : (
                 <Text style={[styles.body, { color: semanticColor('success') }]}>
-                  Nenhum problema encontrado
+                  {t('catalogScanView.noIssuesFound')}
                 </Text>
               )}
             </>
           )}
         </View>
 
-        <Text style={styles.sectionTitle}>Ações</Text>
+        <Text style={styles.sectionTitle}>{t('catalogScanView.actions')}</Text>
         {total > 0 ? (
           <ActionRow
             icon="wifi-tethering"
-            label="Compartilhar com o PS2"
+            label={t('catalogScanView.shareWithPs2')}
             tone="primary"
             onPress={() => navigation.navigate('Sharing')}
           />
         ) : null}
         <ActionRow
           icon="travel-explore"
-          label="Adicionar jogos"
-          subtitle="Catálogo Essentials"
+          label={t('catalogScanView.addGames')}
+          subtitle={t('catalogScanView.essentialsCatalog')}
           onPress={() => navigation.navigate('Essentials')}
         />
         <ImportGameButton />
         <ActionRow
           icon="health-and-safety"
-          label="Diagnóstico do dispositivo"
+          label={t('catalogScanView.deviceDiagnostics')}
           onPress={() => navigation.navigate('Diagnostics')}
         />
-        <ActionRow icon="refresh" label="Catalogar novamente" onPress={() => void startScan()} />
+        <ActionRow icon="refresh" label={t('catalogScanView.rescan')} onPress={() => void startScan()} />
       </View>
     )
   }
@@ -110,20 +114,20 @@ export function CatalogScanView() {
   return (
     <View style={styles.section}>
       <View style={styles.card}>
-        <Text style={styles.body}>A biblioteca ainda não foi catalogada.</Text>
+        <Text style={styles.body}>{t('catalogScanView.notCatalogedYet')}</Text>
       </View>
-      <ActionRow icon="search" label="Catalogar biblioteca" tone="primary" onPress={() => void startScan()} />
-      <Text style={styles.sectionTitle}>Ações</Text>
+      <ActionRow icon="search" label={t('catalogScanView.catalogLibrary')} tone="primary" onPress={() => void startScan()} />
+      <Text style={styles.sectionTitle}>{t('catalogScanView.actions')}</Text>
       <ActionRow
         icon="travel-explore"
-        label="Adicionar jogos"
-        subtitle="Catálogo Essentials"
+        label={t('catalogScanView.addGames')}
+        subtitle={t('catalogScanView.essentialsCatalog')}
         onPress={() => navigation.navigate('Essentials')}
       />
       <ImportGameButton />
       <ActionRow
         icon="health-and-safety"
-        label="Diagnóstico do dispositivo"
+        label={t('catalogScanView.deviceDiagnostics')}
         onPress={() => navigation.navigate('Diagnostics')}
       />
     </View>

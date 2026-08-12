@@ -1,4 +1,5 @@
 import { ActivityIndicator, Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native'
+import { useTranslation } from 'react-i18next'
 import MaterialIcons from '@expo/vector-icons/MaterialIcons'
 import { colors, radius, semanticColor, spacing, typography } from '../../design-system/tokens'
 import { useLibraryStore } from '../../stores/library-store'
@@ -22,6 +23,7 @@ function goToLibraryWithFreshScan() {
  * a header, a status hero card with a colored accent, icon-circle rows.
  */
 export function LibrarySelectScreen() {
+  const { t } = useTranslation()
   const { library, status, errorMessage, selectLibrary } = useLibraryStore()
 
   const handleSelectLibrary = () => {
@@ -32,11 +34,11 @@ export function LibrarySelectScreen() {
 
   const handleClearAppData = () => {
     Alert.alert(
-      'Limpar dados do app',
-      'Isso apaga a biblioteca selecionada, credenciais salvas, catálogo em cache e a fila de transferências. O app vai reiniciar. Esta ação não pode ser desfeita.',
+      t('librarySelect.clearConfirm.title'),
+      t('librarySelect.clearConfirm.message'),
       [
-        { text: 'Cancelar', style: 'cancel' },
-        { text: 'Limpar dados', style: 'destructive', onPress: () => void LibraryModule.clearAppData() }
+        { text: t('librarySelect.clearConfirm.cancel'), style: 'cancel' },
+        { text: t('librarySelect.clearConfirm.confirm'), style: 'destructive', onPress: () => void LibraryModule.clearAppData() }
       ]
     )
   }
@@ -54,8 +56,8 @@ export function LibrarySelectScreen() {
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      <Text style={styles.title}>Configurações</Text>
-      <Text style={styles.subtitle}>Gerencie a pasta da sua biblioteca OPL.</Text>
+      <Text style={styles.title}>{t('librarySelect.title')}</Text>
+      <Text style={styles.subtitle}>{t('librarySelect.subtitle')}</Text>
 
       {library && library.accessValid ? (
         <>
@@ -65,16 +67,18 @@ export function LibrarySelectScreen() {
                 <MaterialIcons name="folder" size={22} color={heroColor} />
               </View>
               <View style={styles.heroTextWrap}>
-                <Text style={styles.heroLabel}>Biblioteca ativa</Text>
+                <Text style={styles.heroLabel}>{t('librarySelect.activeLibrary')}</Text>
                 <Text style={styles.heroValue}>{library.displayName}</Text>
-                <Text style={styles.heroCaption}>Origem: {sourceKindLabel(library.sourceKind)}</Text>
+                <Text style={styles.heroCaption}>
+                  {t('librarySelect.source', { source: sourceKindLabel(t, library.sourceKind) })}
+                </Text>
               </View>
             </View>
           </View>
           <CatalogScanView />
           <Pressable style={styles.secondaryButton} onPress={handleSelectLibrary}>
             <MaterialIcons name="sync-alt" size={18} color={colors.foreground} />
-            <Text style={styles.secondaryButtonText}>Trocar biblioteca</Text>
+            <Text style={styles.secondaryButtonText}>{t('librarySelect.changeLibrary')}</Text>
           </Pressable>
         </>
       ) : null}
@@ -87,14 +91,16 @@ export function LibrarySelectScreen() {
                 <MaterialIcons name="folder-off" size={22} color={heroColor} />
               </View>
               <View style={styles.heroTextWrap}>
-                <Text style={styles.heroLabel}>Acesso perdido</Text>
-                <Text style={styles.heroValue}>{`"${library.displayName}" não está mais disponível.`}</Text>
+                <Text style={styles.heroLabel}>{t('librarySelect.accessLost')}</Text>
+                <Text style={styles.heroValue}>
+                  {t('librarySelect.accessLostMessage', { name: library.displayName })}
+                </Text>
               </View>
             </View>
           </View>
           <Pressable style={styles.primaryButton} onPress={handleSelectLibrary}>
             <MaterialIcons name="folder-open" size={18} color={colors.primaryForeground} />
-            <Text style={styles.primaryButtonText}>Selecionar biblioteca novamente</Text>
+            <Text style={styles.primaryButtonText}>{t('librarySelect.selectAgain')}</Text>
           </Pressable>
         </>
       ) : null}
@@ -107,43 +113,40 @@ export function LibrarySelectScreen() {
                 <MaterialIcons name="create-new-folder" size={22} color={heroColor} />
               </View>
               <View style={styles.heroTextWrap}>
-                <Text style={styles.heroLabel}>Nenhuma biblioteca configurada</Text>
-                <Text style={styles.heroCaption}>
-                  Selecione a pasta que representa sua biblioteca OPL (armazenamento interno,
-                  cartão SD ou um dispositivo USB conectado) para começar.
-                </Text>
+                <Text style={styles.heroLabel}>{t('librarySelect.noLibraryConfigured')}</Text>
+                <Text style={styles.heroCaption}>{t('librarySelect.noLibraryHint')}</Text>
               </View>
             </View>
           </View>
           {errorMessage ? <Text style={styles.errorText}>{errorMessage}</Text> : null}
           <Pressable style={styles.primaryButton} onPress={handleSelectLibrary}>
             <MaterialIcons name="folder-open" size={18} color={colors.primaryForeground} />
-            <Text style={styles.primaryButtonText}>Selecionar biblioteca</Text>
+            <Text style={styles.primaryButtonText}>{t('librarySelect.selectLibrary')}</Text>
           </Pressable>
         </>
       ) : null}
 
-      <Text style={styles.dangerZoneLabel}>Zona de risco</Text>
+      <Text style={styles.dangerZoneLabel}>{t('librarySelect.dangerZone')}</Text>
       <Pressable style={styles.dangerButton} onPress={handleClearAppData}>
         <MaterialIcons name="delete-forever" size={18} color={semanticColor('error')} />
-        <Text style={styles.dangerButtonText}>Limpar dados do app</Text>
+        <Text style={styles.dangerButtonText}>{t('librarySelect.clearAppData')}</Text>
       </Pressable>
     </ScrollView>
   )
 }
 
-function sourceKindLabel(kind: string): string {
+function sourceKindLabel(t: (key: string) => string, kind: string): string {
   switch (kind) {
     case 'internal':
-      return 'Armazenamento interno'
+      return t('librarySelect.sourceKind.internal')
     case 'sd-card':
-      return 'Cartão SD'
+      return t('librarySelect.sourceKind.sdCard')
     case 'usb-otg':
-      return 'Dispositivo USB'
+      return t('librarySelect.sourceKind.usbOtg')
     case 'external-storage':
-      return 'Armazenamento externo'
+      return t('librarySelect.sourceKind.externalStorage')
     default:
-      return 'Desconhecida'
+      return t('librarySelect.sourceKind.unknown')
   }
 }
 

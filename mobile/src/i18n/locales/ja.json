@@ -185,5 +185,107 @@
     "emptyQueue": "キューに転送はありません。",
     "retry": "再試行",
     "cancel": "キャンセル"
+  },
+  "diagnostics": {
+    "readiness": {
+      "ready": "準備完了",
+      "readyWithWarnings": "準備完了（警告あり）",
+      "requiresReorganization": "再編成が必要",
+      "incompatible": "準備未完了"
+    },
+    "unknownSize": "不明",
+    "freeSpace": "空き容量 {{gb}} GB",
+    "freeSpaceLabel": "空き容量",
+    "requiredFolders": "必須フォルダ",
+    "allFoldersPresent": "すべてのフォルダが存在します",
+    "missingFolders": "不足しているフォルダ: {{folders}}",
+    "prepareDeviceButton": "デバイスを準備",
+    "lastCheck": "最終確認: {{date}}",
+    "noDiagnosticsYet": "まだ診断が実行されていません。",
+    "runDiagnosticsButton": "診断を実行",
+    "prepareConfirm": {
+      "title": "デバイスを準備",
+      "message": "まだ存在しないOPL必須フォルダ（DVD、CD、PS1、APPS、ART、CFG、VMC）を作成し、ルートにREADMEを書き込みます。既存のデータは削除されません。続行しますか？",
+      "cancel": "キャンセル",
+      "confirm": "準備する"
+    }
+  },
+  "sources": {
+    "title": "Google ドライブ",
+    "subtitle": "自分のアカウントを接続して、Google ドライブから直接バックアップをインポートします — 読み取り専用アクセス。",
+    "clientIdLabel": "Google クライアントID（OAuth、「Android」タイプ）",
+    "clientIdHelp": "Google Cloud Consoleでプロジェクトを作成し、Drive APIを有効化して「Android」タイプのクライアントIDを生成してください（パッケージ com.oplforge.mobile + 署名SHA-1）— クライアントシークレットは不要です。",
+    "save": "保存",
+    "connect": "Google ドライブに接続",
+    "connected": "接続済み",
+    "listFiles": "ファイル一覧を表示",
+    "disconnect": "切断",
+    "emptyFilesHint": "「ファイル一覧を表示」をタップしてDrive上のバックアップを確認してください。",
+    "downloadConfirm": {
+      "title": "ゲームをダウンロード",
+      "message": "「{{name}}」をライブラリのDVDフォルダにダウンロードしますか？",
+      "cancel": "キャンセル",
+      "confirm": "ダウンロード"
+    },
+    "downloadDone": {
+      "title": "完了",
+      "message": "「{{name}}」をライブラリにダウンロードしました。"
+    }
+  },
+  "librarySelect": {
+    "title": "設定",
+    "subtitle": "OPLライブラリのフォルダを管理します。",
+    "activeLibrary": "有効なライブラリ",
+    "source": "ソース: {{source}}",
+    "changeLibrary": "ライブラリを変更",
+    "accessLost": "アクセスできません",
+    "accessLostMessage": "「{{name}}」は利用できなくなりました。",
+    "selectAgain": "ライブラリを選び直す",
+    "noLibraryConfigured": "ライブラリが設定されていません",
+    "noLibraryHint": "開始するには、OPLライブラリを表すフォルダ（内部ストレージ、SDカード、または接続されたUSBデバイス）を選択してください。",
+    "selectLibrary": "ライブラリを選択",
+    "dangerZone": "危険な操作",
+    "clearAppData": "アプリデータを消去",
+    "sourceKind": {
+      "internal": "内部ストレージ",
+      "sdCard": "SDカード",
+      "usbOtg": "USBデバイス",
+      "externalStorage": "外部ストレージ",
+      "unknown": "不明"
+    },
+    "clearConfirm": {
+      "title": "アプリデータを消去",
+      "message": "選択したライブラリ、保存済みの認証情報、キャッシュされたカタログ、転送キューが消去されます。アプリが再起動します。この操作は取り消せません。",
+      "cancel": "キャンセル",
+      "confirm": "データを消去"
+    }
+  },
+  "catalogScanView": {
+    "scanningProgress": "カタログ作成中... これまでに {{count}} 件のアイテムが見つかりました。",
+    "cancel": "キャンセル",
+    "scanFailed": "ライブラリのカタログ作成に失敗しました。",
+    "retry": "再試行",
+    "noGamesFound": "ゲームが認識されませんでした。フォルダにDVD、CD、PS1、APPSフォルダが含まれているか確認してください。",
+    "catalogedLibrary": "ライブラリのカタログ作成完了",
+    "countsSummary": "DVD: {{dvd}} · CD: {{cd}} · PS1: {{ps1}} · アプリ: {{apps}}",
+    "issuesFound_one": "{{count}} 件の項目に注意が必要です",
+    "issuesFound_other": "{{count}} 件の項目に注意が必要です",
+    "noIssuesFound": "問題は見つかりませんでした",
+    "actions": "操作",
+    "shareWithPs2": "PS2と共有",
+    "addGames": "ゲームを追加",
+    "essentialsCatalog": "Essentialsカタログ",
+    "deviceDiagnostics": "デバイス診断",
+    "rescan": "再カタログ化",
+    "notCatalogedYet": "ライブラリはまだカタログ化されていません。",
+    "catalogLibrary": "ライブラリをカタログ化"
+  },
+  "importGameButton": {
+    "addGames": "ゲームを追加",
+    "localFile": "ローカルファイル",
+    "duplicateTitle": "すでに存在するタイトルです",
+    "duplicateMessage": "「{{fileName}}」はすでにライブラリにあります。上書きすると既存のファイルは完全に置き換えられます。",
+    "cancel": "キャンセル",
+    "overwrite": "上書き"
   }
 }

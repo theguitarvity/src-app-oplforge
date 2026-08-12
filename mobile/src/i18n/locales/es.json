@@ -185,5 +185,107 @@
     "emptyQueue": "No hay transferencias en la cola.",
     "retry": "Reintentar",
     "cancel": "Cancelar"
+  },
+  "diagnostics": {
+    "readiness": {
+      "ready": "Lista",
+      "readyWithWarnings": "Lista, con avisos",
+      "requiresReorganization": "Requiere reorganización",
+      "incompatible": "No lista"
+    },
+    "unknownSize": "Desconocido",
+    "freeSpace": "{{gb}} GB libres",
+    "freeSpaceLabel": "Espacio libre",
+    "requiredFolders": "Carpetas obligatorias",
+    "allFoldersPresent": "Todas las carpetas presentes",
+    "missingFolders": "Faltan: {{folders}}",
+    "prepareDeviceButton": "Preparar dispositivo",
+    "lastCheck": "Última verificación: {{date}}",
+    "noDiagnosticsYet": "Aún no se ha ejecutado ningún diagnóstico.",
+    "runDiagnosticsButton": "Ejecutar diagnóstico",
+    "prepareConfirm": {
+      "title": "Preparar dispositivo",
+      "message": "Esto creará las carpetas obligatorias de OPL (DVD, CD, PS1, APPS, ART, CFG, VMC) que aún no existan y escribirá un README en la raíz. No se eliminará nada existente. ¿Continuar?",
+      "cancel": "Cancelar",
+      "confirm": "Preparar"
+    }
+  },
+  "sources": {
+    "title": "Google Drive",
+    "subtitle": "Conecta tu propia cuenta para importar copias de seguridad directamente desde tu Google Drive: acceso de solo lectura.",
+    "clientIdLabel": "Client ID de Google (OAuth, tipo \"Android\")",
+    "clientIdHelp": "Crea un proyecto en Google Cloud Console, activa la API de Drive y genera un Client ID de tipo \"Android\" (paquete com.oplforge.mobile + SHA-1 de firma); no se necesita ningún client secret.",
+    "save": "Guardar",
+    "connect": "Conectar con Google Drive",
+    "connected": "Conectado",
+    "listFiles": "Listar archivos",
+    "disconnect": "Desconectar",
+    "emptyFilesHint": "Toca \"Listar archivos\" para ver tus copias de seguridad en Drive.",
+    "downloadConfirm": {
+      "title": "Descargar juego",
+      "message": "¿Descargar \"{{name}}\" a la carpeta DVD de la biblioteca?",
+      "cancel": "Cancelar",
+      "confirm": "Descargar"
+    },
+    "downloadDone": {
+      "title": "Completado",
+      "message": "\"{{name}}\" se descargó a la biblioteca."
+    }
+  },
+  "librarySelect": {
+    "title": "Configuración",
+    "subtitle": "Administra la carpeta de tu biblioteca OPL.",
+    "activeLibrary": "Biblioteca activa",
+    "source": "Origen: {{source}}",
+    "changeLibrary": "Cambiar biblioteca",
+    "accessLost": "Acceso perdido",
+    "accessLostMessage": "\"{{name}}\" ya no está disponible.",
+    "selectAgain": "Seleccionar biblioteca de nuevo",
+    "noLibraryConfigured": "Ninguna biblioteca configurada",
+    "noLibraryHint": "Selecciona la carpeta que representa tu biblioteca OPL (almacenamiento interno, tarjeta SD o un dispositivo USB conectado) para comenzar.",
+    "selectLibrary": "Seleccionar biblioteca",
+    "dangerZone": "Zona de riesgo",
+    "clearAppData": "Borrar datos de la app",
+    "sourceKind": {
+      "internal": "Almacenamiento interno",
+      "sdCard": "Tarjeta SD",
+      "usbOtg": "Dispositivo USB",
+      "externalStorage": "Almacenamiento externo",
+      "unknown": "Desconocida"
+    },
+    "clearConfirm": {
+      "title": "Borrar datos de la app",
+      "message": "Esto elimina la biblioteca seleccionada, las credenciales guardadas, el catálogo en caché y la cola de transferencias. La app se reiniciará. Esta acción no se puede deshacer.",
+      "cancel": "Cancelar",
+      "confirm": "Borrar datos"
+    }
+  },
+  "catalogScanView": {
+    "scanningProgress": "Catalogando... {{count}} elementos encontrados hasta ahora.",
+    "cancel": "Cancelar",
+    "scanFailed": "No se pudo catalogar la biblioteca.",
+    "retry": "Reintentar",
+    "noGamesFound": "No se reconoció ningún juego. Verifica que la carpeta contenga las carpetas DVD, CD, PS1 o APPS.",
+    "catalogedLibrary": "Biblioteca catalogada",
+    "countsSummary": "DVD: {{dvd}} · CD: {{cd}} · PS1: {{ps1}} · Apps: {{apps}}",
+    "issuesFound_one": "{{count}} elemento necesita atención",
+    "issuesFound_other": "{{count}} elementos necesitan atención",
+    "noIssuesFound": "No se encontraron problemas",
+    "actions": "Acciones",
+    "shareWithPs2": "Compartir con la PS2",
+    "addGames": "Agregar juegos",
+    "essentialsCatalog": "Catálogo Essentials",
+    "deviceDiagnostics": "Diagnóstico del dispositivo",
+    "rescan": "Catalogar de nuevo",
+    "notCatalogedYet": "La biblioteca aún no ha sido catalogada.",
+    "catalogLibrary": "Catalogar biblioteca"
+  },
+  "importGameButton": {
+    "addGames": "Agregar juegos",
+    "localFile": "Archivo local",
+    "duplicateTitle": "El título ya existe",
+    "duplicateMessage": "\"{{fileName}}\" ya está en la biblioteca. Sobrescribir reemplaza permanentemente el archivo existente.",
+    "cancel": "Cancelar",
+    "overwrite": "Sobrescribir"
   }
 }

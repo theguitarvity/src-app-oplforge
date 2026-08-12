@@ -1,14 +1,23 @@
 import { useEffect } from 'react'
 import { ActivityIndicator, Alert, Pressable, StyleSheet, Text, View } from 'react-native'
+import { useTranslation } from 'react-i18next'
 import { colors, radius, semanticColor, spacing, typography } from '../../design-system/tokens'
 import { useDiagnosticsStore } from '../../stores/diagnostics-store'
 import type { ReadinessStatus } from '../../types'
 
-const READINESS_LABEL: Record<ReadinessStatus, string> = {
-  ready: 'Pronta',
-  'ready-with-warnings': 'Pronta, com avisos',
-  'requires-reorganization': 'Requer reorganização',
-  incompatible: 'Não pronta'
+function readinessLabel(t: (key: string) => string, status: ReadinessStatus): string {
+  switch (status) {
+    case 'ready':
+      return t('diagnostics.readiness.ready')
+    case 'ready-with-warnings':
+      return t('diagnostics.readiness.readyWithWarnings')
+    case 'requires-reorganization':
+      return t('diagnostics.readiness.requiresReorganization')
+    case 'incompatible':
+      return t('diagnostics.readiness.incompatible')
+    default:
+      return status
+  }
 }
 
 function readinessColor(status: ReadinessStatus): string {
@@ -22,10 +31,10 @@ function readinessColor(status: ReadinessStatus): string {
   }
 }
 
-function formatBytes(bytes?: number): string {
-  if (bytes === undefined) return 'Desconhecido'
+function formatBytes(t: (key: string, options?: Record<string, unknown>) => string, bytes?: number): string {
+  if (bytes === undefined) return t('diagnostics.unknownSize')
   const gb = bytes / (1024 * 1024 * 1024)
-  return `${gb.toFixed(1)} GB livres`
+  return t('diagnostics.freeSpace', { gb: gb.toFixed(1) })
 }
 
 /**
@@ -34,6 +43,7 @@ function formatBytes(bytes?: number): string {
  * readiness with the same four-state model as desktop (research.md R8).
  */
 export function DiagnosticsScreen() {
+  const { t } = useTranslation()
   const { report, status, errorMessage, loadLatest, runDiagnostics, prepareDevice } = useDiagnosticsStore()
 
   useEffect(() => {
@@ -42,11 +52,11 @@ export function DiagnosticsScreen() {
 
   function handlePreparePress() {
     Alert.alert(
-      'Preparar dispositivo',
-      'Isso vai criar as pastas obrigatórias do OPL (DVD, CD, PS1, APPS, ART, CFG, VMC) que ainda não existem e gravar um README na raiz. Nada existente será apagado. Continuar?',
+      t('diagnostics.prepareConfirm.title'),
+      t('diagnostics.prepareConfirm.message'),
       [
-        { text: 'Cancelar', style: 'cancel' },
-        { text: 'Preparar', onPress: () => void prepareDevice() }
+        { text: t('diagnostics.prepareConfirm.cancel'), style: 'cancel' },
+        { text: t('diagnostics.prepareConfirm.confirm'), onPress: () => void prepareDevice() }
       ]
     )
   }
@@ -59,42 +69,44 @@ export function DiagnosticsScreen() {
         <View style={styles.card}>
           <View style={[styles.badge, { borderColor: readinessColor(report.readiness) }]}>
             <Text style={[styles.badgeText, { color: readinessColor(report.readiness) }]}>
-              {READINESS_LABEL[report.readiness]}
+              {readinessLabel(t, report.readiness)}
             </Text>
           </View>
 
-          <Text style={styles.label}>Espaço livre</Text>
-          <Text style={styles.body}>{formatBytes(report.freeBytes)}</Text>
+          <Text style={styles.label}>{t('diagnostics.freeSpaceLabel')}</Text>
+          <Text style={styles.body}>{formatBytes(t, report.freeBytes)}</Text>
 
-          <Text style={styles.label}>Pastas obrigatórias</Text>
+          <Text style={styles.label}>{t('diagnostics.requiredFolders')}</Text>
           {report.missingFolders.length === 0 ? (
-            <Text style={[styles.body, { color: semanticColor('success') }]}>Todas as pastas presentes</Text>
+            <Text style={[styles.body, { color: semanticColor('success') }]}>{t('diagnostics.allFoldersPresent')}</Text>
           ) : (
             <>
               <Text style={[styles.body, { color: semanticColor('warning') }]}>
-                Faltando: {report.missingFolders.join(', ')}
+                {t('diagnostics.missingFolders', { folders: report.missingFolders.join(', ') })}
               </Text>
               <Pressable style={styles.prepareButton} onPress={handlePreparePress} disabled={status === 'loading'}>
                 {status === 'loading' ? (
                   <ActivityIndicator color={colors.primaryForeground} />
                 ) : (
-                  <Text style={styles.prepareButtonText}>Preparar dispositivo</Text>
+                  <Text style={styles.prepareButtonText}>{t('diagnostics.prepareDeviceButton')}</Text>
                 )}
               </Pressable>
             </>
           )}
 
-          <Text style={styles.timestamp}>Última verificação: {new Date(report.checkedAt).toLocaleString()}</Text>
+          <Text style={styles.timestamp}>
+            {t('diagnostics.lastCheck', { date: new Date(report.checkedAt).toLocaleString() })}
+          </Text>
         </View>
       ) : status !== 'loading' ? (
-        <Text style={styles.body}>Nenhum diagnóstico executado ainda.</Text>
+        <Text style={styles.body}>{t('diagnostics.noDiagnosticsYet')}</Text>
       ) : null}
 
       <Pressable style={styles.primaryButton} onPress={() => void runDiagnostics()} disabled={status === 'loading'}>
         {status === 'loading' ? (
           <ActivityIndicator color={colors.primaryForeground} />
         ) : (
-          <Text style={styles.primaryButtonText}>Executar diagnóstico</Text>
+          <Text style={styles.primaryButtonText}>{t('diagnostics.runDiagnosticsButton')}</Text>
         )}
       </Pressable>
     </View>

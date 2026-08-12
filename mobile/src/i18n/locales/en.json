@@ -185,5 +185,107 @@
     "emptyQueue": "No transfers in the queue.",
     "retry": "Retry",
     "cancel": "Cancel"
+  },
+  "diagnostics": {
+    "readiness": {
+      "ready": "Ready",
+      "readyWithWarnings": "Ready, with warnings",
+      "requiresReorganization": "Requires reorganization",
+      "incompatible": "Not ready"
+    },
+    "unknownSize": "Unknown",
+    "freeSpace": "{{gb}} GB free",
+    "freeSpaceLabel": "Free space",
+    "requiredFolders": "Required folders",
+    "allFoldersPresent": "All folders present",
+    "missingFolders": "Missing: {{folders}}",
+    "prepareDeviceButton": "Prepare device",
+    "lastCheck": "Last check: {{date}}",
+    "noDiagnosticsYet": "No diagnostics run yet.",
+    "runDiagnosticsButton": "Run diagnostics",
+    "prepareConfirm": {
+      "title": "Prepare device",
+      "message": "This will create the required OPL folders (DVD, CD, PS1, APPS, ART, CFG, VMC) that don’t exist yet, and write a README at the root. Nothing existing will be deleted. Continue?",
+      "cancel": "Cancel",
+      "confirm": "Prepare"
+    }
+  },
+  "sources": {
+    "title": "Google Drive",
+    "subtitle": "Connect your own account to import backups directly from your Google Drive — read-only access.",
+    "clientIdLabel": "Google Client ID (OAuth, \"Android\" type)",
+    "clientIdHelp": "Create a project in Google Cloud Console, enable the Drive API, and generate an \"Android\" type Client ID (package com.oplforge.mobile + signing SHA-1) — no client secret is needed.",
+    "save": "Save",
+    "connect": "Connect to Google Drive",
+    "connected": "Connected",
+    "listFiles": "List files",
+    "disconnect": "Disconnect",
+    "emptyFilesHint": "Tap \"List files\" to see your backups on Drive.",
+    "downloadConfirm": {
+      "title": "Download game",
+      "message": "Download \"{{name}}\" to the library’s DVD folder?",
+      "cancel": "Cancel",
+      "confirm": "Download"
+    },
+    "downloadDone": {
+      "title": "Done",
+      "message": "\"{{name}}\" was downloaded to the library."
+    }
+  },
+  "librarySelect": {
+    "title": "Settings",
+    "subtitle": "Manage your OPL library folder.",
+    "activeLibrary": "Active library",
+    "source": "Source: {{source}}",
+    "changeLibrary": "Change library",
+    "accessLost": "Access lost",
+    "accessLostMessage": "\"{{name}}\" is no longer available.",
+    "selectAgain": "Select library again",
+    "noLibraryConfigured": "No library configured",
+    "noLibraryHint": "Select the folder that represents your OPL library (internal storage, SD card, or a connected USB device) to get started.",
+    "selectLibrary": "Select library",
+    "dangerZone": "Danger zone",
+    "clearAppData": "Clear app data",
+    "sourceKind": {
+      "internal": "Internal storage",
+      "sdCard": "SD card",
+      "usbOtg": "USB device",
+      "externalStorage": "External storage",
+      "unknown": "Unknown"
+    },
+    "clearConfirm": {
+      "title": "Clear app data",
+      "message": "This erases the selected library, saved credentials, cached catalog, and the transfer queue. The app will restart. This action cannot be undone.",
+      "cancel": "Cancel",
+      "confirm": "Clear data"
+    }
+  },
+  "catalogScanView": {
+    "scanningProgress": "Cataloging... {{count}} items found so far.",
+    "cancel": "Cancel",
+    "scanFailed": "Failed to catalog the library.",
+    "retry": "Retry",
+    "noGamesFound": "No games recognized. Check that the folder contains the DVD, CD, PS1, or APPS folders.",
+    "catalogedLibrary": "Library cataloged",
+    "countsSummary": "DVD: {{dvd}} · CD: {{cd}} · PS1: {{ps1}} · Apps: {{apps}}",
+    "issuesFound_one": "{{count}} item needs attention",
+    "issuesFound_other": "{{count}} items need attention",
+    "noIssuesFound": "No issues found",
+    "actions": "Actions",
+    "shareWithPs2": "Share with the PS2",
+    "addGames": "Add games",
+    "essentialsCatalog": "Essentials Catalog",
+    "deviceDiagnostics": "Device diagnostics",
+    "rescan": "Catalog again",
+    "notCatalogedYet": "The library has not been cataloged yet.",
+    "catalogLibrary": "Catalog library"
+  },
+  "importGameButton": {
+    "addGames": "Add games",
+    "localFile": "Local file",
+    "duplicateTitle": "Title already exists",
+    "duplicateMessage": "\"{{fileName}}\" is already in the library. Overwriting permanently replaces the existing file.",
+    "cancel": "Cancel",
+    "overwrite": "Overwrite"
   }
 }

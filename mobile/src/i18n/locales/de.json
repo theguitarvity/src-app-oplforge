@@ -185,5 +185,107 @@
     "emptyQueue": "Keine Übertragungen in der Warteschlange.",
     "retry": "Erneut versuchen",
     "cancel": "Abbrechen"
+  },
+  "diagnostics": {
+    "readiness": {
+      "ready": "Bereit",
+      "readyWithWarnings": "Bereit, mit Warnungen",
+      "requiresReorganization": "Erfordert Reorganisation",
+      "incompatible": "Nicht bereit"
+    },
+    "unknownSize": "Unbekannt",
+    "freeSpace": "{{gb}} GB frei",
+    "freeSpaceLabel": "Freier Speicherplatz",
+    "requiredFolders": "Erforderliche Ordner",
+    "allFoldersPresent": "Alle Ordner vorhanden",
+    "missingFolders": "Fehlend: {{folders}}",
+    "prepareDeviceButton": "Gerät vorbereiten",
+    "lastCheck": "Letzte Prüfung: {{date}}",
+    "noDiagnosticsYet": "Noch keine Diagnose ausgeführt.",
+    "runDiagnosticsButton": "Diagnose ausführen",
+    "prepareConfirm": {
+      "title": "Gerät vorbereiten",
+      "message": "Dadurch werden die erforderlichen OPL-Ordner (DVD, CD, PS1, APPS, ART, CFG, VMC), die noch nicht existieren, erstellt und eine README im Stammverzeichnis geschrieben. Vorhandenes wird nicht gelöscht. Fortfahren?",
+      "cancel": "Abbrechen",
+      "confirm": "Vorbereiten"
+    }
+  },
+  "sources": {
+    "title": "Google Drive",
+    "subtitle": "Verbinde dein eigenes Konto, um Backups direkt aus deinem Google Drive zu importieren — nur Lesezugriff.",
+    "clientIdLabel": "Google Client-ID (OAuth, Typ „Android“)",
+    "clientIdHelp": "Erstelle ein Projekt in der Google Cloud Console, aktiviere die Drive API und erzeuge eine Client-ID vom Typ „Android“ (Paket com.oplforge.mobile + Signatur-SHA-1) — es wird kein Client-Secret benötigt.",
+    "save": "Speichern",
+    "connect": "Mit Google Drive verbinden",
+    "connected": "Verbunden",
+    "listFiles": "Dateien auflisten",
+    "disconnect": "Trennen",
+    "emptyFilesHint": "Tippe auf „Dateien auflisten“, um deine Backups auf Drive zu sehen.",
+    "downloadConfirm": {
+      "title": "Spiel herunterladen",
+      "message": "„{{name}}“ in den DVD-Ordner der Bibliothek herunterladen?",
+      "cancel": "Abbrechen",
+      "confirm": "Herunterladen"
+    },
+    "downloadDone": {
+      "title": "Fertig",
+      "message": "„{{name}}“ wurde in die Bibliothek heruntergeladen."
+    }
+  },
+  "librarySelect": {
+    "title": "Einstellungen",
+    "subtitle": "Verwalte den Ordner deiner OPL-Bibliothek.",
+    "activeLibrary": "Aktive Bibliothek",
+    "source": "Quelle: {{source}}",
+    "changeLibrary": "Bibliothek wechseln",
+    "accessLost": "Zugriff verloren",
+    "accessLostMessage": "„{{name}}“ ist nicht mehr verfügbar.",
+    "selectAgain": "Bibliothek erneut auswählen",
+    "noLibraryConfigured": "Keine Bibliothek konfiguriert",
+    "noLibraryHint": "Wähle den Ordner, der deine OPL-Bibliothek darstellt (interner Speicher, SD-Karte oder ein angeschlossenes USB-Gerät), um zu beginnen.",
+    "selectLibrary": "Bibliothek auswählen",
+    "dangerZone": "Gefahrenzone",
+    "clearAppData": "App-Daten löschen",
+    "sourceKind": {
+      "internal": "Interner Speicher",
+      "sdCard": "SD-Karte",
+      "usbOtg": "USB-Gerät",
+      "externalStorage": "Externer Speicher",
+      "unknown": "Unbekannt"
+    },
+    "clearConfirm": {
+      "title": "App-Daten löschen",
+      "message": "Dadurch werden die ausgewählte Bibliothek, gespeicherte Zugangsdaten, der zwischengespeicherte Katalog und die Übertragungswarteschlange gelöscht. Die App wird neu gestartet. Diese Aktion kann nicht rückgängig gemacht werden.",
+      "cancel": "Abbrechen",
+      "confirm": "Daten löschen"
+    }
+  },
+  "catalogScanView": {
+    "scanningProgress": "Katalogisierung läuft... {{count}} Elemente bisher gefunden.",
+    "cancel": "Abbrechen",
+    "scanFailed": "Katalogisierung der Bibliothek fehlgeschlagen.",
+    "retry": "Erneut versuchen",
+    "noGamesFound": "Keine Spiele erkannt. Prüfe, ob der Ordner die Ordner DVD, CD, PS1 oder APPS enthält.",
+    "catalogedLibrary": "Bibliothek katalogisiert",
+    "countsSummary": "DVD: {{dvd}} · CD: {{cd}} · PS1: {{ps1}} · Apps: {{apps}}",
+    "issuesFound_one": "{{count}} Element erfordert Aufmerksamkeit",
+    "issuesFound_other": "{{count}} Elemente erfordern Aufmerksamkeit",
+    "noIssuesFound": "Keine Probleme gefunden",
+    "actions": "Aktionen",
+    "shareWithPs2": "Mit der PS2 teilen",
+    "addGames": "Spiele hinzufügen",
+    "essentialsCatalog": "Essentials-Katalog",
+    "deviceDiagnostics": "Gerätediagnose",
+    "rescan": "Erneut katalogisieren",
+    "notCatalogedYet": "Die Bibliothek wurde noch nicht katalogisiert.",
+    "catalogLibrary": "Bibliothek katalogisieren"
+  },
+  "importGameButton": {
+    "addGames": "Spiele hinzufügen",
+    "localFile": "Lokale Datei",
+    "duplicateTitle": "Titel existiert bereits",
+    "duplicateMessage": "„{{fileName}}“ ist bereits in der Bibliothek. Überschreiben ersetzt die vorhandene Datei dauerhaft.",
+    "cancel": "Abbrechen",
+    "overwrite": "Überschreiben"
   }
 }

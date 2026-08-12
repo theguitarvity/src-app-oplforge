@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { ActivityIndicator, Alert, FlatList, Pressable, StyleSheet, Text, TextInput, View } from 'react-native'
+import { useTranslation } from 'react-i18next'
 import MaterialIcons from '@expo/vector-icons/MaterialIcons'
 import { colors, radius, semanticColor, spacing, typography } from '../../design-system/tokens'
 import * as GoogleDriveModule from '../../native/GoogleDriveModule'
@@ -18,6 +19,7 @@ function formatSize(bytes: number): string {
  * so this screen is Drive-only rather than duplicating that flow.
  */
 export function SourcesScreen() {
+  const { t } = useTranslation()
   const [status, setStatus] = useState<GoogleDriveStatus | undefined>()
   const [clientIdInput, setClientIdInput] = useState('')
   const [busy, setBusy] = useState(false)
@@ -84,39 +86,38 @@ export function SourcesScreen() {
   }
 
   function handleDownload(file: GoogleDriveFile) {
-    Alert.alert('Baixar jogo', `Baixar "${file.name}" para a pasta DVD da biblioteca?`, [
-      { text: 'Cancelar', style: 'cancel' },
-      {
-        text: 'Baixar',
-        onPress: () => {
-          setDownloadingId(file.id)
-          void GoogleDriveModule.downloadFile(file.id, file.name)
-            .then(() => Alert.alert('Concluído', `"${file.name}" foi baixado para a biblioteca.`))
-            .catch((err) => setError(err instanceof Error ? err.message : String(err)))
-            .finally(() => setDownloadingId(undefined))
+    Alert.alert(
+      t('sources.downloadConfirm.title'),
+      t('sources.downloadConfirm.message', { name: file.name }),
+      [
+        { text: t('sources.downloadConfirm.cancel'), style: 'cancel' },
+        {
+          text: t('sources.downloadConfirm.confirm'),
+          onPress: () => {
+            setDownloadingId(file.id)
+            void GoogleDriveModule.downloadFile(file.id, file.name)
+              .then(() => Alert.alert(t('sources.downloadDone.title'), t('sources.downloadDone.message', { name: file.name })))
+              .catch((err) => setError(err instanceof Error ? err.message : String(err)))
+              .finally(() => setDownloadingId(undefined))
+          }
         }
-      }
-    ])
+      ]
+    )
   }
 
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>Google Drive</Text>
-        <Text style={styles.headerSubtitle}>
-          Conecte sua própria conta para importar backups direto do seu Google Drive — acesso somente leitura.
-        </Text>
+        <Text style={styles.headerTitle}>{t('sources.title')}</Text>
+        <Text style={styles.headerSubtitle}>{t('sources.subtitle')}</Text>
       </View>
 
       {error ? <Text style={styles.error}>{error}</Text> : null}
 
       {!status?.configured ? (
         <View style={styles.card}>
-          <Text style={styles.label}>Client ID do Google (OAuth, tipo "Android")</Text>
-          <Text style={styles.helpText}>
-            Crie um projeto no Google Cloud Console, ative a Drive API e gere um Client ID tipo "Android" (pacote
-            com.oplforge.mobile + SHA-1 de assinatura) — nenhum client secret é necessário.
-          </Text>
+          <Text style={styles.label}>{t('sources.clientIdLabel')}</Text>
+          <Text style={styles.helpText}>{t('sources.clientIdHelp')}</Text>
           <TextInput
             style={styles.input}
             placeholder="xxxxxxxxxxxx.apps.googleusercontent.com"
@@ -130,7 +131,7 @@ export function SourcesScreen() {
             disabled={!clientIdInput.trim() || busy}
             onPress={() => void handleSaveClientId()}
           >
-            <Text style={styles.primaryButtonText}>Salvar</Text>
+            <Text style={styles.primaryButtonText}>{t('sources.save')}</Text>
           </Pressable>
         </View>
       ) : !status.connected ? (
@@ -140,7 +141,7 @@ export function SourcesScreen() {
           ) : (
             <>
               <MaterialIcons name="link" size={18} color={colors.primaryForeground} />
-              <Text style={styles.primaryButtonText}>Conectar ao Google Drive</Text>
+              <Text style={styles.primaryButtonText}>{t('sources.connect')}</Text>
             </>
           )}
         </Pressable>
@@ -148,15 +149,15 @@ export function SourcesScreen() {
         <View style={styles.card}>
           <View style={styles.connectedRow}>
             <MaterialIcons name="cloud-done" size={18} color={semanticColor('active')} />
-            <Text style={styles.connectedText}>Conectado</Text>
+            <Text style={styles.connectedText}>{t('sources.connected')}</Text>
           </View>
           <View style={styles.actionsRow}>
             <Pressable style={styles.secondaryButton} onPress={() => void handleListFiles()} disabled={listLoading}>
-              <Text style={styles.secondaryButtonText}>Listar arquivos</Text>
+              <Text style={styles.secondaryButtonText}>{t('sources.listFiles')}</Text>
             </Pressable>
             <Pressable style={styles.dangerButton} onPress={() => void handleDisconnect()}>
               <MaterialIcons name="link-off" size={16} color={colors.destructiveForeground} />
-              <Text style={styles.dangerButtonText}>Desconectar</Text>
+              <Text style={styles.dangerButtonText}>{t('sources.disconnect')}</Text>
             </Pressable>
           </View>
         </View>
@@ -170,7 +171,7 @@ export function SourcesScreen() {
           listLoading ? (
             <ActivityIndicator color={colors.primary} style={styles.spinner} />
           ) : status?.connected ? (
-            <Text style={styles.emptyText}>Toque em "Listar arquivos" para ver seus backups no Drive.</Text>
+            <Text style={styles.emptyText}>{t('sources.emptyFilesHint')}</Text>
           ) : null
         }
         renderItem={({ item }) => (
