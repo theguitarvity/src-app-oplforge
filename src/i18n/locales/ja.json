@@ -984,6 +984,30 @@
       "accessPathSuffix": "そして以下の値を入力します：",
       "close": "閉じる",
       "loadFailed": "チュートリアルの読み込みに失敗しました。"
+    },
+    "oplComponentsList": {
+      "title": "OPLコンポーネント＆ファイル",
+      "description": "OPLエコシステムに必要なファイル、ランタイム、互換性パッケージを管理します。",
+      "installed": "インストール済み（{{version}}）",
+      "download": "ダウンロード",
+      "items": {
+        "oplLatest": {
+          "name": "OPL安定版ビルド（v1.2.0）",
+          "description": "メモリーカード / FMCBへのインストール用の公式Open PS2 Loader実行ファイル。"
+        },
+        "pcsx2CompatDb": {
+          "name": "PCSX2互換性データベース",
+          "description": "PS2ゲーム固有のCRCハッシュと修正のテーブル。"
+        },
+        "popstarterBin": {
+          "name": "POPStarter PS1ランタイム",
+          "description": "OPLでPS1ゲーム（VCDファイル）を実行するために必要なコンポーネント。"
+        },
+        "defaultArtPack": {
+          "name": "デフォルトテーマ＆カバーアートパック",
+          "description": "公式カバーがないゲーム用の汎用UIテンプレートとアートワーク。"
+        }
+      }
     }
   }
 }

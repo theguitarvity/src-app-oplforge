@@ -984,6 +984,30 @@
       "accessPathSuffix": "e indique los valores a continuación:",
       "close": "Cerrar",
       "loadFailed": "Error al cargar el tutorial."
+    },
+    "oplComponentsList": {
+      "title": "Componentes y Archivos de OPL",
+      "description": "Gestione archivos esenciales, runtimes y paquetes de compatibilidad del ecosistema OPL.",
+      "installed": "Instalado ({{version}})",
+      "download": "Descargar",
+      "items": {
+        "oplLatest": {
+          "name": "OPL Build Estable (v1.2.0)",
+          "description": "Ejecutable oficial de Open PS2 Loader para instalación en Memory Card / FMCB."
+        },
+        "pcsx2CompatDb": {
+          "name": "Base de Datos de Compatibilidad PCSX2",
+          "description": "Tabla de hashes CRC y correcciones específicas para juegos de PS2."
+        },
+        "popstarterBin": {
+          "name": "POPStarter PS1 Runtime",
+          "description": "Componente necesario para ejecutar juegos PS1 (archivos VCD) en OPL."
+        },
+        "defaultArtPack": {
+          "name": "Paquete de Temas y Portadas Predeterminado",
+          "description": "Plantillas de interfaz y artes genéricos para juegos sin portada oficial."
+        }
+      }
     }
   }
 }

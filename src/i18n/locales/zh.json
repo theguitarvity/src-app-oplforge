@@ -984,6 +984,30 @@
       "accessPathSuffix": "并输入以下数值：",
       "close": "关闭",
       "loadFailed": "教程加载失败。"
+    },
+    "oplComponentsList": {
+      "title": "OPL 组件与文件",
+      "description": "管理 OPL 生态系统所需的基本文件、运行时和兼容性软件包。",
+      "installed": "已安装（{{version}}）",
+      "download": "下载",
+      "items": {
+        "oplLatest": {
+          "name": "OPL 稳定版（v1.2.0）",
+          "description": "用于安装到存储卡 / FMCB 的官方 Open PS2 Loader 可执行文件。"
+        },
+        "pcsx2CompatDb": {
+          "name": "PCSX2 兼容性数据库",
+          "description": "PS2 游戏专用的 CRC 哈希与修正表。"
+        },
+        "popstarterBin": {
+          "name": "POPStarter PS1 运行时",
+          "description": "在 OPL 中运行 PS1 游戏（VCD 文件）所需的组件。"
+        },
+        "defaultArtPack": {
+          "name": "默认主题与封面包",
+          "description": "用于没有官方封面的游戏的通用界面模板和美术素材。"
+        }
+      }
     }
   }
 }

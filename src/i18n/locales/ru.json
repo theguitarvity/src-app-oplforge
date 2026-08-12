@@ -984,6 +984,30 @@
       "accessPathSuffix": "и введите значения ниже:",
       "close": "Закрыть",
       "loadFailed": "Не удалось загрузить руководство."
+    },
+    "oplComponentsList": {
+      "title": "Компоненты и файлы OPL",
+      "description": "Управляйте необходимыми файлами, средами выполнения и пакетами совместимости экосистемы OPL.",
+      "installed": "Установлено ({{version}})",
+      "download": "Загрузить",
+      "items": {
+        "oplLatest": {
+          "name": "Стабильная сборка OPL (v1.2.0)",
+          "description": "Официальный исполняемый файл Open PS2 Loader для установки на Memory Card / FMCB."
+        },
+        "pcsx2CompatDb": {
+          "name": "База данных совместимости PCSX2",
+          "description": "Таблица CRC-хешей и исправлений для конкретных игр PS2."
+        },
+        "popstarterBin": {
+          "name": "POPStarter PS1 Runtime",
+          "description": "Компонент, необходимый для запуска игр PS1 (файлы VCD) в OPL."
+        },
+        "defaultArtPack": {
+          "name": "Стандартный пакет тем и обложек",
+          "description": "Универсальные шаблоны интерфейса и обложки для игр без официальной обложки."
+        }
+      }
     }
   }
 }

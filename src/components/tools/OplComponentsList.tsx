@@ -1,10 +1,11 @@
 import { Trophy, CheckCircle2, Download } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 
 interface OplComponentItem {
   id: string
-  name: string
+  nameKey: string
   category: string
-  description: string
+  descriptionKey: string
   version: string
   isInstalled: boolean
 }
@@ -12,45 +13,48 @@ interface OplComponentItem {
 const defaultComponents: OplComponentItem[] = [
   {
     id: 'opl-latest',
-    name: 'OPL Build Estável (v1.2.0)',
+    nameKey: 'oplLatest',
     category: 'Runtime',
-    description: 'Executável oficial Open PS2 Loader para instalação no Memory Card / FMCB.',
+    descriptionKey: 'oplLatest',
     version: '1.2.0',
     isInstalled: true
   },
   {
     id: 'pcsx2-compat-db',
-    name: 'Base de Dados de Compatibilidade PCSX2',
+    nameKey: 'pcsx2CompatDb',
     category: 'Database',
-    description: 'Tabela de hashes CRC e correções específicas para jogos PS2.',
+    descriptionKey: 'pcsx2CompatDb',
     version: '2026.08',
     isInstalled: true
   },
   {
     id: 'popstarter-bin',
-    name: 'POPStarter PS1 Runtime',
+    nameKey: 'popstarterBin',
     category: 'Runtime',
-    description: 'Componente necessário para execução de jogos PS1 (arquivos VCD) no OPL.',
+    descriptionKey: 'popstarterBin',
     version: 'r13',
     isInstalled: false
   },
   {
     id: 'default-art-pack',
-    name: 'Pacote de Temas & Capas Padrão',
+    nameKey: 'defaultArtPack',
     category: 'Assets',
-    description: 'Modelos de interface e artes genéricas para jogos sem capa oficial.',
+    descriptionKey: 'defaultArtPack',
     version: '1.0.0',
     isInstalled: false
   }
 ]
 
 export function OplComponentsList() {
+  const { t } = useTranslation()
   return (
     <div className="space-y-4">
       <div>
-        <h3 className="text-base font-bold text-white">Componentes & Arquivos do OPL</h3>
+        <h3 className="text-base font-bold text-white">
+          {t('components.oplComponentsList.title')}
+        </h3>
         <p className="text-xs text-muted-foreground">
-          Gerencie arquivos essenciais, runtimes e pacotes de compatibilidade do ecossistema OPL.
+          {t('components.oplComponentsList.description')}
         </p>
       </div>
 
@@ -66,23 +70,28 @@ export function OplComponentsList() {
               </div>
               <div>
                 <div className="flex items-center gap-2">
-                  <h4 className="text-sm font-semibold text-white">{comp.name}</h4>
+                  <h4 className="text-sm font-semibold text-white">
+                    {t(`components.oplComponentsList.items.${comp.nameKey}.name`)}
+                  </h4>
                   <span className="rounded bg-white/10 px-2 py-0.5 text-[10px] font-mono text-violet-300">
                     {comp.category}
                   </span>
                 </div>
-                <p className="mt-0.5 text-xs text-muted-foreground">{comp.description}</p>
+                <p className="mt-0.5 text-xs text-muted-foreground">
+                  {t(`components.oplComponentsList.items.${comp.descriptionKey}.description`)}
+                </p>
               </div>
             </div>
 
             <div className="flex items-center gap-3">
               {comp.isInstalled ? (
                 <span className="flex items-center gap-1 text-xs font-semibold text-emerald-400">
-                  <CheckCircle2 className="size-4" /> Instalado ({comp.version})
+                  <CheckCircle2 className="size-4" />{' '}
+                  {t('components.oplComponentsList.installed', { version: comp.version })}
                 </span>
               ) : (
                 <button className="flex items-center gap-1.5 rounded-xl bg-violet-600 px-4 py-2 text-xs font-semibold text-white shadow-md hover:bg-violet-500">
-                  <Download className="size-3.5" /> Baixar
+                  <Download className="size-3.5" /> {t('components.oplComponentsList.download')}
                 </button>
               )}
             </div>

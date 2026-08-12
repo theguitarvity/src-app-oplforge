@@ -984,6 +984,30 @@
       "accessPathSuffix": "and enter the values below:",
       "close": "Close",
       "loadFailed": "Failed to load the tutorial."
+    },
+    "oplComponentsList": {
+      "title": "OPL Components & Files",
+      "description": "Manage essential files, runtimes, and compatibility packages for the OPL ecosystem.",
+      "installed": "Installed ({{version}})",
+      "download": "Download",
+      "items": {
+        "oplLatest": {
+          "name": "OPL Stable Build (v1.2.0)",
+          "description": "Official Open PS2 Loader executable for installation on Memory Card / FMCB."
+        },
+        "pcsx2CompatDb": {
+          "name": "PCSX2 Compatibility Database",
+          "description": "Table of CRC hashes and game-specific fixes for PS2 games."
+        },
+        "popstarterBin": {
+          "name": "POPStarter PS1 Runtime",
+          "description": "Component required to run PS1 games (VCD files) in OPL."
+        },
+        "defaultArtPack": {
+          "name": "Default Theme & Cover Art Pack",
+          "description": "Generic UI templates and artwork for games without official cover art."
+        }
+      }
     }
   }
 }
