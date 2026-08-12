@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { Download, FolderOpen, FolderPlus, RefreshCw, Search } from 'lucide-react'
+import { Download, FolderOpen, FolderPlus, RefreshCw, Search, Upload, UserPlus } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { CatalogGameCard } from '@/components/catalog/CatalogGameCard'
 import { DownloadPlanModal } from '@/components/catalog/DownloadPlanModal'
@@ -48,10 +48,66 @@ export function EssentialsCatalogPage() {
   const [showSubfolder, setShowSubfolder] = useState(false)
   const [subfolderName, setSubfolderName] = useState('')
   const [destinationError, setDestinationError] = useState('')
+  const [source, setSource] = useState<'official' | 'custom'>('official')
+  const [showManualForm, setShowManualForm] = useState(false)
+  const [manualEntry, setManualEntry] = useState({
+    title: '',
+    fileName: '',
+    url: '',
+    sizeBytes: '',
+    mediaType: 'ps2-dvd' as 'ps2-dvd' | 'ps2-cd' | 'ps1'
+  })
+  const [manualError, setManualError] = useState('')
+  const [csvErrors, setCsvErrors] = useState<string[]>([])
 
-  const catalogQuery = useQuery({
+  const officialQuery = useQuery({
     queryKey: ['essentials-catalog', query],
-    queryFn: () => oplApi.listEssentialsCatalog(query)
+    queryFn: () => oplApi.listEssentialsCatalog(query),
+    enabled: source === 'official'
+  })
+  const customQuery = useQuery({
+    queryKey: ['custom-essentials-catalog', query],
+    queryFn: () => oplApi.listCustomCatalog(query),
+    enabled: source === 'custom'
+  })
+  const catalogQuery = source === 'official' ? officialQuery : customQuery
+
+  const addManualEntryMutation = useMutation({
+    mutationFn: () =>
+      oplApi.addCustomCatalogEntry({
+        title: manualEntry.title,
+        fileName: manualEntry.fileName,
+        url: manualEntry.url,
+        sizeBytes: manualEntry.sizeBytes ? Number(manualEntry.sizeBytes) : undefined,
+        mediaType: manualEntry.mediaType
+      }),
+    onSuccess: () => {
+      setManualEntry({ title: '', fileName: '', url: '', sizeBytes: '', mediaType: 'ps2-dvd' })
+      setManualError('')
+      setShowManualForm(false)
+      void queryClient.invalidateQueries({ queryKey: ['custom-essentials-catalog'] })
+    },
+    onError: (err) =>
+      setManualError(err instanceof Error ? err.message : 'Não foi possível adicionar.')
+  })
+  const importCsvMutation = useMutation({
+    mutationFn: async () => {
+      const [filePath] = await oplApi.openPathDialog({
+        mode: 'file',
+        filters: [{ name: 'CSV', extensions: ['csv'] }]
+      })
+      if (!filePath) return null
+      return oplApi.importCustomCatalogCsv(filePath)
+    },
+    onSuccess: (result) => {
+      if (!result) return
+      setCsvErrors(result.errors)
+      void queryClient.invalidateQueries({ queryKey: ['custom-essentials-catalog'] })
+    }
+  })
+  const removeCustomEntryMutation = useMutation({
+    mutationFn: (id: string) => oplApi.removeCustomCatalogEntry(id),
+    onSuccess: () => void queryClient.invalidateQueries({ queryKey: ['custom-essentials-catalog'] })
   })
   const smartFillMutation = useMutation({
     mutationFn: () => oplApi.createSmartFillPlan(activeDevice!.path, 500 * 1000 ** 3),
@@ -177,17 +233,34 @@ export function EssentialsCatalogPage() {
             </p>
           </div>
           <div className="flex gap-2">
-            <Button
-              variant="secondary"
-              disabled={refreshLinksMutation.isPending}
-              onClick={() => refreshLinksMutation.mutate()}
-            >
-              <RefreshCw className="size-4" /> Verificar links
-            </Button>
-            <SmartFillButton
-              disabled={!activeDevice || smartFillMutation.isPending}
-              onClick={() => smartFillMutation.mutate()}
-            />
+            {source === 'official' ? (
+              <>
+                <Button
+                  variant="secondary"
+                  disabled={refreshLinksMutation.isPending}
+                  onClick={() => refreshLinksMutation.mutate()}
+                >
+                  <RefreshCw className="size-4" /> Verificar links
+                </Button>
+                <SmartFillButton
+                  disabled={!activeDevice || smartFillMutation.isPending}
+                  onClick={() => smartFillMutation.mutate()}
+                />
+              </>
+            ) : (
+              <>
+                <Button variant="secondary" onClick={() => setShowManualForm((value) => !value)}>
+                  <UserPlus className="size-4" /> Adicionar manualmente
+                </Button>
+                <Button
+                  variant="secondary"
+                  disabled={importCsvMutation.isPending}
+                  onClick={() => importCsvMutation.mutate()}
+                >
+                  <Upload className="size-4" /> Importar CSV
+                </Button>
+              </>
+            )}
             <Button
               disabled={selected.length === 0 || (targetKind === 'opl-device' && !activeDevice)}
               onClick={() => void beginSelectedDownload()}
@@ -196,6 +269,116 @@ export function EssentialsCatalogPage() {
             </Button>
           </div>
         </div>
+
+        <div className="mt-4 flex gap-2 border-b border-white/10">
+          <button
+            type="button"
+            className={`px-3 py-2 text-sm font-medium ${source === 'official' ? 'border-b-2 border-violet-400 text-white' : 'text-muted-foreground'}`}
+            onClick={() => {
+              setSource('official')
+              setSelected([])
+            }}
+          >
+            Catálogo oficial
+          </button>
+          <button
+            type="button"
+            className={`px-3 py-2 text-sm font-medium ${source === 'custom' ? 'border-b-2 border-violet-400 text-white' : 'text-muted-foreground'}`}
+            onClick={() => {
+              setSource('custom')
+              setSelected([])
+            }}
+          >
+            Minha lista
+          </button>
+        </div>
+
+        {source === 'custom' && showManualForm && (
+          <div className="mt-4 grid gap-3 rounded-xl border border-violet-400/20 bg-violet-500/5 p-4 md:grid-cols-2">
+            <div className="space-y-2">
+              <Label>Título</Label>
+              <Input
+                value={manualEntry.title}
+                onChange={(event) =>
+                  setManualEntry((current) => ({ ...current, title: event.target.value }))
+                }
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Nome do arquivo</Label>
+              <Input
+                value={manualEntry.fileName}
+                onChange={(event) =>
+                  setManualEntry((current) => ({ ...current, fileName: event.target.value }))
+                }
+                placeholder="Ex.: Meu Jogo.iso"
+              />
+            </div>
+            <div className="space-y-2 md:col-span-2">
+              <Label>URL</Label>
+              <Input
+                value={manualEntry.url}
+                onChange={(event) =>
+                  setManualEntry((current) => ({ ...current, url: event.target.value }))
+                }
+                placeholder="https://..."
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Tamanho (bytes, opcional)</Label>
+              <Input
+                type="number"
+                value={manualEntry.sizeBytes}
+                onChange={(event) =>
+                  setManualEntry((current) => ({ ...current, sizeBytes: event.target.value }))
+                }
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Tipo de mídia</Label>
+              <Select
+                value={manualEntry.mediaType}
+                onChange={(event) =>
+                  setManualEntry((current) => ({
+                    ...current,
+                    mediaType: event.target.value as typeof manualEntry.mediaType
+                  }))
+                }
+              >
+                <option value="ps2-dvd">PS2 DVD</option>
+                <option value="ps2-cd">PS2 CD</option>
+                <option value="ps1">PS1</option>
+              </Select>
+            </div>
+            {manualError ? (
+              <p className="text-sm text-red-300 md:col-span-2">{manualError}</p>
+            ) : null}
+            <div className="md:col-span-2">
+              <Button
+                disabled={
+                  addManualEntryMutation.isPending ||
+                  !manualEntry.title.trim() ||
+                  !manualEntry.fileName.trim() ||
+                  !manualEntry.url.trim()
+                }
+                onClick={() => addManualEntryMutation.mutate()}
+              >
+                Adicionar à minha lista
+              </Button>
+            </div>
+          </div>
+        )}
+        {source === 'custom' && csvErrors.length > 0 && (
+          <div className="mt-4 rounded-xl border border-amber-400/20 bg-amber-500/10 p-3 text-sm text-amber-200">
+            <p className="font-medium">Algumas linhas do CSV não foram importadas:</p>
+            <ul className="mt-1 list-disc pl-5">
+              {csvErrors.map((err) => (
+                <li key={err}>{err}</li>
+              ))}
+            </ul>
+          </div>
+        )}
+
         <div className="mt-4 grid items-end gap-3 rounded-xl border border-white/10 bg-black/20 p-4 md:grid-cols-3">
           <div className="space-y-2">
             <Label>Baixar para</Label>
@@ -285,25 +468,27 @@ export function EssentialsCatalogPage() {
               placeholder="Buscar jogo"
             />
           </div>
-          <div className="space-y-2">
-            <Label>Tier</Label>
-            <Select
-              value={query.tier}
-              onChange={(event) =>
-                setQuery((current) => ({
-                  ...current,
-                  tier: event.target.value as CatalogQuery['tier']
-                }))
-              }
-            >
-              <option value="all">Todos</option>
-              <option value="S">S</option>
-              <option value="A">A</option>
-              <option value="B">B</option>
-              <option value="C">C</option>
-              <option value="Unrated">Unrated</option>
-            </Select>
-          </div>
+          {source === 'official' && (
+            <div className="space-y-2">
+              <Label>Tier</Label>
+              <Select
+                value={query.tier}
+                onChange={(event) =>
+                  setQuery((current) => ({
+                    ...current,
+                    tier: event.target.value as CatalogQuery['tier']
+                  }))
+                }
+              >
+                <option value="all">Todos</option>
+                <option value="S">S</option>
+                <option value="A">A</option>
+                <option value="B">B</option>
+                <option value="C">C</option>
+                <option value="Unrated">Unrated</option>
+              </Select>
+            </div>
+          )}
           <div className="space-y-2">
             <Label>Mídia</Label>
             <Select
@@ -320,23 +505,25 @@ export function EssentialsCatalogPage() {
               <option value="ps2-cd">PS2 CD</option>
             </Select>
           </div>
-          <div className="space-y-2">
-            <Label>Prioridade</Label>
-            <Select
-              value={query.priority}
-              onChange={(event) =>
-                setQuery((current) => ({
-                  ...current,
-                  priority: event.target.value as CatalogQuery['priority']
-                }))
-              }
-            >
-              <option value="all">Todas</option>
-              <option value="must-have">Must-have</option>
-              <option value="recommended">Recommended</option>
-              <option value="unrated">Unrated</option>
-            </Select>
-          </div>
+          {source === 'official' && (
+            <div className="space-y-2">
+              <Label>Prioridade</Label>
+              <Select
+                value={query.priority}
+                onChange={(event) =>
+                  setQuery((current) => ({
+                    ...current,
+                    priority: event.target.value as CatalogQuery['priority']
+                  }))
+                }
+              >
+                <option value="all">Todas</option>
+                <option value="must-have">Must-have</option>
+                <option value="recommended">Recommended</option>
+                <option value="unrated">Unrated</option>
+              </Select>
+            </div>
+          )}
           <Button variant="secondary" onClick={() => void catalogQuery.refetch()}>
             <Search className="size-4" /> Atualizar
           </Button>
@@ -362,7 +549,9 @@ export function EssentialsCatalogPage() {
       {catalogQuery.isLoading ? (
         <Card>
           <p className="text-sm text-muted-foreground">
-            Carregando catálogo do Internet Archive...
+            {source === 'official'
+              ? 'Carregando catálogo do Internet Archive...'
+              : 'Carregando sua lista...'}
           </p>
         </Card>
       ) : null}
@@ -379,7 +568,11 @@ export function EssentialsCatalogPage() {
         <EmptyState
           icon={Search}
           title="Nenhum jogo encontrado"
-          description="Tente limpar os filtros ou clique em Verificar links para regenerar o índice local."
+          description={
+            source === 'official'
+              ? 'Tente limpar os filtros ou clique em Verificar links para regenerar o índice local.'
+              : 'Adicione itens manualmente ou importe um CSV (colunas: title,fileName,url,sizeBytes,mediaType).'
+          }
         />
       ) : null}
       <div className="grid gap-4">
@@ -389,6 +582,9 @@ export function EssentialsCatalogPage() {
             game={game}
             selected={selected.some((item) => item.id === game.id)}
             onToggle={() => toggle(game)}
+            onRemove={
+              source === 'custom' ? () => removeCustomEntryMutation.mutate(game.id) : undefined
+            }
           />
         ))}
       </div>

@@ -46,9 +46,13 @@ export interface SmbAuthContext {
 }
 
 export interface SmbSessionCallbacks {
-  onActivity: (activity: NetworkShareClientActivity) => void
+  /** [relativePath] is only ever set for actual game-media reads (DVD/CD/PS1) — see handleReadAndx — never for CFG/ART browsing. */
+  onActivity: (activity: NetworkShareClientActivity, relativePath?: string) => void
   onWriteConflict: (message: string) => void
 }
+
+/** SMB-relative folder prefixes (see toRelativeKey) that represent actual game media, not menu-browsing reads (CFG/ART) — gates the "now playing" activity path. */
+const GAME_MEDIA_FOLDERS = /^(dvd|cd|ps1)\//i
 
 interface OpenHandle {
   absolutePath: string
@@ -111,8 +115,8 @@ export class SmbSession {
     return this.nextSid++ & 0xffff
   }
 
-  markActivity(activity: NetworkShareClientActivity): void {
-    this.callbacks.onActivity(activity)
+  markActivity(activity: NetworkShareClientActivity, relativePath?: string): void {
+    this.callbacks.onActivity(activity, relativePath)
   }
 
   reportWriteConflict(message: string): void {
@@ -426,7 +430,10 @@ async function handleReadAndx(request: SmbMessage, session: SmbSession): Promise
   const handle = session.handles.get(fid)
   if (!handle) return errorResponse(request, NT_STATUS.INVALID_HANDLE)
 
-  session.markActivity('transferring')
+  session.markActivity(
+    'transferring',
+    GAME_MEDIA_FOLDERS.test(handle.relativePath) ? handle.relativePath : undefined
+  )
   const requestedCount = Math.min(0xffff, maxCountLow + maxCountHigh * 0x10000)
   const offset = Number((BigInt(offsetHigh) << 32n) | BigInt(offsetLow))
   if (!Number.isSafeInteger(offset)) return errorResponse(request, NT_STATUS.UNSUCCESSFUL)

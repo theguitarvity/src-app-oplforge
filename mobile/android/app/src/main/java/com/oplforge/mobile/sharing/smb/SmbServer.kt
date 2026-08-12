@@ -19,6 +19,8 @@ interface SmbServerListener {
     fun onClientConnected(remoteAddress: String, connectionId: String)
     fun onClientDisconnected(connectionId: String)
     fun onWriteConflict(path: String)
+    /** Fired on each game-media read (DVD/CD/PS1) — [relativePath] is the raw SMB wire path (e.g. `\DVD\Game.iso`) the PS2 is currently reading. */
+    fun onClientActivity(connectionId: String, relativePath: String)
 }
 
 /**
@@ -53,7 +55,7 @@ class SmbServer(
     val boundPort: Int get() = serverSocket?.localPort ?: port
 
     fun start() {
-        val handlers = CommandHandlers(context, tree, credentialStore, shareName, writeLock, isWriteAccessAcknowledged)
+        val handlers = CommandHandlers(context, tree, credentialStore, shareName, writeLock, isWriteAccessAcknowledged, listener)
         this.handlers = handlers
         val socket = ServerSocket()
         socket.reuseAddress = true
@@ -93,7 +95,7 @@ class SmbServer(
     private fun handleConnection(socket: Socket, connectionId: String, handlers: CommandHandlers) {
         listener?.onClientConnected(socket.inetAddress.hostAddress ?: "unknown", connectionId)
         socket.soTimeout = idleTimeoutMs
-        val state = SmbConnectionState()
+        val state = SmbConnectionState(connectionId)
         try {
             val input = socket.getInputStream()
             val output = socket.getOutputStream()

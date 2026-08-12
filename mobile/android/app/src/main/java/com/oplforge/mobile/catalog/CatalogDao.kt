@@ -62,6 +62,17 @@ interface CatalogEntryDao {
     )
     suspend fun findByFileName(snapshotId: String, fileName: String): CatalogEntryEntity?
 
+    /** Exact serial-code match (e.g. "SLUS_202.46"), for resolving a bare game ID — seen on the wire when OPL opens a file by its CFG-style serial name — to a friendly title during active SMB transfers. */
+    @Query(
+        """
+        SELECT * FROM catalog_entry
+        WHERE snapshotId = :snapshotId
+        AND gameId = :gameId
+        LIMIT 1
+        """
+    )
+    suspend fun findByGameId(snapshotId: String, gameId: String): CatalogEntryEntity?
+
     /** Every cataloged game missing box art (Art Sync candidates) — bounded like desktop's own plan (art-sync-plan.service.ts caps at 500). */
     @Query(
         """

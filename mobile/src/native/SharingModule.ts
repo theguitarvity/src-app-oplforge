@@ -1,6 +1,6 @@
 import { NativeEventEmitter } from 'react-native'
 import NativeSharingModule from './specs/NativeSharingModule'
-import type { ConnectionTutorialStep, SerializableError, SharingSession } from '../types'
+import type { ConnectedClient, ConnectionTutorialStep, SerializableError, SharingSession } from '../types'
 
 /**
  * Typed wrapper over the Codegen'd SharingModule TurboModule
@@ -124,7 +124,7 @@ export async function getRecentConnections(): Promise<RecentConnection[]> {
 export interface SharingSessionEventPayload {
   kind: string
   session: SharingSession
-  client?: { id: string; remoteAddress: string; connectedAt: string }
+  client?: ConnectedClient
   message: string
   timestamp: string
 }

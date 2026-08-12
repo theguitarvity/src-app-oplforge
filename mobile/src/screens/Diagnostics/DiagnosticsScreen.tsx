@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native'
+import { ActivityIndicator, Alert, Pressable, StyleSheet, Text, View } from 'react-native'
 import { colors, radius, semanticColor, spacing, typography } from '../../design-system/tokens'
 import { useDiagnosticsStore } from '../../stores/diagnostics-store'
 import type { ReadinessStatus } from '../../types'
@@ -40,6 +40,17 @@ export function DiagnosticsScreen() {
     void loadLatest()
   }, [loadLatest])
 
+  function handlePreparePress() {
+    Alert.alert(
+      'Preparar dispositivo',
+      'Isso vai criar as pastas obrigatórias do OPL (DVD, CD, PS1, APPS, ART, CFG, VMC) que ainda não existem e gravar um README na raiz. Nada existente será apagado. Continuar?',
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        { text: 'Preparar', onPress: () => void prepareDevice() }
+      ]
+    )
+  }
+
   return (
     <View style={styles.container}>
       {errorMessage ? <Text style={styles.error}>{errorMessage}</Text> : null}
@@ -63,7 +74,7 @@ export function DiagnosticsScreen() {
               <Text style={[styles.body, { color: semanticColor('warning') }]}>
                 Faltando: {report.missingFolders.join(', ')}
               </Text>
-              <Pressable style={styles.prepareButton} onPress={() => void prepareDevice()} disabled={status === 'loading'}>
+              <Pressable style={styles.prepareButton} onPress={handlePreparePress} disabled={status === 'loading'}>
                 {status === 'loading' ? (
                   <ActivityIndicator color={colors.primaryForeground} />
                 ) : (

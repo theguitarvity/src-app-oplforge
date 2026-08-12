@@ -7,6 +7,7 @@ import com.facebook.react.uimanager.ViewManager
 import com.oplforge.mobile.art.ArtSyncModule
 import com.oplforge.mobile.catalog.CatalogScanModule
 import com.oplforge.mobile.diagnostics.DiagnosticsModule
+import com.oplforge.mobile.essentials.CustomCatalogModule
 import com.oplforge.mobile.essentials.EssentialsModule
 import com.oplforge.mobile.library.LibrarySelectionModule
 import com.oplforge.mobile.sharing.SharingSessionModule
@@ -21,6 +22,7 @@ class OplForgePackage : ReactPackage {
             SharingSessionModule(reactContext),
             TransferQueueModule(reactContext),
             EssentialsModule(reactContext),
+            CustomCatalogModule(reactContext),
             DiagnosticsModule(reactContext),
             ArtSyncModule(reactContext)
         )

@@ -37,6 +37,14 @@ class SafDocumentTree(private val context: Context, val treeUri: Uri) {
         return folder.createFile(mimeType, displayName)
     }
 
+    /** Creates (or replaces) a plain-text file directly at the tree root — e.g. the "prepare device" README, which isn't scoped to any of the 7 OPL folders. */
+    fun writeRootTextFile(displayName: String, mimeType: String, content: String) {
+        val root = root ?: return
+        val existing = root.listFiles().firstOrNull { it.isFile && it.name?.equals(displayName, ignoreCase = true) == true }
+        val file = existing ?: root.createFile(mimeType, displayName) ?: return
+        context.contentResolver.openOutputStream(file.uri)?.use { it.write(content.toByteArray(Charsets.UTF_8)) }
+    }
+
     /**
      * Free space on the tree's underlying storage root, for local storage
      * (internal/SD/USB-OTG via `ExternalStorageProvider`) only.

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Wifi, WifiOff, ShieldAlert, Users, Loader2 } from 'lucide-react'
+import { Wifi, WifiOff, ShieldAlert, Users, Loader2, Gamepad2 } from 'lucide-react'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -182,13 +182,27 @@ export function NetworkShareStatus() {
         )}
 
         {connectedCount > 0 && (
-          <div className="mt-4 flex items-center gap-2 rounded-xl border border-emerald-400/20 bg-emerald-500/10 px-3 py-2 text-sm text-emerald-200">
-            <Users className="size-4" />
-            {status?.connectedClients.map((client) => (
-              <span key={client.id}>
-                {client.remoteAddress} ({client.activity})
-              </span>
-            ))}
+          <div className="mt-4 space-y-2">
+            <div className="flex items-center gap-2 rounded-xl border border-emerald-400/20 bg-emerald-500/10 px-3 py-2 text-sm text-emerald-200">
+              <Users className="size-4" />
+              {status?.connectedClients.map((client) => (
+                <span key={client.id}>
+                  {client.remoteAddress} ({client.activity})
+                </span>
+              ))}
+            </div>
+            {status?.connectedClients
+              .filter((client) => client.currentFile)
+              .map((client) => (
+                <div
+                  key={client.id}
+                  className="flex items-center gap-2 rounded-xl border border-primary/30 bg-primary/10 px-3 py-2 text-sm text-white"
+                >
+                  <Gamepad2 className="size-4 shrink-0 text-primary" />
+                  <span className="text-muted-foreground">Transmitindo agora:</span>
+                  <span className="font-medium">{client.currentFile}</span>
+                </div>
+              ))}
           </div>
         )}
 

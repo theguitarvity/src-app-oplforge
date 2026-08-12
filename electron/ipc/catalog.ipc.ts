@@ -12,6 +12,13 @@ import {
   listEssentialsCatalog,
   refreshEssentialsSourceLinks
 } from '../services/catalog/essentials-catalog.service'
+import {
+  addCustomCatalogEntry,
+  importCustomCatalogCsv,
+  listCustomCatalog,
+  removeCustomCatalogEntry,
+  type CustomCatalogEntryInput
+} from '../services/catalog/custom-catalog.service'
 import { getCatalogService } from '../services/catalog/catalog-runtime'
 import { CatalogHashService } from '../services/catalog/catalog-hash.service'
 import { getOplProfileService } from './opl.ipc'
@@ -29,6 +36,14 @@ export function registerCatalogIpc() {
   )
   ipcMain.handle('catalog:add-to-queue', (_event, input: CatalogDownloadInput) =>
     addCatalogGamesToQueue(input)
+  )
+  ipcMain.handle('catalog:custom:list', (_event, query?: CatalogQuery) => listCustomCatalog(query))
+  ipcMain.handle('catalog:custom:add', (_event, input: CustomCatalogEntryInput) =>
+    addCustomCatalogEntry(input)
+  )
+  ipcMain.handle('catalog:custom:remove', (_event, id: string) => removeCustomCatalogEntry(id))
+  ipcMain.handle('catalog:custom:import-csv', (_event, filePath: string) =>
+    importCustomCatalogCsv(filePath)
   )
   ipcMain.handle('catalog:scan', async (_event, input: CatalogScanInput) => {
     const parsed = parseInput('catalogScan', input)

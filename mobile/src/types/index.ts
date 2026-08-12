@@ -86,6 +86,8 @@ export interface ConnectedClient {
   connectedAt: string
   activity: 'idle' | 'browsing' | 'transferring'
   lastActivityAt: string
+  /** Friendly title (or raw filename fallback) of the game currently being read, resolved natively — only set once a read of DVD/CD/PS1 media has happened. */
+  currentFile?: string
 }
 
 export type SharingSessionEventKind =

@@ -3,6 +3,7 @@ import type {
   AppInstallInput,
   CatalogDownloadInput,
   CatalogQuery,
+  CustomCatalogEntryInput,
   DownloadProgress,
   GameImportInput,
   GameLibraryEntry,
@@ -184,6 +185,12 @@ const api: OplApi = {
   refreshEssentialsSourceLinks: () => ipcRenderer.invoke('catalog:essentials:refresh-links'),
   createSmartFillPlan: (devicePath: string, targetBytes?: number) =>
     ipcRenderer.invoke('catalog:smart-fill', devicePath, targetBytes),
+  listCustomCatalog: (query?: CatalogQuery) => ipcRenderer.invoke('catalog:custom:list', query),
+  addCustomCatalogEntry: (input: CustomCatalogEntryInput) =>
+    ipcRenderer.invoke('catalog:custom:add', input),
+  removeCustomCatalogEntry: (id: string) => ipcRenderer.invoke('catalog:custom:remove', id),
+  importCustomCatalogCsv: (filePath: string) =>
+    ipcRenderer.invoke('catalog:custom:import-csv', filePath),
   listTorrentFiles: (taskId: string) => ipcRenderer.invoke('downloads:torrent-files', taskId),
   selectTorrentFiles: (taskId: string, fileNames: string[]) =>
     ipcRenderer.invoke('downloads:select-files', taskId, fileNames),

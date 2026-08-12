@@ -38,6 +38,18 @@ mac:
       arch:
         - x64
         - arm64
+  # Only take effect once a real signing identity is present (CSC_LINK/
+  # CSC_KEY_PASSWORD, or a keychain identity) — with none configured yet,
+  # electron-builder still falls back to the current unsigned/unnotarized
+  # build (see .github/workflows/release.yml's macos job for the env vars
+  # this needs once an Apple Developer ID exists: CSC_LINK,
+  # CSC_KEY_PASSWORD, APPLE_ID, APPLE_APP_SPECIFIC_PASSWORD, APPLE_TEAM_ID —
+  # electron-builder notarizes automatically once those are set and signing
+  # succeeded, no extra `notarize:` key needed here).
+  hardenedRuntime: true
+  gatekeeperAssess: false
+  entitlements: build/entitlements.mac.plist
+  entitlementsInherit: build/entitlements.mac.plist
 linux:
   icon: build/icon.png
   artifactName: OPL-Forge-${env.OPL_PUBLIC_VERSION}-linux-${arch}.${ext}

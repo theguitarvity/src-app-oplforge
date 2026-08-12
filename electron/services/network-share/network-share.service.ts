@@ -14,10 +14,14 @@ import type {
   SetupInstructions
 } from '../../../src/types/opl'
 import { OPL_DIRS } from '../device.service'
+import { getGameLibrary } from '../games/game-id.service'
 import { addHistory } from '../history.service'
 import * as configStoreModule from './config-store'
 import { isLocalNetworkAddress } from './local-network-guard'
 import { listLocalNetworkAddresses } from './network-interfaces'
+
+/** Matches PS2 serial codes like "SLUS_202.46" — the raw CFG-style filename OPL sometimes opens a game by, never a friendly title. */
+const SERIAL_PATTERN = /^[A-Z]{4}[-_]\d{3}\.\d{2}$/
 
 export interface ProtocolServerContext {
   libraryRootPath: string
@@ -30,7 +34,11 @@ export interface ProtocolServerContext {
   onBindError: (error: SerializableError) => void
   onClientConnected: (client: ConnectedClient) => void
   onClientDisconnected: (clientId: string) => void
-  onClientActivity: (clientId: string, activity: NetworkShareClientActivity) => void
+  onClientActivity: (
+    clientId: string,
+    activity: NetworkShareClientActivity,
+    relativePath?: string
+  ) => void
   onWriteConflict: (message: string) => void
 }
 
@@ -93,6 +101,7 @@ async function libraryStructureValid(libraryRootPath: string): Promise<boolean> 
 export class NetworkShareService {
   private readonly emitter = new EventEmitter()
   private readonly clients = new Map<string, ConnectedClient>()
+  private readonly lastActivityPaths = new Map<string, string>()
   private smbStatus: ProtocolStatus = emptyProtocolStatus()
   private ftpStatus: ProtocolStatus = emptyProtocolStatus()
 
@@ -266,7 +275,8 @@ export class NetworkShareService {
         },
         onClientConnected: (client) => this.handleClientConnected(client),
         onClientDisconnected: (clientId) => this.handleClientDisconnected(clientId),
-        onClientActivity: (clientId, activity) => this.handleClientActivity(clientId, activity),
+        onClientActivity: (clientId, activity, relativePath) =>
+          this.handleClientActivity(clientId, activity, relativePath),
         onWriteConflict: (message) => this.handleWriteConflict(message)
       })
     } catch (error) {
@@ -327,6 +337,7 @@ export class NetworkShareService {
   private handleClientDisconnected(clientId: string): void {
     const client = this.clients.get(clientId)
     this.clients.delete(clientId)
+    this.lastActivityPaths.delete(clientId)
     this.emitEvent(
       'client-disconnected',
       client ? `Cliente desconectado: ${client.remoteAddress}` : 'Cliente desconectado',
@@ -334,16 +345,56 @@ export class NetworkShareService {
     )
   }
 
-  private handleClientActivity(clientId: string, activity: NetworkShareClientActivity): void {
+  private handleClientActivity(
+    clientId: string,
+    activity: NetworkShareClientActivity,
+    relativePath?: string
+  ): void {
     const client = this.clients.get(clientId)
     if (!client) return
-    const updated: ConnectedClient = {
-      ...client,
-      activity,
-      lastActivityAt: new Date().toISOString()
+    // A game boot/read burst calls this dozens of times per second for the
+    // same file — only resolve a title and emit an event once the active
+    // file actually changes, not once per SMB read.
+    if (relativePath && this.lastActivityPaths.get(clientId) === relativePath) return
+    if (relativePath) this.lastActivityPaths.set(clientId, relativePath)
+    else this.lastActivityPaths.delete(clientId)
+
+    void (async () => {
+      const currentFile = relativePath ? await this.resolveFriendlyTitle(relativePath) : null
+      const updated: ConnectedClient = {
+        ...client,
+        activity,
+        lastActivityAt: new Date().toISOString(),
+        currentFile
+      }
+      this.clients.set(clientId, updated)
+      this.emitEvent(
+        'client-activity-changed',
+        currentFile ? `Transmitindo: ${currentFile}` : `Atividade: ${activity}`,
+        updated
+      )
+    })()
+  }
+
+  /**
+   * Resolves the raw SMB-relative path (e.g. `DVD/Game.iso`) the PS2 is
+   * currently reading to a friendly title: exact filename match against the
+   * cataloged library first, falling back to a serial-code lookup (OPL
+   * sometimes opens a title by its bare CFG-style serial, e.g.
+   * "SLUS_202.46", which isn't a name any user would recognize) before
+   * finally falling back to the raw filename.
+   */
+  private async resolveFriendlyTitle(relativePath: string): Promise<string> {
+    const fileName = relativePath.split('/').pop() ?? relativePath
+    const nameWithoutExt = fileName.replace(/\.[^./]+$/, '')
+    const library = await getGameLibrary()
+    const byPath = library.games.find((game) => game.path.endsWith(fileName))
+    if (byPath) return byPath.title
+    if (SERIAL_PATTERN.test(nameWithoutExt)) {
+      const byGameId = library.games.find((game) => game.gameId === nameWithoutExt)
+      if (byGameId) return byGameId.title
     }
-    this.clients.set(clientId, updated)
-    this.emitEvent('client-activity-changed', `Atividade: ${activity}`, updated)
+    return nameWithoutExt
   }
 
   private handleWriteConflict(message: string): void {

@@ -760,6 +760,8 @@ export interface ConnectedClient {
   connectedAt: string
   activity: NetworkShareClientActivity
   lastActivityAt: string
+  /** Friendly title (or raw filename fallback) of the game currently being read — null once idle. */
+  currentFile?: string | null
 }
 
 export interface NetworkShareStatus {
@@ -961,6 +963,19 @@ export interface CatalogDownloadInput {
   devicePath: string
   games: CatalogGame[]
   legalConfirmationText: string
+}
+
+export interface CustomCatalogEntryInput {
+  title: string
+  fileName: string
+  url: string
+  sizeBytes?: number
+  mediaType?: ArchiveMediaType
+}
+
+export interface ImportCustomCatalogCsvResult {
+  added: CatalogGame[]
+  errors: string[]
 }
 
 export interface CatalogSourceLink {
@@ -1308,6 +1323,10 @@ export interface OplApi {
   listEssentialsCatalog(query?: CatalogQuery): Promise<CatalogGame[]>
   refreshEssentialsSourceLinks(): Promise<CatalogSourceLinkIndex>
   createSmartFillPlan(devicePath: string, targetBytes?: number): Promise<SmartFillPlan>
+  listCustomCatalog(query?: CatalogQuery): Promise<CatalogGame[]>
+  addCustomCatalogEntry(input: CustomCatalogEntryInput): Promise<CatalogGame>
+  removeCustomCatalogEntry(id: string): Promise<void>
+  importCustomCatalogCsv(filePath: string): Promise<ImportCustomCatalogCsvResult>
   listTorrentFiles(taskId: string): Promise<TorrentFileEntry[]>
   selectTorrentFiles(taskId: string, fileNames: string[]): Promise<void>
   startTorrentDownload(taskId: string, destinationPath: string): Promise<void>

@@ -14,6 +14,8 @@ import com.oplforge.mobile.diagnostics.DiagnosticsReportDao
 import com.oplforge.mobile.diagnostics.DiagnosticsReportEntity
 import com.oplforge.mobile.essentials.CatalogListingCacheDao
 import com.oplforge.mobile.essentials.CatalogListingCacheEntity
+import com.oplforge.mobile.essentials.CustomCatalogEntryDao
+import com.oplforge.mobile.essentials.CustomCatalogEntryEntity
 import com.oplforge.mobile.transfer.TransferDao
 import com.oplforge.mobile.transfer.TransferItemEntity
 
@@ -24,9 +26,10 @@ import com.oplforge.mobile.transfer.TransferItemEntity
         LocalHistoryEntity::class,
         TransferItemEntity::class,
         DiagnosticsReportEntity::class,
-        CatalogListingCacheEntity::class
+        CatalogListingCacheEntity::class,
+        CustomCatalogEntryEntity::class
     ],
-    version = 5,
+    version = 6,
     exportSchema = false
 )
 @TypeConverters(StructuralIssuesConverter::class)
@@ -37,6 +40,7 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun transferDao(): TransferDao
     abstract fun diagnosticsReportDao(): DiagnosticsReportDao
     abstract fun catalogListingCacheDao(): CatalogListingCacheDao
+    abstract fun customCatalogEntryDao(): CustomCatalogEntryDao
 
     companion object {
         @Volatile private var instance: AppDatabase? = null

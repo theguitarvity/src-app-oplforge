@@ -28,6 +28,8 @@ interface EssentialsGameTileProps {
   item: CatalogListing
   selected: boolean
   onToggle: () => void
+  /** Only passed for the user-managed custom list — renders a delete action on the tile. */
+  onRemove?: () => void
 }
 
 /**
@@ -40,7 +42,7 @@ interface EssentialsGameTileProps {
  * principle as `GameArtThumbnail` uses for local library entries. Tapping
  * toggles selection for the bulk-download bar; unavailable items are inert.
  */
-export function EssentialsGameTile({ item, selected, onToggle }: EssentialsGameTileProps) {
+export function EssentialsGameTile({ item, selected, onToggle, onRemove }: EssentialsGameTileProps) {
   const tierColor = TIER_COLOR[item.scoreTier] ?? colors.mutedForeground
   const [artFailed, setArtFailed] = useState(false)
   const showArt = Boolean(item.boxArtUrl) && !artFailed
@@ -76,6 +78,11 @@ export function EssentialsGameTile({ item, selected, onToggle }: EssentialsGameT
           <View style={styles.unavailableOverlay}>
             <Text style={styles.unavailableText}>Indisponível</Text>
           </View>
+        ) : null}
+        {onRemove ? (
+          <Pressable style={styles.removeButton} onPress={onRemove} hitSlop={8}>
+            <MaterialIcons name="delete" size={16} color={colors.background} />
+          </Pressable>
         ) : null}
       </View>
       <Text style={styles.title} numberOfLines={2}>
@@ -132,6 +139,14 @@ const styles = StyleSheet.create({
     alignItems: 'center'
   },
   unavailableText: { color: colors.amber, fontSize: 10, fontWeight: '700' },
+  removeButton: {
+    position: 'absolute',
+    top: spacing.xs,
+    left: spacing.xs,
+    backgroundColor: 'rgba(15,13,19,0.85)',
+    borderRadius: 999,
+    padding: 4
+  },
   title: { color: colors.foreground, fontSize: typography.caption.fontSize, fontWeight: '600', textAlign: 'center' },
   meta: { color: colors.mutedForeground, fontSize: 10, textAlign: 'center' }
 })

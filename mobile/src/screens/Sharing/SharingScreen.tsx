@@ -13,6 +13,7 @@ const LOG_KIND_ICON: Record<string, keyof typeof MaterialIcons.glyphMap> = {
   'state-changed': 'sync',
   'client-connected': 'link',
   'client-disconnected': 'link-off',
+  'client-activity-changed': 'sports-esports',
   'write-conflict': 'warning'
 }
 
@@ -60,8 +61,19 @@ function NetworkHero({ isRunning, isConnected }: { isRunning: boolean; isConnect
  * centered network hero that lights up green once the PS2 actually connects.
  */
 export function SharingScreen() {
-  const { session, status, errorMessage, logs, clearLogs, recentConnections, loadRecentConnections, loadSession, stopSharing, activate } =
-    useSharingStore()
+  const {
+    session,
+    status,
+    errorMessage,
+    currentFile,
+    logs,
+    clearLogs,
+    recentConnections,
+    loadRecentConnections,
+    loadSession,
+    stopSharing,
+    activate
+  } = useSharingStore()
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>()
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
@@ -130,6 +142,17 @@ export function SharingScreen() {
             <Text style={styles.body}>{session?.shareName}</Text>
           </View>
         </View>
+        {isConnected && currentFile ? (
+          <View style={[styles.card, styles.nowPlayingCard]}>
+            <View style={styles.infoRow}>
+              <MaterialIcons name="sports-esports" size={16} color={semanticColor('active')} />
+              <Text style={styles.nowPlayingLabel}>Transmitindo agora</Text>
+            </View>
+            <Text style={styles.nowPlayingTitle} numberOfLines={2}>
+              {currentFile}
+            </Text>
+          </View>
+        ) : null}
         <Pressable style={styles.secondaryButton} onPress={() => navigation.navigate('Tutorial')}>
           <MaterialIcons name="help-outline" size={18} color={colors.foreground} />
           <Text style={styles.secondaryButtonText}>Ver tutorial de configuração do PS2</Text>
@@ -302,6 +325,9 @@ const styles = StyleSheet.create({
     gap: spacing.sm
   },
   warningCard: { borderColor: colors.amber },
+  nowPlayingCard: { borderColor: semanticColor('active') },
+  nowPlayingLabel: { color: semanticColor('active'), fontSize: typography.caption.fontSize, fontWeight: '600' },
+  nowPlayingTitle: { color: colors.foreground, fontSize: typography.body.fontSize, fontWeight: '700' },
   label: { color: colors.mutedForeground, fontSize: typography.caption.fontSize },
   body: { color: colors.foreground, fontSize: typography.body.fontSize },
   infoRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.xs },

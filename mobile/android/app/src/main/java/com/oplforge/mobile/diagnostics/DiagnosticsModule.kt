@@ -12,6 +12,7 @@ import com.oplforge.mobile.library.SafDocumentTree
 import com.oplforge.mobile.shared.AppDatabase
 import com.oplforge.mobile.shared.AppError
 import com.oplforge.mobile.shared.ErrorMapping
+import com.oplforge.mobile.shared.HistoryStore
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -33,9 +34,23 @@ class DiagnosticsModule(reactContext: ReactApplicationContext) :
     private val db = AppDatabase.getInstance(reactContext)
     private val catalogStore = CatalogIndexStore(db)
     private val libraryPreferences = LibraryPreferences(reactContext)
+    private val historyStore = HistoryStore(db)
     private val scope = CoroutineScope(Dispatchers.IO)
 
     private val requiredFolders = listOf("DVD", "CD", "PS1", "APPS", "ART", "CFG", "VMC")
+
+    // Mirrors desktop's file.service.ts README (electron/services/file.service.ts) verbatim.
+    private val readmeText = "# OPL Forge\n\n" +
+        "Estrutura preparada para uso com Open PS2 Loader, homebrews e arquivos fornecidos pelo usuario.\n\n" +
+        "Aviso legal: Utilize apenas backups de jogos que voce possua legalmente ou arquivos distribuidos por seus respectivos autores.\n\n" +
+        "Pastas criadas:\n" +
+        "- DVD: jogos PS2 em DVD\n" +
+        "- CD: jogos PS2 em CD\n" +
+        "- PS1: jogos PS1\n" +
+        "- APPS: homebrews e aplicativos\n" +
+        "- ART: capas e imagens\n" +
+        "- CFG: configuracoes\n" +
+        "- VMC: memory cards virtuais\n"
 
     override fun runDiagnostics(promise: Promise) {
         val stored = libraryPreferences.load()
@@ -107,8 +122,11 @@ class DiagnosticsModule(reactContext: ReactApplicationContext) :
                 requiredFolders.forEach { name ->
                     if (tree.findFolder(name) == null) tree.root?.createDirectory(name)
                 }
+                tree.writeRootTextFile("README_OPL_FORGE.txt", "text/plain", readmeText)
+                historyStore.record(HistoryStore.OP_DEVICE_PREPARED, HistoryStore.RESULT_SUCCESS, "Estrutura OPL criada.")
                 runDiagnostics(promise)
             } catch (e: Exception) {
+                historyStore.record(HistoryStore.OP_DEVICE_PREPARED, HistoryStore.RESULT_FAILURE, e.message ?: "Falha ao preparar dispositivo.")
                 ErrorMapping.rejectUnexpected(promise, e)
             }
         }

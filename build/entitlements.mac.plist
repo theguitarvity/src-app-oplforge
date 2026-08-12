@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  Entitlements required for a hardened-runtime, notarized Electron build
+  (electron-builder mac.entitlements/entitlementsInherit). Without
+  allow-jit/allow-unsigned-executable-memory, a hardened-runtime Electron
+  app crashes on launch — Chromium's JIT needs both. disable-library-validation
+  is required because Electron/Node load native (non-Apple-signed) .node
+  addons at runtime, which the hardened runtime blocks by default.
+  network.client is required for this app's SMB/FTP sharing and Essentials
+  downloads. This file has no effect until mac.hardenedRuntime is combined
+  with an actual signing identity (CSC_LINK) — with no identity configured,
+  electron-builder still produces the current unsigned/unnotarized build.
+-->
+<plist version="1.0">
+  <dict>
+    <key>com.apple.security.cs.allow-jit</key>
+    <true/>
+    <key>com.apple.security.cs.allow-unsigned-executable-memory</key>
+    <true/>
+    <key>com.apple.security.cs.disable-library-validation</key>
+    <true/>
+    <key>com.apple.security.network.client</key>
+    <true/>
+    <key>com.apple.security.network.server</key>
+    <true/>
+  </dict>
+</plist>

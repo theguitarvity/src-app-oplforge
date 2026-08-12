@@ -21,6 +21,9 @@ private val OEM = Charset.forName("ISO-8859-1")
 /** File I/O this server issues per SMB request has no client-visible timeout of its own — a stalled USB-OTG read/write must not hang the connection forever. */
 private const val FILE_IO_TIMEOUT_MS = 10_000L
 
+/** SMB wire-path prefixes that represent actual game media, used to gate the "now playing" activity callback so CFG/ART browsing reads don't spam it. */
+private val GAME_MEDIA_FOLDERS = listOf("\\DVD\\", "\\CD\\", "\\PS1\\")
+
 /** Windows FILETIME (100ns ticks since 1601-01-01T00:00:00Z) — MS-CIFS 2.2.4.52.2 SystemTime field. */
 private fun writeFileTime(buf: ByteBuffer, offset: Int, unixMillis: Long) {
     val fileTimeUnixEpochOffsetMs = 11_644_473_600_000L
@@ -41,8 +44,8 @@ private fun writeFileTime(buf: ByteBuffer, offset: Int, unixMillis: Long) {
  */
 internal fun String.stripTrailingNul(): String = trimEnd(' ', '\u0000')
 
-/** One open file/directory handle within a connection (SMB1 FID). */
-data class OpenFile(val documentFile: DocumentFile, val pfd: ParcelFileDescriptor?, val isDirectory: Boolean)
+/** One open file/directory handle within a connection (SMB1 FID). [smbPath] is the raw wire path (e.g. `\DVD\Game.iso`) as requested at open time, kept for surfacing "now playing" activity on reads. */
+data class OpenFile(val documentFile: DocumentFile, val pfd: ParcelFileDescriptor?, val isDirectory: Boolean, val smbPath: String)
 
 /** A blocking file read/write against the underlying storage exceeded [FILE_IO_TIMEOUT_MS] (e.g. a stalled USB-OTG device). */
 class SmbIoTimeoutException(cause: Throwable) : Exception(cause)
@@ -54,7 +57,7 @@ data class DirEntry(val name: String, val isDirectory: Boolean, val size: Long, 
 data class SearchState(val entries: List<DirEntry>, var nextIndex: Int)
 
 /** Per-TCP-connection SMB1 protocol state — never shared across connections. */
-class SmbConnectionState {
+class SmbConnectionState(val connectionId: String = "") {
     var authenticated = false
     var tid: Int = 0
     // Per-connection NTLMv1 challenge, sent in the NEGOTIATE response and
@@ -74,9 +77,9 @@ class SmbConnectionState {
 
     fun allocateSid(): Int = nextSid++
 
-    fun openFile(documentFile: DocumentFile, pfd: ParcelFileDescriptor?, isDirectory: Boolean): Int {
+    fun openFile(documentFile: DocumentFile, pfd: ParcelFileDescriptor?, isDirectory: Boolean, smbPath: String): Int {
         val fid = nextFid++
-        fids[fid] = OpenFile(documentFile, pfd, isDirectory)
+        fids[fid] = OpenFile(documentFile, pfd, isDirectory, smbPath)
         return fid
     }
 
@@ -106,7 +109,8 @@ class CommandHandlers(
     private val credentialStore: CredentialStore,
     private val shareName: String,
     private val writeLock: WriteLock,
-    private val isWriteAccessAcknowledged: () -> Boolean
+    private val isWriteAccessAcknowledged: () -> Boolean,
+    private val listener: SmbServerListener? = null
 ) {
     // Bounds otherwise-unbounded blocking file I/O (see readAndx/writeAndx) —
     // created once per CommandHandlers instance (one per running SmbServer),
@@ -345,7 +349,7 @@ class CommandHandlers(
             }
         } else null
 
-        val fid = state.openFile(target, pfd, target.isDirectory)
+        val fid = state.openFile(target, pfd, target.isDirectory, if (rawPath.isBlank()) "\\" else rawPath)
         val mtime = target.lastModified()
         // 68-byte NT_CREATE_ANDX response, MS-CIFS 2.2.4.64.2 — byte-for-byte
         // mirror of desktop's command-handlers.ts:handleNtCreate (including
@@ -398,7 +402,7 @@ class CommandHandlers(
         } catch (e: Exception) {
             null
         }
-        val fid = state.openFile(target, pfd, false)
+        val fid = state.openFile(target, pfd, false, rawPath)
 
         val params = ByteBuffer.allocate(30).order(ByteOrder.LITTLE_ENDIAN).apply {
             put(0, 0xFF.toByte()) // AndXCommand: no chained response
@@ -452,6 +456,13 @@ class CommandHandlers(
                 "Read timed out fid=$fid offset=$offset maxCount=$maxCount after ${System.currentTimeMillis() - readStart}ms — likely a stalled USB-OTG/slow-media read"
             )
             return FrameCodec.response(frame, NtStatus.UNSUCCESSFUL)
+        }
+
+        // Surface "now playing" only for actual game media reads (DVD/CD/PS1) —
+        // CFG/ART reads happen constantly while OPL just browses the menu and
+        // would make the indicator flicker between the real game and cover art.
+        if (bytesRead.isNotEmpty() && GAME_MEDIA_FOLDERS.any { open.smbPath.startsWith(it, ignoreCase = true) }) {
+            listener?.onClientActivity(state.connectionId, open.smbPath)
         }
 
         // 24-byte READ_ANDX response, MS-CIFS 2.2.4.42.2 — byte-for-byte

@@ -53,6 +53,7 @@ class HistoryStore(private val db: AppDatabase) {
         const val OP_SHARING_STOPPED = "sharing-stopped"
         const val OP_WRITE_ACCESS_ACKNOWLEDGED = "write-access-acknowledged"
         const val OP_GAME_DELETED = "game-deleted"
+        const val OP_DEVICE_PREPARED = "device-prepared"
 
         const val RESULT_SUCCESS = "success"
         const val RESULT_FAILURE = "failure"

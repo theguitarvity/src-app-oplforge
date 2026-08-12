@@ -106,7 +106,8 @@ export class SmbProtocolServer implements ProtocolServer {
     const session = new SmbSession(
       { username: context.username, password: context.password },
       {
-        onActivity: (activity) => context.onClientActivity(clientId, activity),
+        onActivity: (activity, relativePath) =>
+          context.onClientActivity(clientId, activity, relativePath),
         onWriteConflict: (message) => context.onWriteConflict(message)
       }
     )

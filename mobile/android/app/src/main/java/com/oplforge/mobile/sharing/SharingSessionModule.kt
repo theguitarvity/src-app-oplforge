@@ -41,6 +41,11 @@ class SharingSessionModule(reactContext: ReactApplicationContext) :
     private var startedAt: String? = null
     private var shareName = SharingForegroundService.SHARE_NAME_DEFAULT
     private val connectedClients = ConcurrentHashMap<String, WritableMap>()
+    // A game boot/read burst calls onClientActivity dozens of times per second
+    // for the same file — tracks the last-seen raw path per connection so
+    // resolveFriendlyTitle's DB lookup and the client-activity-changed event
+    // only fire once per actual file change, not once per SMB read.
+    private val lastActivityPath = ConcurrentHashMap<String, String>()
 
     init {
         SharingForegroundService.listener = this
@@ -140,6 +145,7 @@ class SharingSessionModule(reactContext: ReactApplicationContext) :
         state = STATE_OFF
         startedAt = null
         connectedClients.clear()
+        lastActivityPath.clear()
         scope.launch {
             historyStore.record(HistoryStore.OP_SHARING_STOPPED, HistoryStore.RESULT_SUCCESS, "Compartilhamento interrompido.")
         }
@@ -196,10 +202,13 @@ class SharingSessionModule(reactContext: ReactApplicationContext) :
 
     override fun onClientConnected(remoteAddress: String, connectionId: String) {
         state = STATE_RUNNING_CONNECTED
+        val now = Instant.now().toString()
         val client = Arguments.createMap().apply {
             putString("id", connectionId)
             putString("remoteAddress", remoteAddress)
-            putString("connectedAt", Instant.now().toString())
+            putString("connectedAt", now)
+            putString("activity", "idle")
+            putString("lastActivityAt", now)
         }
         connectedClients[connectionId] = client
         emitSessionEvent("client-connected", client, "PS2 conectado.")
@@ -207,12 +216,48 @@ class SharingSessionModule(reactContext: ReactApplicationContext) :
 
     override fun onClientDisconnected(connectionId: String) {
         connectedClients.remove(connectionId)
+        lastActivityPath.remove(connectionId)
         if (connectedClients.isEmpty() && state == STATE_RUNNING_CONNECTED) state = STATE_RUNNING_IDLE
         emitSessionEvent("client-disconnected", null, "PS2 desconectado.")
     }
 
     override fun onWriteConflict(path: String) {
         emitSessionEvent("write-conflict", null, "Gravação concorrente detectada em $path — última gravação aplicada.")
+    }
+
+    override fun onClientActivity(connectionId: String, relativePath: String) {
+        if (lastActivityPath.put(connectionId, relativePath) == relativePath) return
+        scope.launch {
+            val title = resolveFriendlyTitle(relativePath)
+            val client = connectedClients[connectionId] ?: return@launch
+            val updated = Arguments.createMap().apply {
+                merge(client)
+                putString("activity", "transferring")
+                putString("lastActivityAt", Instant.now().toString())
+                putString("currentFile", title)
+            }
+            connectedClients[connectionId] = updated
+            emitSessionEvent("client-activity-changed", updated, "Transmitindo: $title")
+        }
+    }
+
+    /**
+     * Resolves the raw SMB wire path (e.g. `\DVD\Game.iso`) the PS2 is
+     * currently reading to a friendly title, matching desktop's equivalent
+     * resolution: exact filename match against the cataloged library first,
+     * falling back to a serial-code lookup (OPL sometimes opens a title by
+     * its bare CFG-style serial, e.g. "SLUS_202.46", which isn't a name any
+     * user would recognize) before finally falling back to the raw filename.
+     */
+    private suspend fun resolveFriendlyTitle(relativePath: String): String {
+        val fileName = relativePath.substringAfterLast('\\')
+        val nameWithoutExt = fileName.substringBeforeLast('.', fileName)
+        val snapshotId = catalogStore.getLatestCompleted()?.id ?: return nameWithoutExt
+        db.catalogEntryDao().findByFileName(snapshotId, fileName)?.let { return it.title }
+        if (SERIAL_PATTERN.matches(nameWithoutExt)) {
+            db.catalogEntryDao().findByGameId(snapshotId, nameWithoutExt)?.let { return it.title }
+        }
+        return nameWithoutExt
     }
 
     // -- helpers --
@@ -256,6 +301,9 @@ class SharingSessionModule(reactContext: ReactApplicationContext) :
         private const val STATE_RUNNING_IDLE = "running-idle"
         private const val STATE_RUNNING_CONNECTED = "running-connected"
         private const val STATE_STOPPING = "stopping"
+
+        /** Matches PS2 serial codes like "SLUS_202.46" — the raw CFG-style filename OPL sometimes opens a game by, never a friendly title. */
+        private val SERIAL_PATTERN = Regex("^[A-Z]{4}[-_]\\d{3}\\.\\d{2}$")
 
         private var writeAccessAcknowledgedAt: String? = null
     }

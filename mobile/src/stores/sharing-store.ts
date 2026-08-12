@@ -17,6 +17,8 @@ interface SharingStoreState {
   session: SharingSession | undefined
   status: 'idle' | 'busy' | 'error'
   errorMessage: string | undefined
+  /** Title (or filename fallback) of the game currently being read by the PS2 — undefined once idle/disconnected. */
+  currentFile: string | undefined
   logs: SharingLogEntry[]
   clearLogs: () => void
   recentConnections: RecentConnection[]
@@ -34,6 +36,7 @@ export const useSharingStore = create<SharingStoreState>((set) => ({
   session: undefined,
   status: 'idle',
   errorMessage: undefined,
+  currentFile: undefined,
   logs: [],
   recentConnections: [],
 
@@ -129,9 +132,13 @@ export const useSharingStore = create<SharingStoreState>((set) => ({
 let unsubscribeFromEvents: (() => void) | undefined
 let nextLogId = 0
 if (!unsubscribeFromEvents) {
-  unsubscribeFromEvents = SharingModule.onSharingSessionEvent(({ session, kind, message, timestamp }) => {
+  unsubscribeFromEvents = SharingModule.onSharingSessionEvent(({ session, kind, client, message, timestamp }) => {
     const entry: SharingLogEntry = { id: nextLogId++, kind, message, timestamp }
-    useSharingStore.setState((state) => ({ session, logs: [entry, ...state.logs].slice(0, MAX_LOG_ENTRIES) }))
+    useSharingStore.setState((state) => ({
+      session,
+      logs: [entry, ...state.logs].slice(0, MAX_LOG_ENTRIES),
+      currentFile: kind === 'client-disconnected' ? undefined : kind === 'client-activity-changed' ? client?.currentFile : state.currentFile
+    }))
   })
 }
 

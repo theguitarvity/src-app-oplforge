@@ -57,10 +57,23 @@ jobs:
     runs-on: macos-latest
     env:
       OPL_PUBLIC_VERSION: ${{ needs.validate.outputs.public_version }}
-      # No Apple Developer ID certificate is configured yet, so this build is
-      # unsigned/unnotarized (same as the "continuous" test channel). Users
-      # will need to right-click > Open the first time to bypass Gatekeeper.
-      CSC_IDENTITY_AUTO_DISCOVERY: false
+      # Signing/notarization are opt-in via repo secrets — until an Apple
+      # Developer ID (paid account) is set up and these five secrets exist,
+      # this stays exactly as unsigned/unnotarized as it is today (same as
+      # the "continuous" test channel), just via a different mechanism
+      # (empty CSC_LINK rather than a hardcoded AUTO_DISCOVERY:false). Once
+      # they exist, electron-builder signs AND notarizes automatically — no
+      # other workflow change needed. Required secrets when ready:
+      #   MAC_CSC_LINK               base64 (or file://, or https://) .p12 export of the "Developer ID Application" certificate
+      #   MAC_CSC_KEY_PASSWORD       password for that .p12
+      #   APPLE_ID                   Apple ID email enrolled in the Developer Program
+      #   APPLE_APP_SPECIFIC_PASSWORD  app-specific password for that Apple ID (appleid.apple.com > Sign-In and Security)
+      #   APPLE_TEAM_ID              10-character Team ID from developer.apple.com/account
+      CSC_LINK: ${{ secrets.MAC_CSC_LINK }}
+      CSC_KEY_PASSWORD: ${{ secrets.MAC_CSC_KEY_PASSWORD }}
+      APPLE_ID: ${{ secrets.APPLE_ID }}
+      APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
+      APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
     steps:
       - uses: actions/checkout@v6
       - uses: pnpm/action-setup@v4.4.0
@@ -68,6 +81,9 @@ jobs:
         with: { node-version: '22', cache: pnpm }
       - run: pnpm install --frozen-lockfile
       - run: pnpm build
+      - name: Disable signing when no certificate secret is configured
+        if: env.CSC_LINK == ''
+        run: echo "CSC_IDENTITY_AUTO_DISCOVERY=false" >> "$GITHUB_ENV"
       - run: pnpm exec electron-builder --mac dmg --x64 --arm64 --publish never
       - run: pnpm exec tsx scripts/validate-artifacts.ts release mac
       - run: mv release/artifact-inventory.json release/artifact-inventory-macos.json
