@@ -1,16 +1,9 @@
 import { useEffect } from 'react'
 import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native'
+import { useTranslation } from 'react-i18next'
 import { colors, radius, semanticColor, spacing, typography } from '../../design-system/tokens'
 import { useTransferStore } from '../../stores/transfer-store'
 import type { TransferItem, TransferState } from '../../types'
-
-const STATE_LABEL: Record<TransferState, string> = {
-  queued: 'Na fila',
-  running: 'Transferindo',
-  completed: 'Concluído',
-  failed: 'Falhou',
-  paused: 'Pausado'
-}
 
 function stateColor(state: TransferState): string {
   switch (state) {
@@ -39,6 +32,7 @@ function formatProgress(item: TransferItem): string {
  * retry/cancel (spec 008 FR-011).
  */
 export function TransfersScreen() {
+  const { t } = useTranslation()
   const { items, loadQueue, cancel, retry } = useTransferStore()
 
   useEffect(() => {
@@ -51,7 +45,7 @@ export function TransfersScreen() {
         data={items}
         keyExtractor={(item) => item.id}
         contentContainerStyle={styles.list}
-        ListEmptyComponent={<Text style={styles.emptyText}>Nenhuma transferência na fila.</Text>}
+        ListEmptyComponent={<Text style={styles.emptyText}>{t('transfers.emptyQueue')}</Text>}
         renderItem={({ item }) => (
           <View style={styles.card}>
             <Text style={styles.cardTitle} numberOfLines={1}>
@@ -60,19 +54,19 @@ export function TransfersScreen() {
             <View style={styles.cardMetaRow}>
               <Text style={styles.cardMeta}>{formatProgress(item)}</Text>
               <Text style={[styles.stateBadge, { color: stateColor(item.state) }]}>
-                {STATE_LABEL[item.state]}
+                {t(`transfers.stateLabel.${item.state}`)}
               </Text>
             </View>
             {item.errorMessage ? <Text style={styles.errorText}>{item.errorMessage}</Text> : null}
             <View style={styles.actionsRow}>
               {item.state === 'failed' ? (
                 <Pressable style={styles.actionButton} onPress={() => void retry(item.id)}>
-                  <Text style={styles.actionButtonText}>Tentar novamente</Text>
+                  <Text style={styles.actionButtonText}>{t('transfers.retry')}</Text>
                 </Pressable>
               ) : null}
               {item.state === 'queued' || item.state === 'running' ? (
                 <Pressable style={styles.actionButton} onPress={() => void cancel(item.id)}>
-                  <Text style={styles.actionButtonText}>Cancelar</Text>
+                  <Text style={styles.actionButtonText}>{t('transfers.cancel')}</Text>
                 </Pressable>
               ) : null}
             </View>

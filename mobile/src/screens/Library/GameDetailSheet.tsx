@@ -1,17 +1,11 @@
 import { useState } from 'react'
 import { Alert, Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native'
+import { useTranslation } from 'react-i18next'
 import { colors, radius, spacing, typography } from '../../design-system/tokens'
 import { GameArtThumbnail } from '../../components/GameArtThumbnail'
 import * as CatalogModule from '../../native/CatalogModule'
 import { useSharingStore } from '../../stores/sharing-store'
 import type { CatalogEntry } from '../../types'
-
-const CONTENT_TYPE_LABEL: Record<CatalogEntry['contentType'], string> = {
-  dvd: 'DVD',
-  cd: 'CD',
-  ps1: 'PS1',
-  app: 'App'
-}
 
 function formatSize(bytes: number): string {
   const mb = bytes / (1024 * 1024)
@@ -30,6 +24,7 @@ interface GameDetailSheetProps {
  * problemas estruturais) aberta a partir de um card na LibraryScreen.
  */
 export function GameDetailSheet({ entry, onClose, onDeleted }: GameDetailSheetProps) {
+  const { t } = useTranslation()
   const sharingState = useSharingStore((state) => state.session?.state)
   const sharingActive = sharingState === 'running-connected' || sharingState === 'running-idle'
   const [deleting, setDeleting] = useState(false)
@@ -37,14 +32,14 @@ export function GameDetailSheet({ entry, onClose, onDeleted }: GameDetailSheetPr
   const handleDelete = () => {
     if (!entry) return
     Alert.alert(
-      'Excluir título',
+      t('gameDetailSheet.deleteConfirm.title'),
       sharingActive
-        ? `Isso remove o arquivo do jogo, capa e configuração de "${entry.title}". O compartilhamento está ativo — excluir um jogo que o PS2 esteja lendo agora pode causar falha no PS2. Esta ação não pode ser desfeita.`
-        : `Isso remove o arquivo do jogo, capa e configuração de "${entry.title}". Esta ação não pode ser desfeita.`,
+        ? t('gameDetailSheet.deleteConfirm.messageSharing', { title: entry.title })
+        : t('gameDetailSheet.deleteConfirm.message', { title: entry.title }),
       [
-        { text: 'Cancelar', style: 'cancel' },
+        { text: t('gameDetailSheet.deleteConfirm.cancel'), style: 'cancel' },
         {
-          text: 'Excluir',
+          text: t('gameDetailSheet.deleteConfirm.confirm'),
           style: 'destructive',
           onPress: () => {
             setDeleting(true)
@@ -54,10 +49,12 @@ export function GameDetailSheet({ entry, onClose, onDeleted }: GameDetailSheetPr
                   onDeleted?.(entry.id)
                   onClose()
                 } else {
-                  Alert.alert('Excluído com falhas', result.failed.map((f) => f.path).join(', '))
+                  Alert.alert(t('gameDetailSheet.deleteFailedTitle'), result.failed.map((f) => f.path).join(', '))
                 }
               })
-              .catch((error) => Alert.alert('Erro ao excluir', error instanceof Error ? error.message : String(error)))
+              .catch((error) =>
+                Alert.alert(t('gameDetailSheet.deleteErrorTitle'), error instanceof Error ? error.message : String(error))
+              )
               .finally(() => setDeleting(false))
           }
         }
@@ -76,29 +73,31 @@ export function GameDetailSheet({ entry, onClose, onDeleted }: GameDetailSheetPr
                 <Text style={styles.title}>{entry.title}</Text>
               </View>
               <View style={styles.row}>
-                <Text style={styles.label}>Tipo</Text>
-                <Text style={styles.value}>{CONTENT_TYPE_LABEL[entry.contentType]}</Text>
+                <Text style={styles.label}>{t('gameDetailSheet.type')}</Text>
+                <Text style={styles.value}>{t(`gameDetailSheet.contentType.${entry.contentType}`)}</Text>
               </View>
               {entry.gameId ? (
                 <View style={styles.row}>
-                  <Text style={styles.label}>ID do jogo</Text>
+                  <Text style={styles.label}>{t('gameDetailSheet.gameId')}</Text>
                   <Text style={styles.value}>{entry.gameId}</Text>
                 </View>
               ) : null}
               <View style={styles.row}>
-                <Text style={styles.label}>Extensão</Text>
+                <Text style={styles.label}>{t('gameDetailSheet.extension')}</Text>
                 <Text style={styles.value}>{entry.extension}</Text>
               </View>
               <View style={styles.row}>
-                <Text style={styles.label}>Tamanho</Text>
+                <Text style={styles.label}>{t('gameDetailSheet.size')}</Text>
                 <Text style={styles.value}>{formatSize(entry.sizeBytes)}</Text>
               </View>
               <View style={styles.row}>
-                <Text style={styles.label}>Capa</Text>
-                <Text style={styles.value}>{entry.hasArt ? 'Disponível' : 'Não encontrada'}</Text>
+                <Text style={styles.label}>{t('gameDetailSheet.art')}</Text>
+                <Text style={styles.value}>
+                  {entry.hasArt ? t('gameDetailSheet.artAvailable') : t('gameDetailSheet.artNotFound')}
+                </Text>
               </View>
               <View style={styles.row}>
-                <Text style={styles.label}>Caminho</Text>
+                <Text style={styles.label}>{t('gameDetailSheet.path')}</Text>
                 <Text style={styles.value}>{entry.logicalPath}</Text>
               </View>
 
@@ -110,8 +109,8 @@ export function GameDetailSheet({ entry, onClose, onDeleted }: GameDetailSheetPr
               >
                 <Text style={styles.statusTitle}>
                   {entry.namingConformance === 'conforms'
-                    ? 'Nomenclatura em conformidade'
-                    : 'Nomenclatura precisa de atenção'}
+                    ? t('gameDetailSheet.namingConforms')
+                    : t('gameDetailSheet.namingNeedsAttention')}
                 </Text>
                 {entry.structuralIssues.map((issue) => (
                   <Text key={issue} style={styles.statusIssue}>
@@ -121,11 +120,13 @@ export function GameDetailSheet({ entry, onClose, onDeleted }: GameDetailSheetPr
               </View>
 
               <Pressable style={styles.deleteButton} onPress={handleDelete} disabled={deleting}>
-                <Text style={styles.deleteButtonText}>{deleting ? 'Excluindo...' : 'Excluir Título'}</Text>
+                <Text style={styles.deleteButtonText}>
+                  {deleting ? t('gameDetailSheet.deleting') : t('gameDetailSheet.deleteTitle')}
+                </Text>
               </Pressable>
 
               <Pressable style={styles.closeButton} onPress={onClose}>
-                <Text style={styles.closeButtonText}>Fechar</Text>
+                <Text style={styles.closeButtonText}>{t('gameDetailSheet.close')}</Text>
               </Pressable>
             </ScrollView>
           ) : null}

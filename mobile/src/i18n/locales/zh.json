@@ -32,9 +32,18 @@
     "updateAction": "更新"
   },
   "library": {
-    "changedTitle": "游戏库已更改",
-    "changedMessage": "检测到新的设备/游戏库来源。正在加载您的游戏库...",
-    "loadError": "无法加载游戏库"
+    "changedTitle": "资料库已更改",
+    "changedMessage": "检测到新的设备/资料库来源，正在加载你的资料库...",
+    "loadError": "无法加载资料库",
+    "filters": {
+      "all": "全部",
+      "dvd": "DVD",
+      "cd": "CD",
+      "ps1": "PS1",
+      "apps": "应用"
+    },
+    "emptyState": "尚未编目任何项目。",
+    "needsAttention": "注意"
   },
   "downloadsFab": {
     "title": "下载",
@@ -118,5 +127,63 @@
     "writeAccessConsent": "我已知晓并授权",
     "writeAccessRequired": "共享前请确认写入权限。",
     "startSharing": "开始共享"
+  },
+  "artSync": {
+    "title": "同步封面",
+    "description": "从公共 OPLM Art 存档（archive.org）为资料库中已编目但尚无封面的游戏下载封面，通过精确的 Game ID 匹配 —— 不会修改游戏文件。",
+    "prepareButton": "准备同步",
+    "checkingArt": "正在检查缺失和可用的封面...",
+    "gamesWithoutArt": "没有封面的游戏",
+    "foundInSource": "在存档中找到",
+    "startButton": "开始同步",
+    "completedLabel": "同步已完成",
+    "syncingLabel": "同步中...",
+    "processedCount": "已处理 {{processed}} / {{total}} 个封面",
+    "installedCount_one": "已安装 {{count}} 个",
+    "installedCount_other": "已安装 {{count}} 个",
+    "failedCount": " · {{count}} 个失败",
+    "recheckButton": "重新检查"
+  },
+  "gameDetailSheet": {
+    "contentType": {
+      "dvd": "DVD",
+      "cd": "CD",
+      "ps1": "PS1",
+      "app": "应用"
+    },
+    "type": "类型",
+    "gameId": "游戏 ID",
+    "extension": "扩展名",
+    "size": "大小",
+    "art": "封面",
+    "artAvailable": "可用",
+    "artNotFound": "未找到",
+    "path": "路径",
+    "namingConforms": "命名符合规范",
+    "namingNeedsAttention": "命名需要注意",
+    "deleting": "删除中...",
+    "deleteTitle": "删除标题",
+    "close": "关闭",
+    "deleteConfirm": {
+      "title": "删除标题",
+      "messageSharing": "这将删除“{{title}}”的游戏文件、封面和配置。共享功能当前处于开启状态 —— 删除 PS2 正在读取的游戏可能导致 PS2 出现故障。此操作无法撤销。",
+      "message": "这将删除“{{title}}”的游戏文件、封面和配置。此操作无法撤销。",
+      "cancel": "取消",
+      "confirm": "删除"
+    },
+    "deleteFailedTitle": "删除时出现失败项",
+    "deleteErrorTitle": "删除时出错"
+  },
+  "transfers": {
+    "stateLabel": {
+      "queued": "排队中",
+      "running": "传输中",
+      "completed": "已完成",
+      "failed": "失败",
+      "paused": "已暂停"
+    },
+    "emptyQueue": "队列中没有传输任务。",
+    "retry": "重试",
+    "cancel": "取消"
   }
 }

@@ -34,7 +34,16 @@
   "library": {
     "changedTitle": "Библиотека изменена",
     "changedMessage": "Обнаружено новое устройство/источник библиотеки. Загружаем вашу библиотеку...",
-    "loadError": "Не удалось загрузить библиотеку"
+    "loadError": "Не удалось загрузить библиотеку",
+    "filters": {
+      "all": "Все",
+      "dvd": "DVD",
+      "cd": "CD",
+      "ps1": "PS1",
+      "apps": "Приложения"
+    },
+    "emptyState": "Пока нет каталогизированных элементов.",
+    "needsAttention": "Внимание"
   },
   "downloadsFab": {
     "title": "Загрузки",
@@ -118,5 +127,63 @@
     "writeAccessConsent": "Я осведомлён и разрешаю",
     "writeAccessRequired": "Подтвердите доступ на запись перед началом общего доступа.",
     "startSharing": "Начать общий доступ"
+  },
+  "artSync": {
+    "title": "Синхронизация обложек",
+    "description": "Загружает обложки для игр, уже каталогизированных в вашей библиотеке, у которых их ещё нет, из публичного архива OPLM Art (archive.org), сопоставляя по точному Game ID — без изменения файлов игр.",
+    "prepareButton": "Подготовить синхронизацию",
+    "checkingArt": "Проверка недостающих и доступных обложек...",
+    "gamesWithoutArt": "Игры без обложки",
+    "foundInSource": "Найдено в архиве",
+    "startButton": "Начать синхронизацию",
+    "completedLabel": "Синхронизация завершена",
+    "syncingLabel": "Синхронизация...",
+    "processedCount": "Обработано {{processed}} из {{total}} обложек",
+    "installedCount_one": "Установлено: {{count}}",
+    "installedCount_other": "Установлено: {{count}}",
+    "failedCount": " · Ошибок: {{count}}",
+    "recheckButton": "Проверить снова"
+  },
+  "gameDetailSheet": {
+    "contentType": {
+      "dvd": "DVD",
+      "cd": "CD",
+      "ps1": "PS1",
+      "app": "Приложение"
+    },
+    "type": "Тип",
+    "gameId": "ID игры",
+    "extension": "Расширение",
+    "size": "Размер",
+    "art": "Обложка",
+    "artAvailable": "Доступна",
+    "artNotFound": "Не найдена",
+    "path": "Путь",
+    "namingConforms": "Именование соответствует",
+    "namingNeedsAttention": "Именование требует внимания",
+    "deleting": "Удаление...",
+    "deleteTitle": "Удалить игру",
+    "close": "Закрыть",
+    "deleteConfirm": {
+      "title": "Удалить игру",
+      "messageSharing": "Это удалит файл игры, обложку и конфигурацию для «{{title}}». Общий доступ активен — удаление игры, которую сейчас читает PS2, может привести к сбою PS2. Это действие нельзя отменить.",
+      "message": "Это удалит файл игры, обложку и конфигурацию для «{{title}}». Это действие нельзя отменить.",
+      "cancel": "Отмена",
+      "confirm": "Удалить"
+    },
+    "deleteFailedTitle": "Удалено с ошибками",
+    "deleteErrorTitle": "Ошибка удаления"
+  },
+  "transfers": {
+    "stateLabel": {
+      "queued": "В очереди",
+      "running": "Передаётся",
+      "completed": "Завершено",
+      "failed": "Ошибка",
+      "paused": "Приостановлено"
+    },
+    "emptyQueue": "В очереди нет передач.",
+    "retry": "Повторить",
+    "cancel": "Отмена"
   }
 }

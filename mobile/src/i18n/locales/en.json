@@ -34,7 +34,16 @@
   "library": {
     "changedTitle": "Library changed",
     "changedMessage": "We detected a new device/library source. Loading your library...",
-    "loadError": "Couldn't load the library"
+    "loadError": "Could not load the library",
+    "filters": {
+      "all": "All",
+      "dvd": "DVD",
+      "cd": "CD",
+      "ps1": "PS1",
+      "apps": "Apps"
+    },
+    "emptyState": "No items cataloged yet.",
+    "needsAttention": "Attention"
   },
   "downloadsFab": {
     "title": "Downloads",
@@ -118,5 +127,63 @@
     "writeAccessConsent": "I am aware and authorize this",
     "writeAccessRequired": "Confirm write access before sharing.",
     "startSharing": "Start sharing"
+  },
+  "artSync": {
+    "title": "Sync Art",
+    "description": "Downloads box art for games already cataloged in your library that don’t have it yet, from the public OPLM Art archive (archive.org), matched by exact Game ID — without touching game files.",
+    "prepareButton": "Prepare sync",
+    "checkingArt": "Checking for missing and available art...",
+    "gamesWithoutArt": "Games without art",
+    "foundInSource": "Found in archive",
+    "startButton": "Start sync",
+    "completedLabel": "Sync completed",
+    "syncingLabel": "Syncing...",
+    "processedCount": "{{processed}} of {{total}} art processed",
+    "installedCount_one": "{{count}} installed",
+    "installedCount_other": "{{count}} installed",
+    "failedCount": " · {{count}} failed",
+    "recheckButton": "Check again"
+  },
+  "gameDetailSheet": {
+    "contentType": {
+      "dvd": "DVD",
+      "cd": "CD",
+      "ps1": "PS1",
+      "app": "App"
+    },
+    "type": "Type",
+    "gameId": "Game ID",
+    "extension": "Extension",
+    "size": "Size",
+    "art": "Art",
+    "artAvailable": "Available",
+    "artNotFound": "Not found",
+    "path": "Path",
+    "namingConforms": "Naming compliant",
+    "namingNeedsAttention": "Naming needs attention",
+    "deleting": "Deleting...",
+    "deleteTitle": "Delete Title",
+    "close": "Close",
+    "deleteConfirm": {
+      "title": "Delete title",
+      "messageSharing": "This removes the game file, art, and config for \"{{title}}\". Sharing is active — deleting a game the PS2 is currently reading can cause the PS2 to fail. This action cannot be undone.",
+      "message": "This removes the game file, art, and config for \"{{title}}\". This action cannot be undone.",
+      "cancel": "Cancel",
+      "confirm": "Delete"
+    },
+    "deleteFailedTitle": "Deleted with failures",
+    "deleteErrorTitle": "Error deleting"
+  },
+  "transfers": {
+    "stateLabel": {
+      "queued": "Queued",
+      "running": "Transferring",
+      "completed": "Completed",
+      "failed": "Failed",
+      "paused": "Paused"
+    },
+    "emptyQueue": "No transfers in the queue.",
+    "retry": "Retry",
+    "cancel": "Cancel"
   }
 }

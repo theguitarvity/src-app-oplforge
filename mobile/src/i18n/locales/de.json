@@ -33,8 +33,17 @@
   },
   "library": {
     "changedTitle": "Bibliothek geändert",
-    "changedMessage": "Wir haben ein neues Gerät/eine neue Bibliotheksquelle erkannt. Deine Bibliothek wird geladen...",
-    "loadError": "Bibliothek konnte nicht geladen werden"
+    "changedMessage": "Wir haben ein neues Gerät/eine neue Bibliotheksquelle erkannt. Bibliothek wird geladen...",
+    "loadError": "Bibliothek konnte nicht geladen werden",
+    "filters": {
+      "all": "Alle",
+      "dvd": "DVD",
+      "cd": "CD",
+      "ps1": "PS1",
+      "apps": "Apps"
+    },
+    "emptyState": "Noch keine Einträge katalogisiert.",
+    "needsAttention": "Achtung"
   },
   "downloadsFab": {
     "title": "Downloads",
@@ -118,5 +127,63 @@
     "writeAccessConsent": "Ich bin mir dessen bewusst und erlaube es",
     "writeAccessRequired": "Bestätige den Schreibzugriff, bevor du freigibst.",
     "startSharing": "Freigabe starten"
+  },
+  "artSync": {
+    "title": "Cover synchronisieren",
+    "description": "Lädt Cover für Spiele herunter, die bereits in deiner Bibliothek katalogisiert sind, aber noch keines haben, aus dem öffentlichen OPLM-Art-Archiv (archive.org), abgeglichen über die exakte Game-ID — ohne Spieldateien zu verändern.",
+    "prepareButton": "Synchronisierung vorbereiten",
+    "checkingArt": "Fehlende und verfügbare Cover werden geprüft...",
+    "gamesWithoutArt": "Spiele ohne Cover",
+    "foundInSource": "Im Archiv gefunden",
+    "startButton": "Synchronisierung starten",
+    "completedLabel": "Synchronisierung abgeschlossen",
+    "syncingLabel": "Wird synchronisiert...",
+    "processedCount": "{{processed}} von {{total}} Covern verarbeitet",
+    "installedCount_one": "{{count}} installiert",
+    "installedCount_other": "{{count}} installiert",
+    "failedCount": " · {{count}} fehlgeschlagen",
+    "recheckButton": "Erneut prüfen"
+  },
+  "gameDetailSheet": {
+    "contentType": {
+      "dvd": "DVD",
+      "cd": "CD",
+      "ps1": "PS1",
+      "app": "App"
+    },
+    "type": "Typ",
+    "gameId": "Spiel-ID",
+    "extension": "Erweiterung",
+    "size": "Größe",
+    "art": "Cover",
+    "artAvailable": "Verfügbar",
+    "artNotFound": "Nicht gefunden",
+    "path": "Pfad",
+    "namingConforms": "Benennung konform",
+    "namingNeedsAttention": "Benennung erfordert Aufmerksamkeit",
+    "deleting": "Wird gelöscht...",
+    "deleteTitle": "Titel löschen",
+    "close": "Schließen",
+    "deleteConfirm": {
+      "title": "Titel löschen",
+      "messageSharing": "Dadurch werden Spieldatei, Cover und Konfiguration von „{{title}}“ entfernt. Die Freigabe ist aktiv — das Löschen eines Spiels, das die PS2 gerade liest, kann zu einem PS2-Fehler führen. Diese Aktion kann nicht rückgängig gemacht werden.",
+      "message": "Dadurch werden Spieldatei, Cover und Konfiguration von „{{title}}“ entfernt. Diese Aktion kann nicht rückgängig gemacht werden.",
+      "cancel": "Abbrechen",
+      "confirm": "Löschen"
+    },
+    "deleteFailedTitle": "Mit Fehlern gelöscht",
+    "deleteErrorTitle": "Fehler beim Löschen"
+  },
+  "transfers": {
+    "stateLabel": {
+      "queued": "In Warteschlange",
+      "running": "Wird übertragen",
+      "completed": "Abgeschlossen",
+      "failed": "Fehlgeschlagen",
+      "paused": "Pausiert"
+    },
+    "emptyQueue": "Keine Übertragungen in der Warteschlange.",
+    "retry": "Erneut versuchen",
+    "cancel": "Abbrechen"
   }
 }

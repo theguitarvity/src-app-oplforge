@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react'
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native'
+import { useTranslation } from 'react-i18next'
 import { colors, radius, semanticColor, spacing, typography } from '../../design-system/tokens'
 import { useArtSyncStore } from '../../stores/art-sync-store'
 import { useCatalogStore } from '../../stores/catalog-store'
@@ -12,6 +13,7 @@ import { navigationRef } from '../../app/navigationRef'
  * files, only cover art, so there's no per-item legal confirmation gate.
  */
 export function ArtSyncScreen() {
+  const { t } = useTranslation()
   const { state, totalGames, matchedInSource, installed, failed, errorMessage, plan, start } = useArtSyncStore()
   const navigatedOnCompletion = useRef(false)
 
@@ -35,59 +37,54 @@ export function ArtSyncScreen() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Sincronizar Artes</Text>
-      <Text style={styles.description}>
-        Baixa a capa dos jogos já catalogados na sua biblioteca que ainda não têm arte, a partir do
-        acervo público OPLM Art (archive.org), casando pelo Game ID exato — sem alterar arquivos de jogo.
-      </Text>
+      <Text style={styles.title}>{t('artSync.title')}</Text>
+      <Text style={styles.description}>{t('artSync.description')}</Text>
 
       {errorMessage ? <Text style={styles.error}>{errorMessage}</Text> : null}
 
       {state === 'idle' || state === 'error' ? (
         <Pressable style={styles.primaryButton} onPress={() => void plan()}>
-          <Text style={styles.primaryButtonText}>Preparar sincronização</Text>
+          <Text style={styles.primaryButtonText}>{t('artSync.prepareButton')}</Text>
         </Pressable>
       ) : null}
 
       {isPlanning ? (
         <View style={styles.card}>
           <ActivityIndicator color={colors.primary} />
-          <Text style={styles.body}>Verificando artes faltando e disponíveis...</Text>
+          <Text style={styles.body}>{t('artSync.checkingArt')}</Text>
         </View>
       ) : null}
 
       {state === 'planned' ? (
         <View style={styles.card}>
-          <Text style={styles.label}>Jogos sem arte</Text>
+          <Text style={styles.label}>{t('artSync.gamesWithoutArt')}</Text>
           <Text style={styles.body}>{totalGames}</Text>
-          <Text style={styles.label}>Encontrados no acervo</Text>
+          <Text style={styles.label}>{t('artSync.foundInSource')}</Text>
           <Text style={styles.body}>{matchedInSource}</Text>
           <Pressable
             style={[styles.primaryButton, matchedInSource === 0 ? styles.disabled : null]}
             disabled={matchedInSource === 0}
             onPress={() => void start()}
           >
-            <Text style={styles.primaryButtonText}>Iniciar sincronização</Text>
+            <Text style={styles.primaryButtonText}>{t('artSync.startButton')}</Text>
           </Pressable>
         </View>
       ) : null}
 
       {isRunning || isDone ? (
         <View style={styles.card}>
-          <Text style={styles.label}>{isDone ? 'Sincronização concluída' : 'Sincronizando...'}</Text>
+          <Text style={styles.label}>{isDone ? t('artSync.completedLabel') : t('artSync.syncingLabel')}</Text>
           <View style={styles.progressTrack}>
             <View style={[styles.progressFill, { width: `${Math.round(progress * 100)}%` }]} />
           </View>
-          <Text style={styles.body}>
-            {processed} de {matchedInSource} artes processadas
-          </Text>
+          <Text style={styles.body}>{t('artSync.processedCount', { processed, total: matchedInSource })}</Text>
           <Text style={styles.label}>
-            {installed} instalada{installed === 1 ? '' : 's'}
-            {failed > 0 ? ` · ${failed} falharam` : ''}
+            {t('artSync.installedCount', { count: installed })}
+            {failed > 0 ? t('artSync.failedCount', { count: failed }) : ''}
           </Text>
           {isDone ? (
             <Pressable style={styles.primaryButton} onPress={() => void plan()}>
-              <Text style={styles.primaryButtonText}>Verificar novamente</Text>
+              <Text style={styles.primaryButtonText}>{t('artSync.recheckButton')}</Text>
             </Pressable>
           ) : null}
         </View>

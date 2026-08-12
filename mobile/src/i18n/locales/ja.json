@@ -33,8 +33,17 @@
   },
   "library": {
     "changedTitle": "ライブラリが変更されました",
-    "changedMessage": "新しいデバイス/ライブラリのソースを検出しました。ライブラリを読み込んでいます...",
-    "loadError": "ライブラリを読み込めませんでした"
+    "changedMessage": "新しいデバイス/ライブラリソースを検出しました。ライブラリを読み込んでいます...",
+    "loadError": "ライブラリを読み込めませんでした",
+    "filters": {
+      "all": "すべて",
+      "dvd": "DVD",
+      "cd": "CD",
+      "ps1": "PS1",
+      "apps": "アプリ"
+    },
+    "emptyState": "まだカタログ登録された項目はありません。",
+    "needsAttention": "要確認"
   },
   "downloadsFab": {
     "title": "ダウンロード",
@@ -118,5 +127,63 @@
     "writeAccessConsent": "内容を理解し、許可します",
     "writeAccessRequired": "共有する前に書き込みアクセスを確認してください。",
     "startSharing": "共有を開始"
+  },
+  "artSync": {
+    "title": "アートワークを同期",
+    "description": "ライブラリに既にカタログ登録されているがアートワークがないゲームのカバーを、公開アーカイブ OPLM Art (archive.org) から、正確な Game ID で照合してダウンロードします — ゲームファイルは変更しません。",
+    "prepareButton": "同期を準備",
+    "checkingArt": "不足しているアートワークと利用可能なアートワークを確認中...",
+    "gamesWithoutArt": "アートワークのないゲーム",
+    "foundInSource": "アーカイブで見つかった件数",
+    "startButton": "同期を開始",
+    "completedLabel": "同期が完了しました",
+    "syncingLabel": "同期中...",
+    "processedCount": "{{total}} 件中 {{processed}} 件のアートワークを処理済み",
+    "installedCount_one": "{{count}} 件インストール済み",
+    "installedCount_other": "{{count}} 件インストール済み",
+    "failedCount": " · {{count}} 件失敗",
+    "recheckButton": "再確認"
+  },
+  "gameDetailSheet": {
+    "contentType": {
+      "dvd": "DVD",
+      "cd": "CD",
+      "ps1": "PS1",
+      "app": "アプリ"
+    },
+    "type": "種類",
+    "gameId": "ゲームID",
+    "extension": "拡張子",
+    "size": "サイズ",
+    "art": "カバー",
+    "artAvailable": "あり",
+    "artNotFound": "見つかりません",
+    "path": "パス",
+    "namingConforms": "命名規則に準拠",
+    "namingNeedsAttention": "命名規則の確認が必要",
+    "deleting": "削除中...",
+    "deleteTitle": "タイトルを削除",
+    "close": "閉じる",
+    "deleteConfirm": {
+      "title": "タイトルを削除",
+      "messageSharing": "「{{title}}」のゲームファイル、カバー、設定が削除されます。共有が有効です — PS2が現在読み込んでいるゲームを削除すると、PS2で不具合が発生する可能性があります。この操作は取り消せません。",
+      "message": "「{{title}}」のゲームファイル、カバー、設定が削除されます。この操作は取り消せません。",
+      "cancel": "キャンセル",
+      "confirm": "削除"
+    },
+    "deleteFailedTitle": "一部削除に失敗しました",
+    "deleteErrorTitle": "削除エラー"
+  },
+  "transfers": {
+    "stateLabel": {
+      "queued": "待機中",
+      "running": "転送中",
+      "completed": "完了",
+      "failed": "失敗",
+      "paused": "一時停止"
+    },
+    "emptyQueue": "キューに転送はありません。",
+    "retry": "再試行",
+    "cancel": "キャンセル"
   }
 }

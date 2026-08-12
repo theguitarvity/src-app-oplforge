@@ -34,7 +34,16 @@
   "library": {
     "changedTitle": "Biblioteca alterada",
     "changedMessage": "Detectamos um novo dispositivo/origem de biblioteca. Carregando sua biblioteca...",
-    "loadError": "Não foi possível carregar a biblioteca"
+    "loadError": "Não foi possível carregar a biblioteca",
+    "filters": {
+      "all": "Todos",
+      "dvd": "DVD",
+      "cd": "CD",
+      "ps1": "PS1",
+      "apps": "Apps"
+    },
+    "emptyState": "Nenhum item catalogado ainda.",
+    "needsAttention": "Atenção"
   },
   "downloadsFab": {
     "title": "Downloads",
@@ -118,5 +127,63 @@
     "writeAccessConsent": "Estou ciente e autorizo",
     "writeAccessRequired": "Confirme o acesso de escrita antes de compartilhar.",
     "startSharing": "Iniciar compartilhamento"
+  },
+  "artSync": {
+    "title": "Sincronizar Artes",
+    "description": "Baixa a capa dos jogos já catalogados na sua biblioteca que ainda não têm arte, a partir do acervo público OPLM Art (archive.org), casando pelo Game ID exato — sem alterar arquivos de jogo.",
+    "prepareButton": "Preparar sincronização",
+    "checkingArt": "Verificando artes faltando e disponíveis...",
+    "gamesWithoutArt": "Jogos sem arte",
+    "foundInSource": "Encontrados no acervo",
+    "startButton": "Iniciar sincronização",
+    "completedLabel": "Sincronização concluída",
+    "syncingLabel": "Sincronizando...",
+    "processedCount": "{{processed}} de {{total}} artes processadas",
+    "installedCount_one": "{{count}} instalada",
+    "installedCount_other": "{{count}} instaladas",
+    "failedCount": " · {{count}} falharam",
+    "recheckButton": "Verificar novamente"
+  },
+  "gameDetailSheet": {
+    "contentType": {
+      "dvd": "DVD",
+      "cd": "CD",
+      "ps1": "PS1",
+      "app": "App"
+    },
+    "type": "Tipo",
+    "gameId": "ID do jogo",
+    "extension": "Extensão",
+    "size": "Tamanho",
+    "art": "Capa",
+    "artAvailable": "Disponível",
+    "artNotFound": "Não encontrada",
+    "path": "Caminho",
+    "namingConforms": "Nomenclatura em conformidade",
+    "namingNeedsAttention": "Nomenclatura precisa de atenção",
+    "deleting": "Excluindo...",
+    "deleteTitle": "Excluir Título",
+    "close": "Fechar",
+    "deleteConfirm": {
+      "title": "Excluir título",
+      "messageSharing": "Isso remove o arquivo do jogo, capa e configuração de \"{{title}}\". O compartilhamento está ativo — excluir um jogo que o PS2 esteja lendo agora pode causar falha no PS2. Esta ação não pode ser desfeita.",
+      "message": "Isso remove o arquivo do jogo, capa e configuração de \"{{title}}\". Esta ação não pode ser desfeita.",
+      "cancel": "Cancelar",
+      "confirm": "Excluir"
+    },
+    "deleteFailedTitle": "Excluído com falhas",
+    "deleteErrorTitle": "Erro ao excluir"
+  },
+  "transfers": {
+    "stateLabel": {
+      "queued": "Na fila",
+      "running": "Transferindo",
+      "completed": "Concluído",
+      "failed": "Falhou",
+      "paused": "Pausado"
+    },
+    "emptyQueue": "Nenhuma transferência na fila.",
+    "retry": "Tentar novamente",
+    "cancel": "Cancelar"
   }
 }

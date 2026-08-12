@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, View } from 'react-native'
+import { useTranslation } from 'react-i18next'
 import { colors, radius, spacing, typography } from '../../design-system/tokens'
 import * as CatalogModule from '../../native/CatalogModule'
 import type { CatalogContentType, CatalogEntry } from '../../types'
@@ -11,12 +12,12 @@ const GRID_COLUMNS = 3
 
 const PAGE_SIZE = 30
 
-const FILTERS: { label: string; value: CatalogContentType | '' }[] = [
-  { label: 'Todos', value: '' },
-  { label: 'DVD', value: 'dvd' },
-  { label: 'CD', value: 'cd' },
-  { label: 'PS1', value: 'ps1' },
-  { label: 'Apps', value: 'app' }
+const FILTERS: { labelKey: string; value: CatalogContentType | '' }[] = [
+  { labelKey: 'library.filters.all', value: '' },
+  { labelKey: 'library.filters.dvd', value: 'dvd' },
+  { labelKey: 'library.filters.cd', value: 'cd' },
+  { labelKey: 'library.filters.ps1', value: 'ps1' },
+  { labelKey: 'library.filters.apps', value: 'app' }
 ]
 
 /**
@@ -24,6 +25,7 @@ const FILTERS: { label: string; value: CatalogContentType | '' }[] = [
  * backed by getCatalogEntries(), always reading the latest completed scan.
  */
 export function LibraryScreen() {
+  const { t } = useTranslation()
   const [filter, setFilter] = useState<CatalogContentType | ''>('')
   const [entries, setEntries] = useState<CatalogEntry[]>([])
   const [page, setPage] = useState(0)
@@ -65,12 +67,12 @@ export function LibraryScreen() {
       <View style={styles.filterRow}>
         {FILTERS.map((option) => (
           <Pressable
-            key={option.label}
+            key={option.labelKey}
             style={[styles.chip, filter === option.value ? styles.chipActive : null]}
             onPress={() => setFilter(option.value)}
           >
             <Text style={[styles.chipText, filter === option.value ? styles.chipTextActive : null]}>
-              {option.label}
+              {t(option.labelKey)}
             </Text>
           </Pressable>
         ))}
@@ -87,7 +89,7 @@ export function LibraryScreen() {
         ListEmptyComponent={
           !loading ? (
             <View style={styles.emptyState}>
-              <Text style={styles.emptyText}>Nenhum item catalogado ainda.</Text>
+              <Text style={styles.emptyText}>{t('library.emptyState')}</Text>
             </View>
           ) : null
         }
@@ -101,7 +103,7 @@ export function LibraryScreen() {
             <View style={styles.cardMetaRow}>
               <Text style={styles.cardMeta}>{item.contentType.toUpperCase()}</Text>
               {item.namingConformance === 'needs-attention' ? (
-                <Text style={styles.cardWarning}>Atenção</Text>
+                <Text style={styles.cardWarning}>{t('library.needsAttention')}</Text>
               ) : null}
             </View>
           </Pressable>

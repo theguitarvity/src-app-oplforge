@@ -34,7 +34,16 @@
   "library": {
     "changedTitle": "Biblioteca modificada",
     "changedMessage": "Detectamos un nuevo dispositivo/origen de biblioteca. Cargando tu biblioteca...",
-    "loadError": "No se pudo cargar la biblioteca"
+    "loadError": "No se pudo cargar la biblioteca",
+    "filters": {
+      "all": "Todos",
+      "dvd": "DVD",
+      "cd": "CD",
+      "ps1": "PS1",
+      "apps": "Apps"
+    },
+    "emptyState": "Aún no hay elementos catalogados.",
+    "needsAttention": "Atención"
   },
   "downloadsFab": {
     "title": "Descargas",
@@ -118,5 +127,63 @@
     "writeAccessConsent": "Estoy al tanto y lo autorizo",
     "writeAccessRequired": "Confirma el acceso de escritura antes de compartir.",
     "startSharing": "Iniciar el uso compartido"
+  },
+  "artSync": {
+    "title": "Sincronizar carátulas",
+    "description": "Descarga la carátula de los juegos ya catalogados en tu biblioteca que aún no la tienen, desde el archivo público OPLM Art (archive.org), emparejando por el Game ID exacto, sin modificar archivos de juego.",
+    "prepareButton": "Preparar sincronización",
+    "checkingArt": "Verificando carátulas faltantes y disponibles...",
+    "gamesWithoutArt": "Juegos sin carátula",
+    "foundInSource": "Encontrados en el archivo",
+    "startButton": "Iniciar sincronización",
+    "completedLabel": "Sincronización completada",
+    "syncingLabel": "Sincronizando...",
+    "processedCount": "{{processed}} de {{total}} carátulas procesadas",
+    "installedCount_one": "{{count}} instalada",
+    "installedCount_other": "{{count}} instaladas",
+    "failedCount": " · {{count}} fallaron",
+    "recheckButton": "Verificar de nuevo"
+  },
+  "gameDetailSheet": {
+    "contentType": {
+      "dvd": "DVD",
+      "cd": "CD",
+      "ps1": "PS1",
+      "app": "App"
+    },
+    "type": "Tipo",
+    "gameId": "ID del juego",
+    "extension": "Extensión",
+    "size": "Tamaño",
+    "art": "Carátula",
+    "artAvailable": "Disponible",
+    "artNotFound": "No encontrada",
+    "path": "Ruta",
+    "namingConforms": "Nomenclatura conforme",
+    "namingNeedsAttention": "La nomenclatura necesita atención",
+    "deleting": "Eliminando...",
+    "deleteTitle": "Eliminar título",
+    "close": "Cerrar",
+    "deleteConfirm": {
+      "title": "Eliminar título",
+      "messageSharing": "Esto elimina el archivo del juego, la carátula y la configuración de \"{{title}}\". El uso compartido está activo: eliminar un juego que la PS2 esté leyendo ahora puede provocar un fallo en la PS2. Esta acción no se puede deshacer.",
+      "message": "Esto elimina el archivo del juego, la carátula y la configuración de \"{{title}}\". Esta acción no se puede deshacer.",
+      "cancel": "Cancelar",
+      "confirm": "Eliminar"
+    },
+    "deleteFailedTitle": "Eliminado con fallos",
+    "deleteErrorTitle": "Error al eliminar"
+  },
+  "transfers": {
+    "stateLabel": {
+      "queued": "En cola",
+      "running": "Transfiriendo",
+      "completed": "Completado",
+      "failed": "Fallido",
+      "paused": "Pausado"
+    },
+    "emptyQueue": "No hay transferencias en la cola.",
+    "retry": "Reintentar",
+    "cancel": "Cancelar"
   }
 }
