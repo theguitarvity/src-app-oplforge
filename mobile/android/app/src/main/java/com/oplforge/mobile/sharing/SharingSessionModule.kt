@@ -22,6 +22,31 @@ import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
 
 /**
+ * Plain-Kotlin snapshot of a connected client — never a [WritableMap] itself,
+ * since `WritableNativeMap` is write-once: once an instance crosses the
+ * bridge (e.g. via [emitSessionEvent]), reading it again (including via
+ * `merge()`) throws `ObjectAlreadyConsumedException`. A fresh [WritableMap]
+ * is built from this on each emission instead.
+ */
+private data class ClientInfo(
+    val id: String,
+    val remoteAddress: String,
+    val connectedAt: String,
+    val activity: String,
+    val lastActivityAt: String,
+    val currentFile: String? = null
+) {
+    fun toWritableMap(): WritableMap = Arguments.createMap().apply {
+        putString("id", id)
+        putString("remoteAddress", remoteAddress)
+        putString("connectedAt", connectedAt)
+        putString("activity", activity)
+        putString("lastActivityAt", lastActivityAt)
+        currentFile?.let { putString("currentFile", it) }
+    }
+}
+
+/**
  * TurboModule for SMB sharing sessions (FR-013–FR-024, FR-033, FR-034). See
  * contracts/native-modules.md SharingModule for the contract this implements.
  */
@@ -40,7 +65,7 @@ class SharingSessionModule(reactContext: ReactApplicationContext) :
     private var lastError: Pair<String, String>? = null
     private var startedAt: String? = null
     private var shareName = SharingForegroundService.SHARE_NAME_DEFAULT
-    private val connectedClients = ConcurrentHashMap<String, WritableMap>()
+    private val connectedClients = ConcurrentHashMap<String, ClientInfo>()
     // A game boot/read burst calls onClientActivity dozens of times per second
     // for the same file — tracks the last-seen raw path per connection so
     // resolveFriendlyTitle's DB lookup and the client-activity-changed event
@@ -203,15 +228,15 @@ class SharingSessionModule(reactContext: ReactApplicationContext) :
     override fun onClientConnected(remoteAddress: String, connectionId: String) {
         state = STATE_RUNNING_CONNECTED
         val now = Instant.now().toString()
-        val client = Arguments.createMap().apply {
-            putString("id", connectionId)
-            putString("remoteAddress", remoteAddress)
-            putString("connectedAt", now)
-            putString("activity", "idle")
-            putString("lastActivityAt", now)
-        }
+        val client = ClientInfo(
+            id = connectionId,
+            remoteAddress = remoteAddress,
+            connectedAt = now,
+            activity = "idle",
+            lastActivityAt = now
+        )
         connectedClients[connectionId] = client
-        emitSessionEvent("client-connected", client, "PS2 conectado.")
+        emitSessionEvent("client-connected", client.toWritableMap(), "PS2 conectado.")
     }
 
     override fun onClientDisconnected(connectionId: String) {
@@ -230,14 +255,13 @@ class SharingSessionModule(reactContext: ReactApplicationContext) :
         scope.launch {
             val title = resolveFriendlyTitle(relativePath)
             val client = connectedClients[connectionId] ?: return@launch
-            val updated = Arguments.createMap().apply {
-                merge(client)
-                putString("activity", "transferring")
-                putString("lastActivityAt", Instant.now().toString())
-                putString("currentFile", title)
-            }
+            val updated = client.copy(
+                activity = "transferring",
+                lastActivityAt = Instant.now().toString(),
+                currentFile = title
+            )
             connectedClients[connectionId] = updated
-            emitSessionEvent("client-activity-changed", updated, "Transmitindo: $title")
+            emitSessionEvent("client-activity-changed", updated.toWritableMap(), "Transmitindo: $title")
         }
     }
 
