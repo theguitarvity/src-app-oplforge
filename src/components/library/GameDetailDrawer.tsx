@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import {
   X,
   MonitorPlay,
@@ -33,6 +34,7 @@ function formatBytes(bytes?: number) {
 }
 
 export function GameDetailDrawer({ item, isOpen, onClose, onUpdated }: GameDetailDrawerProps) {
+  const { t } = useTranslation()
   const activeDevice = useDeviceStore((state) => state.activeDevice)
   const sharingActive = useNetworkShareStore((state) => state.status?.smb.state) === 'running'
   const [isProcessing, setIsProcessing] = useState(false)
@@ -69,8 +71,7 @@ export function GameDetailDrawer({ item, isOpen, onClose, onUpdated }: GameDetai
     setFeedback(null)
     try {
       const profileId = profiles.data?.[0]?.id
-      if (!profileId)
-        throw new Error('Nenhum perfil OPL registrado. Registre um perfil antes de validar.')
+      if (!profileId) throw new Error(t('components.gameDetailDrawer.noProfileError') ?? '')
       const snapshot = await oplApi.scanCatalog({ devicePath: activeDevice.path })
       const plan = await oplApi.planValidation({
         deviceId: activeDevice.id,
@@ -83,10 +84,12 @@ export function GameDetailDrawer({ item, isOpen, onClose, onUpdated }: GameDetai
         bootMode: 'memory-card'
       })
       await oplApi.startValidation(plan.id)
-      setFeedback('PCSX2 iniciado em ambiente isolado.')
+      setFeedback(t('components.gameDetailDrawer.pcsx2Started'))
       setShowPcsx2Picker(false)
     } catch (err) {
-      setFeedback(`Erro ao iniciar PCSX2: ${(err as Error).message}`)
+      setFeedback(
+        t('components.gameDetailDrawer.pcsx2StartError', { message: (err as Error).message })
+      )
     } finally {
       setIsProcessing(false)
     }
@@ -101,15 +104,19 @@ export function GameDetailDrawer({ item, isOpen, onClose, onUpdated }: GameDetai
       const audit = await oplApi.auditOplNaming({ deviceId: activeDevice.id, profileId })
       const auditItem = audit.items.find((entry) => entry.currentRelativePath === item.filePath)
       if (!auditItem) {
-        setFeedback('Não foi possível localizar este arquivo na auditoria de nomes.')
+        setFeedback(t('components.gameDetailDrawer.auditNotFound'))
         return
       }
       if (auditItem.classification === 'canonical') {
-        setFeedback('O nome já está no padrão OPL.')
+        setFeedback(t('components.gameDetailDrawer.alreadyCanonical'))
         return
       }
       if (auditItem.classification !== 'correctable') {
-        setFeedback(`Nome não pode ser corrigido automaticamente (${auditItem.classification}).`)
+        setFeedback(
+          t('components.gameDetailDrawer.notCorrectable', {
+            classification: auditItem.classification
+          })
+        )
         return
       }
       const plan = await oplApi.createOplNamingPlan({
@@ -120,12 +127,17 @@ export function GameDetailDrawer({ item, isOpen, onClose, onUpdated }: GameDetai
       await oplApi.confirmOplNaming({
         planId: plan.planId,
         expectedRevision: plan.revision,
+        // Literal confirmation phrase expected by the backend — not localized (Constitution Principle I).
         confirmation: 'ADEQUAR NOMES OPL'
       })
-      setFeedback(`Nome atualizado para ${auditItem.canonicalRelativePath ?? 'o padrão OPL'}.`)
+      setFeedback(
+        t('components.gameDetailDrawer.renamedTo', {
+          path: auditItem.canonicalRelativePath ?? t('components.gameDetailDrawer.title')
+        })
+      )
       onUpdated?.()
     } catch (err) {
-      setFeedback(`Erro ao renomear: ${(err as Error).message}`)
+      setFeedback(t('components.gameDetailDrawer.renameError', { message: (err as Error).message }))
     } finally {
       setIsProcessing(false)
     }
@@ -139,7 +151,7 @@ export function GameDetailDrawer({ item, isOpen, onClose, onUpdated }: GameDetai
       const inventory = await oplApi.listFragmentationGames(activeDevice.path)
       const match = inventory.items.find((entry) => entry.relativePaths.includes(item.filePath))
       if (!match) {
-        setFeedback('Este arquivo não foi encontrado no inventário de fragmentação.')
+        setFeedback(t('components.gameDetailDrawer.fragmentationNotFound'))
         return
       }
       const diagnostic = await oplApi.diagnoseFragmentation({
@@ -150,20 +162,25 @@ export function GameDetailDrawer({ item, isOpen, onClose, onUpdated }: GameDetai
         entry.identity.relativePaths.includes(item.filePath)
       )
       if (!result) {
-        setFeedback('Diagnóstico concluído sem resultado para este arquivo.')
+        setFeedback(t('components.gameDetailDrawer.fragmentationNoResult'))
         return
       }
       const labels: Record<string, string> = {
-        contiguous: 'Arquivo contíguo (pronto para OPL).',
-        fragmented: 'Arquivo fragmentado — recomenda-se correção.',
-        'partially-fragmented': 'Arquivo parcialmente fragmentado.',
-        incomplete: 'Instalação incompleta detectada.',
-        invalid: 'Instalação inválida detectada.',
-        unverifiable: 'Não foi possível verificar a fragmentação.'
+        contiguous: t('components.gameDetailDrawer.fragmentationContiguous'),
+        fragmented: t('components.gameDetailDrawer.fragmentationFragmented'),
+        'partially-fragmented': t('components.gameDetailDrawer.fragmentationPartial'),
+        incomplete: t('components.gameDetailDrawer.fragmentationIncomplete'),
+        invalid: t('components.gameDetailDrawer.fragmentationInvalid'),
+        unverifiable: t('components.gameDetailDrawer.fragmentationUnverifiable')
       }
-      setFeedback(labels[result.state] ?? `Estado: ${result.state}`)
+      setFeedback(
+        labels[result.state] ??
+          t('components.gameDetailDrawer.fragmentationState', { state: result.state })
+      )
     } catch (err) {
-      setFeedback(`Erro na verificação de fragmentação: ${(err as Error).message}`)
+      setFeedback(
+        t('components.gameDetailDrawer.fragmentationError', { message: (err as Error).message })
+      )
     } finally {
       setIsProcessing(false)
     }
@@ -178,9 +195,11 @@ export function GameDetailDrawer({ item, isOpen, onClose, onUpdated }: GameDetai
         deviceId: activeDevice.id,
         relativePath: item.filePath
       })
-      setFeedback(`Hash calculado: ${hash}`)
+      setFeedback(t('components.gameDetailDrawer.hashCalculated', { hash }))
     } catch (err) {
-      setFeedback(`Erro na validação: ${(err as Error).message}`)
+      setFeedback(
+        t('components.gameDetailDrawer.validationError', { message: (err as Error).message })
+      )
     } finally {
       setIsProcessing(false)
     }
@@ -194,14 +213,18 @@ export function GameDetailDrawer({ item, isOpen, onClose, onUpdated }: GameDetai
     try {
       const result = await oplApi.deleteGame(activeDevice.path, item.filePath, item.gameId)
       if (result.failed.length) {
-        setFeedback(`Excluído com falhas: ${result.failed.map((f) => f.path).join(', ')}`)
+        setFeedback(
+          t('components.gameDetailDrawer.deletedWithFailures', {
+            paths: result.failed.map((f) => f.path).join(', ')
+          })
+        )
       } else {
-        setFeedback(`${item.title} removido da biblioteca.`)
+        setFeedback(t('components.gameDetailDrawer.deletedSuccess', { title: item.title }))
         onUpdated?.()
         onClose()
       }
     } catch (err) {
-      setFeedback(`Erro ao excluir: ${(err as Error).message}`)
+      setFeedback(t('components.gameDetailDrawer.deleteError', { message: (err as Error).message }))
     } finally {
       setIsProcessing(false)
     }
@@ -214,7 +237,7 @@ export function GameDetailDrawer({ item, isOpen, onClose, onUpdated }: GameDetai
         <div className="flex items-center justify-between border-b border-white/10 pb-4">
           <div className="flex items-center gap-2 text-sm font-semibold text-white">
             <Gamepad2 className="size-5 text-violet-400" />
-            <span>Detalhes do Jogo</span>
+            <span>{t('components.gameDetailDrawer.title')}</span>
           </div>
           <button
             onClick={onClose}
@@ -234,7 +257,7 @@ export function GameDetailDrawer({ item, isOpen, onClose, onUpdated }: GameDetai
             <div>
               <h3 className="text-base font-bold text-white line-clamp-2">{item.title}</h3>
               <p className="mt-1 font-mono text-xs text-violet-300">
-                {item.gameId || 'Sem Game ID'}
+                {item.gameId || t('components.gameDetailDrawer.noGameId')}
               </p>
               <div className="mt-2 flex gap-1.5">
                 <span className="rounded bg-violet-600/20 px-2 py-0.5 text-[10px] font-bold text-violet-300 border border-violet-500/30">
@@ -257,29 +280,36 @@ export function GameDetailDrawer({ item, isOpen, onClose, onUpdated }: GameDetai
           {/* Metadata Table */}
           <div className="rounded-2xl border border-white/10 bg-white/5 p-4 space-y-3">
             <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-              Informações da Mídia
+              {t('components.gameDetailDrawer.mediaInfo')}
             </h4>
             <div className="grid grid-cols-2 gap-2 text-xs">
               <div>
-                <span className="text-muted-foreground">Tamanho no Disco:</span>
+                <span className="text-muted-foreground">
+                  {t('components.gameDetailDrawer.sizeOnDisk')}
+                </span>
                 <p className="font-medium text-white">{formatBytes(item.sizeBytes)}</p>
               </div>
               <div>
-                <span className="text-muted-foreground">Status OPL:</span>
+                <span className="text-muted-foreground">
+                  {t('components.gameDetailDrawer.oplStatus')}
+                </span>
                 <p className="font-medium text-emerald-400 flex items-center gap-1">
                   {item.status === 'ready' ? (
                     <>
-                      <CheckCircle2 className="size-3" /> Válido
+                      <CheckCircle2 className="size-3" /> {t('components.gameDetailDrawer.valid')}
                     </>
                   ) : (
                     <>
-                      <AlertTriangle className="size-3 text-amber-400" /> Requer atenção
+                      <AlertTriangle className="size-3 text-amber-400" />{' '}
+                      {t('components.gameDetailDrawer.needsAttention')}
                     </>
                   )}
                 </p>
               </div>
               <div className="col-span-2">
-                <span className="text-muted-foreground">Caminho Relativo:</span>
+                <span className="text-muted-foreground">
+                  {t('components.gameDetailDrawer.relativePath')}
+                </span>
                 <p className="font-mono text-[11px] text-white/80 break-all">{item.filePath}</p>
               </div>
             </div>
@@ -288,7 +318,7 @@ export function GameDetailDrawer({ item, isOpen, onClose, onUpdated }: GameDetai
           {/* Contextual Actions Panel */}
           <div className="space-y-2.5">
             <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-              Ferramentas & Operações
+              {t('components.gameDetailDrawer.toolsAndOperations')}
             </h4>
 
             <button
@@ -298,41 +328,48 @@ export function GameDetailDrawer({ item, isOpen, onClose, onUpdated }: GameDetai
             >
               <span className="flex items-center gap-2">
                 <MonitorPlay className="size-4 text-violet-400" />
-                Testar no PCSX2
+                {t('components.gameDetailDrawer.testOnPcsx2')}
               </span>
-              <span className="text-[10px] text-violet-300 font-mono">Emulador</span>
+              <span className="text-[10px] text-violet-300 font-mono">
+                {t('components.gameDetailDrawer.emulator')}
+              </span>
             </button>
 
             {showPcsx2Picker ? (
               <div className="space-y-2 rounded-xl border border-white/10 bg-white/5 p-3">
                 <p className="text-[11px] text-muted-foreground">
-                  Selecione sua própria BIOS legalmente extraída. Ela não será baixada nem
-                  distribuída.
+                  {t('components.gameDetailDrawer.biosPickerHint')}
                 </p>
                 <button
                   onClick={() => void pickPath(setPcsx2Path, ['AppImage', 'exe'])}
                   className="w-full rounded-lg border border-white/10 bg-white/5 px-2.5 py-1.5 text-left text-[11px] text-white hover:bg-white/10"
                 >
-                  PCSX2: {pcsx2Path || 'selecionar executável'}
+                  {t('components.gameDetailDrawer.pcsx2Label', {
+                    value: pcsx2Path || t('components.gameDetailDrawer.selectExecutable')
+                  })}
                 </button>
                 <button
                   onClick={() => void pickPath(setBiosPath, ['bin', 'rom'])}
                   className="w-full rounded-lg border border-white/10 bg-white/5 px-2.5 py-1.5 text-left text-[11px] text-white hover:bg-white/10"
                 >
-                  BIOS: {biosPath || 'selecionar arquivo próprio'}
+                  {t('components.gameDetailDrawer.biosLabel', {
+                    value: biosPath || t('components.gameDetailDrawer.selectOwnFile')
+                  })}
                 </button>
                 <button
                   onClick={() => void pickPath(setCardPath, ['ps2', 'mcd'])}
                   className="w-full rounded-lg border border-white/10 bg-white/5 px-2.5 py-1.5 text-left text-[11px] text-white hover:bg-white/10"
                 >
-                  Memory Card: {cardPath || 'selecionar imagem'}
+                  {t('components.gameDetailDrawer.memoryCardLabel', {
+                    value: cardPath || t('components.gameDetailDrawer.selectImage')
+                  })}
                 </button>
                 <button
                   onClick={handleTestPcsx2}
                   disabled={isProcessing || !pcsx2Path || !biosPath || !cardPath}
                   className="w-full rounded-lg bg-violet-600 px-2.5 py-1.5 text-[11px] font-semibold text-white hover:bg-violet-500 disabled:opacity-50"
                 >
-                  Confirmar & Iniciar
+                  {t('components.gameDetailDrawer.confirmAndStart')}
                 </button>
               </div>
             ) : null}
@@ -344,7 +381,7 @@ export function GameDetailDrawer({ item, isOpen, onClose, onUpdated }: GameDetai
             >
               <span className="flex items-center gap-2">
                 <FilePenLine className="size-4 text-violet-400" />
-                Renomear para Padrão OPL
+                {t('components.gameDetailDrawer.renameToOplStandard')}
               </span>
             </button>
 
@@ -355,7 +392,7 @@ export function GameDetailDrawer({ item, isOpen, onClose, onUpdated }: GameDetai
             >
               <span className="flex items-center gap-2">
                 <ScanSearch className="size-4 text-violet-400" />
-                Verificar Fragmentação
+                {t('components.gameDetailDrawer.checkFragmentation')}
               </span>
             </button>
 
@@ -366,7 +403,7 @@ export function GameDetailDrawer({ item, isOpen, onClose, onUpdated }: GameDetai
             >
               <span className="flex items-center gap-2">
                 <ShieldCheck className="size-4 text-violet-400" />
-                Validar Hash / ISO
+                {t('components.gameDetailDrawer.validateHashIso')}
               </span>
             </button>
 
@@ -376,9 +413,11 @@ export function GameDetailDrawer({ item, isOpen, onClose, onUpdated }: GameDetai
             >
               <span className="flex items-center gap-2">
                 <Images className="size-4 text-violet-400" />
-                Gerenciar Artes
+                {t('components.gameDetailDrawer.manageArt')}
               </span>
-              <span className="text-[10px] text-violet-300 font-mono">Catálogo</span>
+              <span className="text-[10px] text-violet-300 font-mono">
+                {t('components.gameDetailDrawer.catalog')}
+              </span>
             </Link>
 
             <button
@@ -388,7 +427,7 @@ export function GameDetailDrawer({ item, isOpen, onClose, onUpdated }: GameDetai
             >
               <span className="flex items-center gap-2">
                 <Trash2 className="size-4" />
-                Excluir Título
+                {t('components.gameDetailDrawer.deleteTitle')}
               </span>
             </button>
           </div>
@@ -400,7 +439,7 @@ export function GameDetailDrawer({ item, isOpen, onClose, onUpdated }: GameDetai
             onClick={onClose}
             className="w-full rounded-xl border border-white/15 bg-white/10 py-2.5 text-xs font-semibold text-white transition hover:bg-white/15"
           >
-            Fechar
+            {t('components.gameDetailDrawer.close')}
           </button>
         </div>
       </div>
@@ -408,13 +447,15 @@ export function GameDetailDrawer({ item, isOpen, onClose, onUpdated }: GameDetai
       <ConfirmDialog
         open={showDeleteConfirm}
         onOpenChange={setShowDeleteConfirm}
-        title="Excluir título"
+        title={t('components.gameDetailDrawer.deleteConfirmTitle')}
         description={
           sharingActive
-            ? `Isso remove o arquivo do jogo, capa e configuração de "${item.title}". O compartilhamento está ativo — excluir um jogo que o PS2 esteja lendo agora pode causar falha no PS2. Esta ação não pode ser desfeita.`
-            : `Isso remove o arquivo do jogo, capa e configuração de "${item.title}". Esta ação não pode ser desfeita.`
+            ? t('components.gameDetailDrawer.deleteConfirmDescriptionSharing', {
+                title: item.title
+              })
+            : t('components.gameDetailDrawer.deleteConfirmDescription', { title: item.title })
         }
-        confirmLabel="Excluir"
+        confirmLabel={t('components.gameDetailDrawer.deleteConfirmLabel')}
         onConfirm={handleDelete}
       />
     </div>
