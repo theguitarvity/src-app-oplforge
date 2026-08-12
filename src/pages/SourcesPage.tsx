@@ -1,6 +1,7 @@
 import { Cloud, FolderInput, Import, LinkIcon, Unlink } from 'lucide-react'
 import { useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useTranslation } from 'react-i18next'
 import { ConfirmDialog } from '@/components/ConfirmDialog'
 import { EmptyState } from '@/components/EmptyState'
 import { Button } from '@/components/ui/button'
@@ -18,11 +19,13 @@ type SourceProviderChoice = 'local-folder' | 'google-drive'
 // Electron's IPC error boundary only forwards `Error.message` to the
 // renderer, dropping any custom `.code` property set in the main process —
 // this codebase's existing pattern (DownloadsPage's STALE_REVISION check)
-// is to match on message text instead.
+// is to match on message text instead. The main process error message
+// itself is not localized, so this check intentionally stays in Portuguese.
 const isImportCollision = (error: unknown) =>
   error instanceof Error && /já existe um arquivo com esse nome/i.test(error.message)
 
 export function SourcesPage() {
+  const { t } = useTranslation()
   const [provider, setProvider] = useState<SourceProviderChoice>('local-folder')
   const [folder, setFolder] = useState('')
   const [destinationDir, setDestinationDir] = useState('')
@@ -73,7 +76,7 @@ export function SourcesPage() {
       void queryClient.invalidateQueries({ queryKey: ['google-drive-status'] })
     },
     onError: (error) =>
-      setGoogleDriveError(error instanceof Error ? error.message : 'Falha ao conectar.')
+      setGoogleDriveError(error instanceof Error ? error.message : t('pages.sources.connectError'))
   })
   const disconnectMutation = useMutation({
     mutationFn: () => oplApi.disconnectGoogleDrive(),
@@ -94,18 +97,16 @@ export function SourcesPage() {
     return (
       <EmptyState
         icon={FolderInput}
-        title="Selecione um dispositivo"
-        description="Escolha um dispositivo ativo para importar arquivos de fontes autorizadas."
+        title={t('pages.sources.selectDeviceTitle')}
+        description={t('pages.sources.selectDeviceDescription')}
       />
     )
 
   return (
     <div className="space-y-6">
       <Card>
-        <h2 className="text-2xl font-semibold text-white">Fontes</h2>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Importe arquivos de uma pasta local autorizada ou da sua própria conta do Google Drive.
-        </p>
+        <h2 className="text-2xl font-semibold text-white">{t('pages.sources.title')}</h2>
+        <p className="mt-1 text-sm text-muted-foreground">{t('pages.sources.subtitle')}</p>
 
         <div className="mt-4 flex gap-2 border-b border-white/10">
           <button
@@ -113,29 +114,29 @@ export function SourcesPage() {
             className={`px-3 py-2 text-sm font-medium ${provider === 'local-folder' ? 'border-b-2 border-violet-400 text-white' : 'text-muted-foreground'}`}
             onClick={() => setProvider('local-folder')}
           >
-            Pasta local
+            {t('pages.sources.tabLocalFolder')}
           </button>
           <button
             type="button"
             className={`px-3 py-2 text-sm font-medium ${provider === 'google-drive' ? 'border-b-2 border-violet-400 text-white' : 'text-muted-foreground'}`}
             onClick={() => setProvider('google-drive')}
           >
-            Google Drive
+            {t('pages.sources.tabGoogleDrive')}
           </button>
         </div>
 
         {provider === 'local-folder' && (
           <div className="mt-4 grid gap-4 md:grid-cols-[1fr_auto]">
             <div className="space-y-2">
-              <Label>Pasta local autorizada</Label>
+              <Label>{t('pages.sources.authorizedFolderLabel')}</Label>
               <Input value={folder} onChange={(event) => setFolder(event.target.value)} />
             </div>
             <div className="flex items-end gap-2">
               <Button type="button" variant="secondary" onClick={pickFolder}>
-                Selecionar
+                {t('pages.sources.select')}
               </Button>
               <Button type="button" onClick={() => void refetch()} disabled={!folder}>
-                Listar
+                {t('pages.sources.list')}
               </Button>
             </div>
           </div>
@@ -145,9 +146,9 @@ export function SourcesPage() {
           <div className="mt-4 space-y-3 rounded-xl border border-white/10 bg-black/20 p-4">
             {!googleDriveStatus?.configured && (
               <div className="space-y-2">
-                <Label>Client ID do Google (OAuth, tipo "Desktop app")</Label>
+                <Label>{t('pages.sources.googleClientIdLabel')}</Label>
                 <p className="text-xs text-muted-foreground">
-                  Crie um projeto no{' '}
+                  {t('pages.sources.googleClientIdHintPrefix')}{' '}
                   <button
                     type="button"
                     className="underline"
@@ -157,10 +158,9 @@ export function SourcesPage() {
                       )
                     }
                   >
-                    Google Cloud Console
+                    {t('pages.sources.googleCloudConsole')}
                   </button>
-                  , ative a Drive API e gere um Client ID tipo "Desktop app" — nenhum client secret
-                  é necessário.
+                  {t('pages.sources.googleClientIdHintSuffix')}
                 </p>
                 <div className="flex gap-2">
                   <Input
@@ -173,7 +173,7 @@ export function SourcesPage() {
                     disabled={!clientIdInput.trim() || saveClientIdMutation.isPending}
                     onClick={() => saveClientIdMutation.mutate()}
                   >
-                    Salvar
+                    {t('pages.sources.save')}
                   </Button>
                 </div>
               </div>
@@ -184,17 +184,17 @@ export function SourcesPage() {
                 disabled={connectMutation.isPending}
                 onClick={() => connectMutation.mutate()}
               >
-                <LinkIcon className="size-4" /> Conectar ao Google Drive
+                <LinkIcon className="size-4" /> {t('pages.sources.connectGoogleDrive')}
               </Button>
             )}
             {googleDriveStatus?.connected && (
               <div className="flex items-center justify-between gap-3">
                 <div className="flex items-center gap-2 text-sm text-emerald-300">
-                  <Cloud className="size-4" /> Conectado
+                  <Cloud className="size-4" /> {t('pages.sources.connected')}
                 </div>
                 <div className="flex gap-2">
                   <Button type="button" onClick={() => void refetch()}>
-                    Listar arquivos
+                    {t('pages.sources.listFiles')}
                   </Button>
                   <Button
                     type="button"
@@ -202,7 +202,7 @@ export function SourcesPage() {
                     disabled={disconnectMutation.isPending}
                     onClick={() => disconnectMutation.mutate()}
                   >
-                    <Unlink className="size-4" /> Desconectar
+                    <Unlink className="size-4" /> {t('pages.sources.disconnect')}
                   </Button>
                 </div>
               </div>
@@ -213,7 +213,7 @@ export function SourcesPage() {
 
         <div className="mt-4 grid gap-4 md:grid-cols-[1fr_auto]">
           <div className="space-y-2">
-            <Label>Destino</Label>
+            <Label>{t('pages.sources.destinationLabel')}</Label>
             <Input
               value={destinationDir || activeDevice.path}
               onChange={(event) => setDestinationDir(event.target.value)}
@@ -221,7 +221,7 @@ export function SourcesPage() {
           </div>
           <div className="flex items-end">
             <Button type="button" variant="secondary" onClick={pickDestination}>
-              Alterar destino
+              {t('pages.sources.changeDestination')}
             </Button>
           </div>
         </div>
@@ -233,11 +233,11 @@ export function SourcesPage() {
             <div>
               <p className="font-medium text-white">{file.name}</p>
               <p className="text-sm text-muted-foreground">
-                {file.extension || 'arquivo'} - {formatBytes(file.size)}
+                {file.extension || t('pages.sources.genericFile')} - {formatBytes(file.size)}
               </p>
             </div>
             <Button onClick={() => mutation.mutate({ file })} disabled={mutation.isPending}>
-              <Import className="size-4" /> Importar
+              <Import className="size-4" /> {t('pages.sources.import')}
             </Button>
           </Card>
         ))}
@@ -248,9 +248,11 @@ export function SourcesPage() {
         onOpenChange={(open) => {
           if (!open) setPendingOverwrite(null)
         }}
-        title="Substituir arquivo existente?"
-        description={`Já existe um arquivo com o nome "${pendingOverwrite?.name}" no destino. Sobrescrever substitui o arquivo existente permanentemente.`}
-        confirmLabel="Sobrescrever"
+        title={t('pages.sources.overwriteConfirmTitle')}
+        description={t('pages.sources.overwriteConfirmDescription', {
+          name: pendingOverwrite?.name
+        })}
+        confirmLabel={t('pages.sources.overwriteConfirmLabel')}
         onConfirm={() => {
           if (pendingOverwrite) mutation.mutate({ file: pendingOverwrite, overwrite: true })
           setPendingOverwrite(null)
