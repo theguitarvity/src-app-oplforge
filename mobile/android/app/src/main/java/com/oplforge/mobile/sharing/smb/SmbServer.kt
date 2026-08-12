@@ -76,6 +76,13 @@ class SmbServer(
                     client.close()
                     continue
                 }
+                // Real PS2 hardware runs a notoriously primitive TCP/IP stack that
+                // stalls badly on Nagle/delayed-ACK interaction — this is a well
+                // documented compatibility requirement for PS2 SMB servers, not an
+                // optimization. Desktop's Node socket happens to not need this
+                // (different host OS TCP stack), which is why this bug never
+                // showed up there.
+                runCatching { client.tcpNoDelay = true }
                 val connectionId = "${remote.hostAddress}:${client.port}"
                 activeSockets[connectionId] = client
                 connectionExecutor.submit { handleConnection(client, connectionId, handlers) }

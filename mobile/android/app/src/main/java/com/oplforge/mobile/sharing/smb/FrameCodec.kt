@@ -141,15 +141,28 @@ object FrameCodec {
         output.flush()
     }
 
+    /**
+     * Combines the 4-byte NBSS header and the SMB payload into a single
+     * buffer and issues one `output.write()` call — mirrors desktop's
+     * `socket.write(encodeNbssFrame(encodeSmbMessage(response)))`, which is
+     * always a single atomic write. This previously wrote the NBSS header
+     * and payload as two separate `output.write()` calls: harmless against
+     * well-behaved TCP stacks, but real PS2 hardware runs a notoriously
+     * primitive TCP/IP implementation that can choke when a response arrives
+     * as a tiny 4-byte segment immediately followed by a second segment,
+     * rather than one combined packet — found while chasing a PS2 boot-time
+     * hang that occurred only on mobile, never on desktop, for byte-identical
+     * SMB responses.
+     */
     fun writeFrame(output: OutputStream, frame: SmbFrame) {
         val payload = encode(frame)
-        val nbHeader = ByteArray(4)
-        nbHeader[0] = NETBIOS_SESSION_MESSAGE.toByte()
-        nbHeader[1] = ((payload.size shr 16) and 0xFF).toByte()
-        nbHeader[2] = ((payload.size shr 8) and 0xFF).toByte()
-        nbHeader[3] = (payload.size and 0xFF).toByte()
-        output.write(nbHeader)
-        output.write(payload)
+        val message = ByteArray(4 + payload.size)
+        message[0] = NETBIOS_SESSION_MESSAGE.toByte()
+        message[1] = ((payload.size shr 16) and 0xFF).toByte()
+        message[2] = ((payload.size shr 8) and 0xFF).toByte()
+        message[3] = (payload.size and 0xFF).toByte()
+        payload.copyInto(message, 4)
+        output.write(message)
         output.flush()
     }
 

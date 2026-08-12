@@ -137,17 +137,22 @@ class CommandHandlers(
         } catch (e: TimeoutException) {
             future.cancel(true) // interrupts the worker thread -> ClosedByInterruptException on the blocked channel call
             throw SmbIoTimeoutException(e)
+        } catch (e: java.util.concurrent.ExecutionException) {
+            // A real I/O failure inside the Callable (e.g. a transient
+            // USB-OTG hiccup under the burst of small reads a PS2 game boot
+            // sends — far more likely to hit this than the sparse reads
+            // during simple browsing) surfaces here, NOT as TimeoutException.
+            // Left uncaught, this propagated all the way to SmbServer's
+            // generic exception handler, which closes the whole TCP
+            // connection — a real bug found via on-device testing: the
+            // connection visibly dropped and reconnected exactly when a game
+            // boot's burst of reads began, then hung. Must convert to the
+            // same recoverable SMB error as a timeout, not kill the socket.
+            throw SmbIoTimeoutException(e.cause ?: e)
         }
     }
 
     fun handle(frame: SmbFrame, state: SmbConnectionState): SmbFrame {
-        android.util.Log.d("OplForgeSmbTiming", "-> cmd=0x%02X paramsLen=%d dataLen=%d".format(frame.command, frame.params.size, frame.data.size))
-        val response = dispatch(frame, state)
-        android.util.Log.d("OplForgeSmbTiming", "<- cmd=0x%02X status=0x%08X".format(frame.command, response.status))
-        return response
-    }
-
-    private fun dispatch(frame: SmbFrame, state: SmbConnectionState): SmbFrame {
         return when (frame.command) {
             SmbCommand.NEGOTIATE -> negotiate(frame, state)
             SmbCommand.SESSION_SETUP_ANDX -> sessionSetup(frame, state)
@@ -330,7 +335,6 @@ class CommandHandlers(
         }.stripTrailingNul()
 
         val target = if (rawPath.isBlank()) tree.root else PathConfinement.resolve(tree, rawPath)
-        android.util.Log.d("OplForgeSmbTiming", "ntCreate rawPath='$rawPath' found=${target != null}")
         if (target == null) return FrameCodec.response(frame, NtStatus.OBJECT_NAME_NOT_FOUND)
 
         val pfd = if (!target.isDirectory) {
@@ -444,16 +448,11 @@ class CommandHandlers(
             }
         } catch (e: SmbIoTimeoutException) {
             android.util.Log.w(
-                "OplForgeSmbTiming",
-                "READ TIMEOUT fid=$fid offset=$offset maxCount=$maxCount after ${System.currentTimeMillis() - readStart}ms"
+                "OplForgeSmb",
+                "Read timed out fid=$fid offset=$offset maxCount=$maxCount after ${System.currentTimeMillis() - readStart}ms — likely a stalled USB-OTG/slow-media read"
             )
             return FrameCodec.response(frame, NtStatus.UNSUCCESSFUL)
         }
-        val readDurationMs = System.currentTimeMillis() - readStart
-        android.util.Log.d(
-            "OplForgeSmbTiming",
-            "READ fid=$fid offset=$offset maxCount=$maxCount got=${bytesRead.size} took=${readDurationMs}ms"
-        )
 
         // 24-byte READ_ANDX response, MS-CIFS 2.2.4.42.2 — byte-for-byte
         // mirror of desktop's handleReadAndx, including a real (not
