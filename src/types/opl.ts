@@ -830,6 +830,13 @@ export interface SourceProviderConfig {
   url?: string
 }
 
+export interface GoogleDriveStatus {
+  /** Whether a Client ID has been saved — required before connect() can run. */
+  configured: boolean
+  connected: boolean
+  clientId?: string
+}
+
 export interface ImportFromSourceInput {
   file: SourceFile
   destination: string
@@ -1313,6 +1320,10 @@ export interface OplApi {
   searchRemoteSource(params: RemoteSearchParams): Promise<RemoteSearchResult[]>
   getRemoteItemDetails(id: string): Promise<RemoteItemDetails>
   listRemoteFiles(id: string): Promise<RemoteFile[]>
+  getGoogleDriveStatus(): Promise<GoogleDriveStatus>
+  saveGoogleDriveClientId(clientId: string): Promise<void>
+  connectGoogleDrive(): Promise<void>
+  disconnectGoogleDrive(): Promise<void>
   addP2PDownload(input: TorrentInput): Promise<DownloadTask>
   addCatalogGamesToQueue(input: CatalogDownloadInput): Promise<DownloadTask[]>
   pauseDownload(taskId: string): Promise<void>

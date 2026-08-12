@@ -15,14 +15,34 @@ import {
   saveManagedSource,
   searchRemoteSource
 } from '../services/source.service'
+import {
+  connectGoogleDrive,
+  disconnectGoogleDrive,
+  getGoogleDriveStatus,
+  saveGoogleDriveClientId
+} from '../services/sources/google-drive-auth.service'
 
 export function registerSourceIpc() {
-  ipcMain.handle('sources:list-files', (_event, config: SourceProviderConfig) => listSourceFiles(config))
-  ipcMain.handle('sources:import-file', (_event, input: ImportFromSourceInput) => importFromSource(input))
+  ipcMain.handle('sources:list-files', (_event, config: SourceProviderConfig) =>
+    listSourceFiles(config)
+  )
+  ipcMain.handle('sources:import-file', (_event, input: ImportFromSourceInput) =>
+    importFromSource(input)
+  )
   ipcMain.handle('sources:managed:list', () => listManagedSources())
-  ipcMain.handle('sources:managed:save', (_event, config: ManagedSourceConfig) => saveManagedSource(config))
+  ipcMain.handle('sources:managed:save', (_event, config: ManagedSourceConfig) =>
+    saveManagedSource(config)
+  )
   ipcMain.handle('sources:managed:remove', (_event, id: string) => removeManagedSource(id))
-  ipcMain.handle('sources:remote:search', (_event, params: RemoteSearchParams) => searchRemoteSource(params))
+  ipcMain.handle('sources:remote:search', (_event, params: RemoteSearchParams) =>
+    searchRemoteSource(params)
+  )
   ipcMain.handle('sources:remote:details', (_event, id: string) => getRemoteItemDetails(id))
   ipcMain.handle('sources:remote:files', (_event, id: string) => listRemoteFiles(id))
+  ipcMain.handle('sources:google-drive:status', () => getGoogleDriveStatus())
+  ipcMain.handle('sources:google-drive:save-client-id', (_event, clientId: string) =>
+    saveGoogleDriveClientId(clientId)
+  )
+  ipcMain.handle('sources:google-drive:connect', () => connectGoogleDrive())
+  ipcMain.handle('sources:google-drive:disconnect', () => disconnectGoogleDrive())
 }

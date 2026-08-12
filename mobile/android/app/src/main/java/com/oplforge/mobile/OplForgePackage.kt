@@ -11,6 +11,7 @@ import com.oplforge.mobile.essentials.CustomCatalogModule
 import com.oplforge.mobile.essentials.EssentialsModule
 import com.oplforge.mobile.library.LibrarySelectionModule
 import com.oplforge.mobile.sharing.SharingSessionModule
+import com.oplforge.mobile.sources.GoogleDriveModule
 import com.oplforge.mobile.transfer.TransferQueueModule
 
 /** Registers this app's own TurboModules — not autolinked, since they live in-app, not as a package. */
@@ -24,7 +25,8 @@ class OplForgePackage : ReactPackage {
             EssentialsModule(reactContext),
             CustomCatalogModule(reactContext),
             DiagnosticsModule(reactContext),
-            ArtSyncModule(reactContext)
+            ArtSyncModule(reactContext),
+            GoogleDriveModule(reactContext)
         )
 
     override fun createViewManagers(reactContext: ReactApplicationContext): List<ViewManager<*, *>> = emptyList()

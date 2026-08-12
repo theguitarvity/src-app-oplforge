@@ -64,6 +64,12 @@ const QUICK_ACTIONS: QuickAction[] = [
     label: 'Sincronizar Artes',
     icon: 'image',
     onPress: (navigation) => navigation.navigate('ArtSync')
+  },
+  {
+    key: 'sources',
+    label: 'Google Drive',
+    icon: 'cloud',
+    onPress: (navigation) => navigation.navigate('Sources')
   }
 ]
 

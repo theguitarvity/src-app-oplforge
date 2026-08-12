@@ -14,6 +14,8 @@ import { DEFAULT_REMOTE_SOURCES } from '../../src/services/sources/defaultRemote
 import { InternetArchiveProvider } from '../../src/services/sources/providers/InternetArchiveProvider'
 import { addHistory, recordFailure } from './history.service'
 import { sendLog } from './logger'
+import { GoogleDriveProvider } from './sources/GoogleDriveProvider'
+import { getValidGoogleDriveAccessToken } from './sources/google-drive-auth.service'
 
 export interface SourceProvider {
   name: string
@@ -101,19 +103,31 @@ async function writeSources(sources: ManagedSourceConfig[]) {
 }
 
 // TODO: Implementar UrlProvider com suporte a fontes autorizadas configuradas pelo usuario.
-// TODO: Implementar GoogleDriveProvider usando OAuth/arquivos compartilhados autorizados.
 // TODO: Implementar MegaProvider usando credenciais ou links autorizados pelo usuario.
 
-function createProvider(config: SourceProviderConfig): SourceProvider {
+async function createProvider(config: SourceProviderConfig): Promise<SourceProvider> {
   if (config.provider === 'local-folder') {
     if (!config.rootPath) throw new Error('Diretorio local nao informado.')
     return new LocalFolderProvider(config.rootPath)
   }
+  if (config.provider === 'google-drive') {
+    const accessToken = await getValidGoogleDriveAccessToken()
+    return new GoogleDriveProvider(accessToken)
+  }
   throw new Error(`Provider ${config.provider} ainda nao implementado no MVP.`)
 }
 
+/** Reconstructs the same provider that produced `file` (via its own `.provider` tag) — a downloaded file must be fetched the same way it was listed, not assumed to always be a local path. */
+async function providerForFile(file: SourceFile): Promise<SourceProvider> {
+  if (file.provider === 'GoogleDriveProvider') {
+    const accessToken = await getValidGoogleDriveAccessToken()
+    return new GoogleDriveProvider(accessToken)
+  }
+  return new LocalFolderProvider(path.dirname(file.path))
+}
+
 export async function listSourceFiles(config: SourceProviderConfig): Promise<SourceFile[]> {
-  const provider = createProvider(config)
+  const provider = await createProvider(config)
   return provider.listFiles()
 }
 
@@ -133,7 +147,7 @@ export async function importFromSource(input: ImportFromSourceInput) {
       })
   }
   try {
-    const provider = new LocalFolderProvider(path.dirname(input.file.path))
+    const provider = await providerForFile(input.file)
     await provider.downloadFile(input.file, input.destination)
     sendLog('SUCCESS', `Arquivo importado da fonte: ${input.file.name}`)
     return addHistory({
@@ -141,7 +155,7 @@ export async function importFromSource(input: ImportFromSourceInput) {
       origin: input.file.path,
       destination: input.destination,
       result: 'success',
-      message: 'Arquivo importado de fonte local.'
+      message: `Arquivo importado via ${input.file.provider}.`
     })
   } catch (error) {
     return recordFailure('Importar de fonte', error, input.file.path, input.destination)

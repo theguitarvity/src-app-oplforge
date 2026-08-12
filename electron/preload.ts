@@ -172,6 +172,11 @@ const api: OplApi = {
     ipcRenderer.invoke('sources:remote:search', params),
   getRemoteItemDetails: (id: string) => ipcRenderer.invoke('sources:remote:details', id),
   listRemoteFiles: (id: string) => ipcRenderer.invoke('sources:remote:files', id),
+  getGoogleDriveStatus: () => ipcRenderer.invoke('sources:google-drive:status'),
+  saveGoogleDriveClientId: (clientId: string) =>
+    ipcRenderer.invoke('sources:google-drive:save-client-id', clientId),
+  connectGoogleDrive: () => ipcRenderer.invoke('sources:google-drive:connect'),
+  disconnectGoogleDrive: () => ipcRenderer.invoke('sources:google-drive:disconnect'),
   addP2PDownload: (input: TorrentInput) => ipcRenderer.invoke('downloads:add-p2p', input),
   addCatalogGamesToQueue: (input: CatalogDownloadInput) =>
     ipcRenderer.invoke('catalog:add-to-queue', input),
