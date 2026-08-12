@@ -1,10 +1,12 @@
 import { useLogStore } from '@/stores/log-store'
 import { X, Trash2, Copy, Filter } from 'lucide-react'
 import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { oplApi } from '@/services/api'
 import type { OperationSummary } from '@/types/opl-finalization'
 
 export function ActivityDrawer() {
+  const { t } = useTranslation()
   const { logs, isDrawerOpen, logFilter, toggleDrawer, clearLogs, setLogFilter } = useLogStore()
   const [operations, setOperations] = useState<OperationSummary[]>([])
   useEffect(() => {
@@ -40,7 +42,9 @@ export function ActivityDrawer() {
       {/* Drawer Header */}
       <div className="flex items-center justify-between border-b border-white/10 pb-3">
         <div className="flex items-center gap-3">
-          <h3 className="text-sm font-semibold text-white">Console de Atividades & Logs</h3>
+          <h3 className="text-sm font-semibold text-white">
+            {t('components.activityDrawer.title')}
+          </h3>
           <div className="flex items-center gap-1 rounded-lg border border-white/10 bg-white/5 p-1 text-xs">
             <Filter className="ml-1 size-3 text-muted-foreground" />
             <button
@@ -51,7 +55,7 @@ export function ActivityDrawer() {
                   : 'text-muted-foreground hover:text-white'
               }`}
             >
-              Todos
+              {t('components.activityDrawer.filterAll')}
             </button>
             <button
               onClick={() => setLogFilter('info')}
@@ -61,7 +65,7 @@ export function ActivityDrawer() {
                   : 'text-muted-foreground hover:text-white'
               }`}
             >
-              Info
+              {t('components.activityDrawer.filterInfo')}
             </button>
             <button
               onClick={() => setLogFilter('warn')}
@@ -71,7 +75,7 @@ export function ActivityDrawer() {
                   : 'text-muted-foreground hover:text-white'
               }`}
             >
-              Avisos
+              {t('components.activityDrawer.filterWarn')}
             </button>
             <button
               onClick={() => setLogFilter('error')}
@@ -81,7 +85,7 @@ export function ActivityDrawer() {
                   : 'text-muted-foreground hover:text-white'
               }`}
             >
-              Erros
+              {t('components.activityDrawer.filterError')}
             </button>
           </div>
         </div>
@@ -92,14 +96,14 @@ export function ActivityDrawer() {
             className="flex items-center gap-1 rounded-md border border-white/10 bg-white/5 px-2.5 py-1 text-xs font-medium text-muted-foreground hover:bg-white/10 hover:text-white"
           >
             <Copy className="size-3" />
-            Copiar
+            {t('components.activityDrawer.copy')}
           </button>
           <button
             onClick={clearLogs}
             className="flex items-center gap-1 rounded-md border border-white/10 bg-white/5 px-2.5 py-1 text-xs font-medium text-muted-foreground hover:bg-white/10 hover:text-white"
           >
             <Trash2 className="size-3" />
-            Limpar
+            {t('components.activityDrawer.clear')}
           </button>
           <button
             onClick={() => toggleDrawer(false)}
@@ -129,14 +133,15 @@ export function ActivityDrawer() {
             {operation.bytes && (
               <p className="mt-1 text-muted-foreground">
                 {operation.bytes.done.toLocaleString()} /{' '}
-                {operation.bytes.total?.toLocaleString() || '?'} bytes · {operation.phase}
+                {operation.bytes.total?.toLocaleString() || '?'}{' '}
+                {t('components.activityDrawer.bytesUnit')} · {operation.phase}
               </p>
             )}
           </div>
         ))}
         {filteredLogs.length === 0 ? (
           <div className="grid h-full place-items-center text-muted-foreground">
-            Nenhum evento registrado no console.
+            {t('components.activityDrawer.noEvents')}
           </div>
         ) : (
           filteredLogs.map((log) => (

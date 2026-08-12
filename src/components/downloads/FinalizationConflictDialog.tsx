@@ -1,4 +1,5 @@
 import { useId, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import type { FinalizationPlan } from '../../types/opl-finalization'
 
 export interface FinalizationConflictDialogProps {
@@ -18,6 +19,7 @@ export function FinalizationConflictDialog({
   onCancel,
   onConfirm
 }: FinalizationConflictDialogProps) {
+  const { t } = useTranslation()
   const titleId = useId()
   const descriptionId = useId()
   const [resolution, setResolution] = useState<
@@ -26,21 +28,19 @@ export function FinalizationConflictDialog({
   if (!open) return null
   return (
     <div role="dialog" aria-modal="true" aria-labelledby={titleId} aria-describedby={descriptionId}>
-      <h2 id={titleId}>Confirmar finalização OPL</h2>
-      <p id={descriptionId}>
-        Revise a identidade, o nome e qualquer colisão antes de gravar no dispositivo.
-      </p>
+      <h2 id={titleId}>{t('components.finalizationConflictDialog.title')}</h2>
+      <p id={descriptionId}>{t('components.finalizationConflictDialog.description')}</p>
       <dl>
-        <dt>Nome canônico</dt>
-        <dd>{plan.canonicalName ?? 'Identidade pendente'}</dd>
-        <dt>Destino</dt>
+        <dt>{t('components.finalizationConflictDialog.canonicalName')}</dt>
+        <dd>{plan.canonicalName ?? t('components.finalizationConflictDialog.pendingIdentity')}</dd>
+        <dt>{t('components.finalizationConflictDialog.destination')}</dt>
         <dd>{plan.destinationRelativePaths.join(', ')}</dd>
-        <dt>Verificação</dt>
+        <dt>{t('components.finalizationConflictDialog.verification')}</dt>
         <dd>{plan.verificationCapability}</dd>
       </dl>
       {plan.collision && (
         <fieldset>
-          <legend>Arquivo existente</legend>
+          <legend>{t('components.finalizationConflictDialog.existingFile')}</legend>
           {(['keep-existing', 'replace-identical', 'replace-authorized'] as const).map((value) => (
             <label key={value}>
               <input
@@ -56,7 +56,7 @@ export function FinalizationConflictDialog({
         </fieldset>
       )}
       <button type="button" onClick={onCancel}>
-        Cancelar
+        {t('components.finalizationConflictDialog.cancel')}
       </button>
       <button
         type="button"
@@ -68,7 +68,7 @@ export function FinalizationConflictDialog({
           })
         }
       >
-        Finalizar backup para OPL
+        {t('components.finalizationConflictDialog.finalize')}
       </button>
     </div>
   )

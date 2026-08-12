@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Wifi, WifiOff, ShieldAlert, Users, Loader2, Gamepad2 } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -15,6 +16,7 @@ function protocolLabel(protocol: NetworkShareProtocol) {
 }
 
 export function NetworkShareStatus() {
+  const { t } = useTranslation()
   const activeDevice = useDeviceStore((state) => state.activeDevice)
   const config = useNetworkShareStore((state) => state.config)
   const status = useNetworkShareStore((state) => state.status)
@@ -72,15 +74,15 @@ export function NetworkShareStatus() {
 
   const handleStart = async () => {
     if (!activeDevice) {
-      setError('Selecione um dispositivo em Dispositivos antes de ligar o compartilhamento.')
+      setError(t('components.networkShareStatus.errorSelectDevice'))
       return
     }
     if (!username.trim()) {
-      setError('Informe um usuário para o compartilhamento.')
+      setError(t('components.networkShareStatus.errorProvideUsername'))
       return
     }
     if (!config?.username && !password) {
-      setError('Defina uma senha para o compartilhamento.')
+      setError(t('components.networkShareStatus.errorSetPassword'))
       return
     }
     setIsBusy(true)
@@ -100,9 +102,7 @@ export function NetworkShareStatus() {
 
       if (!savedConfig.writeAccessAcknowledgedAt) {
         if (!writeAccessChecked) {
-          setError(
-            'Confirme que o PS2 poderá gravar/sobrescrever arquivos na biblioteca antes de continuar.'
-          )
+          setError(t('components.networkShareStatus.errorConfirmWriteAccess'))
           return
         }
         const acknowledged = await oplApi.acknowledgeNetworkShareWriteAccess()
@@ -113,7 +113,9 @@ export function NetworkShareStatus() {
       setStatus(newStatus)
       setPassword('')
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Não foi possível iniciar o compartilhamento.')
+      setError(
+        err instanceof Error ? err.message : t('components.networkShareStatus.errorStartFailed')
+      )
     } finally {
       setIsBusy(false)
     }
@@ -125,7 +127,9 @@ export function NetworkShareStatus() {
     try {
       setStatus(await oplApi.stopNetworkShare())
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Não foi possível parar o compartilhamento.')
+      setError(
+        err instanceof Error ? err.message : t('components.networkShareStatus.errorStopFailed')
+      )
     } finally {
       setIsBusy(false)
     }
@@ -142,24 +146,39 @@ export function NetworkShareStatus() {
               <WifiOff className="size-6 text-muted-foreground" />
             )}
             <div>
-              <h2 className="text-xl font-semibold text-white">Compartilhamento de Rede</h2>
+              <h2 className="text-xl font-semibold text-white">
+                {t('components.networkShareStatus.title')}
+              </h2>
               <p className="text-sm text-muted-foreground">
-                {!isRunning &&
-                  'Desligado — nenhum dispositivo pode acessar sua biblioteca pela rede.'}
-                {isRunning && connectedCount === 0 && 'Ativo — aguardando conexão do PS2 (idle).'}
+                {!isRunning && t('components.networkShareStatus.off')}
+                {isRunning && connectedCount === 0 && t('components.networkShareStatus.activeIdle')}
                 {isRunning &&
                   connectedCount > 0 &&
-                  `Ativo — ${connectedCount} ${connectedCount === 1 ? 'conexão ativa' : 'conexões ativas'}.`}
+                  t('components.networkShareStatus.activeConnections', {
+                    count: connectedCount,
+                    label:
+                      connectedCount === 1
+                        ? t('components.networkShareStatus.activeConnectionSingular')
+                        : t('components.networkShareStatus.activeConnectionPlural')
+                  })}
               </p>
             </div>
           </div>
           {isRunning ? (
             <Button variant="secondary" onClick={handleStop} disabled={isBusy}>
-              {isBusy ? <Loader2 className="size-4 animate-spin" /> : 'Desligar'}
+              {isBusy ? (
+                <Loader2 className="size-4 animate-spin" />
+              ) : (
+                t('components.networkShareStatus.turnOff')
+              )}
             </Button>
           ) : (
             <Button variant="primary" onClick={handleStart} disabled={isBusy || !activeDevice}>
-              {isBusy ? <Loader2 className="size-4 animate-spin" /> : 'Ligar compartilhamento'}
+              {isBusy ? (
+                <Loader2 className="size-4 animate-spin" />
+              ) : (
+                t('components.networkShareStatus.turnOn')
+              )}
             </Button>
           )}
         </div>
@@ -168,16 +187,17 @@ export function NetworkShareStatus() {
           <div className="mt-4 flex items-start gap-2 rounded-xl border border-amber-400/20 bg-amber-500/10 px-3 py-2 text-sm text-amber-200">
             <ShieldAlert className="mt-0.5 size-4 shrink-0" />
             <span>
-              Nenhum dispositivo ativo. Selecione um dispositivo em <strong>Dispositivos</strong>{' '}
-              para poder compartilhá-lo pela rede.
+              {t('components.networkShareStatus.noActiveDevicePrefix')}{' '}
+              <strong>{t('components.networkShareStatus.devicesLabel')}</strong>{' '}
+              {t('components.networkShareStatus.noActiveDeviceSuffix')}
             </span>
           </div>
         )}
 
         {!isRunning && activeDevice && (
           <p className="mt-4 text-sm text-muted-foreground">
-            Compartilhará: <span className="text-white">{activeDevice.name}</span> (
-            {activeDevice.path})
+            {t('components.networkShareStatus.willShare')}{' '}
+            <span className="text-white">{activeDevice.name}</span> ({activeDevice.path})
           </p>
         )}
 
@@ -199,7 +219,9 @@ export function NetworkShareStatus() {
                   className="flex items-center gap-2 rounded-xl border border-primary/30 bg-primary/10 px-3 py-2 text-sm text-white"
                 >
                   <Gamepad2 className="size-4 shrink-0 text-primary" />
-                  <span className="text-muted-foreground">Transmitindo agora:</span>
+                  <span className="text-muted-foreground">
+                    {t('components.networkShareStatus.streamingNow')}
+                  </span>
                   <span className="font-medium">{client.currentFile}</span>
                 </div>
               ))}
@@ -216,10 +238,12 @@ export function NetworkShareStatus() {
 
       {!isRunning && (
         <Card>
-          <h3 className="text-lg font-semibold text-white">Configuração</h3>
+          <h3 className="text-lg font-semibold text-white">
+            {t('components.networkShareStatus.configuration')}
+          </h3>
           <div className="mt-4 grid gap-4 sm:grid-cols-2">
             <div className="space-y-2 sm:col-span-2">
-              <Label>Protocolos</Label>
+              <Label>{t('components.networkShareStatus.protocols')}</Label>
               <div className="flex gap-4">
                 {(['smb', 'ftp'] as const).map((protocol) => (
                   <label key={protocol} className="flex items-center gap-2 text-sm text-white">
@@ -234,15 +258,15 @@ export function NetworkShareStatus() {
               </div>
               {enabledProtocols.includes('ftp') && !enabledProtocols.includes('smb') && (
                 <p className="text-xs text-amber-300">
-                  Atenção: o OPL só navega e lança jogos pela rede via SMB. Com apenas FTP
-                  habilitado, seu PS2 não conseguirá listar a biblioteca pelo menu do OPL — o FTP
-                  serve como canal secundário (gerenciamento de arquivos), não como fonte de boot.
+                  {t('components.networkShareStatus.ftpOnlyWarning')}
                 </p>
               )}
             </div>
             {enabledProtocols.includes('smb') && (
               <div className="space-y-2">
-                <Label htmlFor="network-share-smb-port">Porta SMB</Label>
+                <Label htmlFor="network-share-smb-port">
+                  {t('components.networkShareStatus.smbPort')}
+                </Label>
                 <Input
                   id="network-share-smb-port"
                   type="number"
@@ -255,7 +279,9 @@ export function NetworkShareStatus() {
             )}
             {enabledProtocols.includes('ftp') && (
               <div className="space-y-2">
-                <Label htmlFor="network-share-ftp-port">Porta FTP</Label>
+                <Label htmlFor="network-share-ftp-port">
+                  {t('components.networkShareStatus.ftpPort')}
+                </Label>
                 <Input
                   id="network-share-ftp-port"
                   type="number"
@@ -268,13 +294,13 @@ export function NetworkShareStatus() {
             )}
             {(smbPort < 1024 || (enabledProtocols.includes('ftp') && ftpPort < 1024)) && (
               <p className="text-xs text-amber-300 sm:col-span-2">
-                Portas abaixo de 1024 (o padrão 445/21) exigem privilégios de administrador e
-                normalmente falham. Se o compartilhamento não ligar, troque para um valor acima de
-                1024 (ex.: 4450) e informe essa mesma porta no menu do PS2.
+                {t('components.networkShareStatus.lowPortWarning')}
               </p>
             )}
             <div className="space-y-2">
-              <Label htmlFor="network-share-name">Nome do compartilhamento</Label>
+              <Label htmlFor="network-share-name">
+                {t('components.networkShareStatus.shareName')}
+              </Label>
               <Input
                 id="network-share-name"
                 value={shareName}
@@ -282,7 +308,9 @@ export function NetworkShareStatus() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="network-share-username">Usuário</Label>
+              <Label htmlFor="network-share-username">
+                {t('components.networkShareStatus.username')}
+              </Label>
               <Input
                 id="network-share-username"
                 value={username}
@@ -290,13 +318,19 @@ export function NetworkShareStatus() {
               />
             </div>
             <div className="space-y-2 sm:col-span-2">
-              <Label htmlFor="network-share-password">Senha</Label>
+              <Label htmlFor="network-share-password">
+                {t('components.networkShareStatus.password')}
+              </Label>
               <Input
                 id="network-share-password"
                 type="password"
                 value={password}
                 onChange={(event) => setPassword(event.target.value)}
-                placeholder={config?.username ? 'Deixe em branco para manter a senha atual' : ''}
+                placeholder={
+                  config?.username
+                    ? (t('components.networkShareStatus.keepCurrentPassword') ?? '')
+                    : ''
+                }
               />
             </div>
             <label className="flex items-start gap-2 text-sm text-white sm:col-span-2">
@@ -307,8 +341,9 @@ export function NetworkShareStatus() {
                 onChange={(event) => setWriteAccessChecked(event.target.checked)}
               />
               <span>
-                Entendo que o PS2 poderá <strong>criar, modificar e sobrescrever</strong> arquivos
-                na minha biblioteca local através deste compartilhamento (ex.: saves de jogos).
+                {t('components.networkShareStatus.writeAccessPrefix')}{' '}
+                <strong>{t('components.networkShareStatus.writeAccessBold')}</strong>{' '}
+                {t('components.networkShareStatus.writeAccessSuffix')}
               </span>
             </label>
           </div>
@@ -317,7 +352,9 @@ export function NetworkShareStatus() {
 
       {isRunning && (
         <Card>
-          <h3 className="text-lg font-semibold text-white">Detalhes de conexão</h3>
+          <h3 className="text-lg font-semibold text-white">
+            {t('components.networkShareStatus.connectionDetails')}
+          </h3>
           <div className="mt-4 space-y-3">
             {enabledProtocols.includes('smb') && status?.smb.state === 'running' && (
               <div className="flex items-center justify-between rounded-xl border border-white/10 bg-white/5 px-4 py-3">
@@ -325,16 +362,17 @@ export function NetworkShareStatus() {
                   <div className="font-medium">
                     SMB — {status.smb.boundAddresses.join(' ou ')}:{status.smb.port}
                   </div>
-                  <div className="text-muted-foreground">Compartilhamento: {config?.shareName}</div>
+                  <div className="text-muted-foreground">
+                    {t('components.networkShareStatus.shareLabel', { name: config?.shareName })}
+                  </div>
                   {status.smb.boundAddresses.length > 1 && (
                     <div className="text-xs text-amber-300">
-                      Mais de uma rede local ativa — se o primeiro endereço não conectar no PS2,
-                      tente o outro (veja o tutorial).
+                      {t('components.networkShareStatus.multipleNetworksWarning')}
                     </div>
                   )}
                 </div>
                 <Button variant="ghost" size="sm" onClick={() => setTutorialProtocol('smb')}>
-                  Ver tutorial
+                  {t('components.networkShareStatus.viewTutorial')}
                 </Button>
               </div>
             )}
@@ -346,7 +384,7 @@ export function NetworkShareStatus() {
                   </div>
                 </div>
                 <Button variant="ghost" size="sm" onClick={() => setTutorialProtocol('ftp')}>
-                  Ver tutorial
+                  {t('components.networkShareStatus.viewTutorial')}
                 </Button>
               </div>
             )}
