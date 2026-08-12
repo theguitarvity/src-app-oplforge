@@ -821,6 +821,58 @@
       "cancel": "Cancelar",
       "renaming": "Adecuando nombres…",
       "confirm": "Confirmar adecuación"
+    },
+    "catalogGameCard": {
+      "unrated": "Sin calificación",
+      "removeFromList": "Quitar de la lista",
+      "selected": "Seleccionado",
+      "select": "Seleccionar"
+    },
+    "downloadPlanModal": {
+      "title": "Plan Smart Fill 500GB",
+      "estimatedTotal": "Total estimado: {{total}} - restante: {{remaining}}",
+      "cancel": "Cancelar",
+      "usePlan": "Usar plan"
+    },
+    "legalConfirmationModal": {
+      "title": "Confirmación legal obligatoria",
+      "description": "Esta confirmación se registrará en el historial de cada elemento antes de añadir cualquier juego a la cola.",
+      "cancel": "Cancelar",
+      "confirmAndQueue": "Confirmar y añadir a la cola"
+    },
+    "smartFillButton": {
+      "label": "Smart Fill 500GB"
+    },
+    "checkpointPanel": {
+      "labels": [
+        "BIOS iniciada",
+        "OPL abrió sin fallos",
+        "USB emulado detectado",
+        "Lista de juegos cargada",
+        "Game ID y título mostrados",
+        "Portada COV/COV2 mostrada",
+        "Juego seleccionable",
+        "Sin error de fragmentación",
+        "Hito del juego alcanzado"
+      ],
+      "waiting": "esperando",
+      "passed": "Aprobado",
+      "failed": "Fallido",
+      "notVerified": "No verificado"
+    },
+    "readinessReportView": {
+      "title": "Informe de preparación",
+      "exportJson": "Exportar JSON depurado",
+      "structural": "Estructural",
+      "ps2Real": "PS2 real",
+      "pcsx2Disclaimer": "La validación en PCSX2 no garantiza el funcionamiento en hardware real.",
+      "consoleModelPlaceholder": "Modelo de consola",
+      "adapterPlaceholder": "Adaptador/dispositivo",
+      "deviceDetected": "Dispositivo detectado",
+      "artDisplayed": "Portada mostrada",
+      "noFragmentationError": "Sin error de fragmentación",
+      "milestoneReached": "Hito del juego alcanzado",
+      "recordSmokeTest": "Registrar prueba en PS2 real"
     }
   }
 }

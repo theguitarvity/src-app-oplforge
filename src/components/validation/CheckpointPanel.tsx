@@ -1,17 +1,7 @@
+import { useTranslation } from 'react-i18next'
 import type { ValidationCheckpoint, ValidationCheckpointResult } from '@/types/opl'
 import { Button } from '@/components/ui/button'
 
-const labels = [
-  'BIOS inicializada',
-  'OPL abriu sem crash',
-  'USB emulado detectado',
-  'Lista de jogos carregada',
-  'Game ID e título exibidos',
-  'Capa COV/COV2 exibida',
-  'Jogo selecionável',
-  'Sem erro de fragmentação',
-  'Marco do jogo alcançado'
-]
 export function CheckpointPanel({
   checkpoints,
   onConfirm
@@ -19,6 +9,13 @@ export function CheckpointPanel({
   checkpoints: ValidationCheckpoint[]
   onConfirm(stage: number, result: ValidationCheckpointResult): void
 }) {
+  const { t } = useTranslation()
+  const labels = t('components.checkpointPanel.labels', { returnObjects: true }) as string[]
+  const resultLabels: Record<ValidationCheckpointResult, string> = {
+    passed: t('components.checkpointPanel.passed'),
+    failed: t('components.checkpointPanel.failed'),
+    'not-verified': t('components.checkpointPanel.notVerified')
+  }
   return (
     <div className="space-y-2">
       {labels.map((label, index) => {
@@ -30,21 +27,22 @@ export function CheckpointPanel({
             className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-white/10 p-3"
           >
             <span>
-              {stage}. {label} — {current?.result ?? 'aguardando'}
+              {stage}. {label} —{' '}
+              {current ? resultLabels[current.result] : t('components.checkpointPanel.waiting')}
             </span>
             <div className="flex gap-1">
               <Button type="button" variant="secondary" onClick={() => onConfirm(stage, 'passed')}>
-                Passou
+                {t('components.checkpointPanel.passed')}
               </Button>
               <Button type="button" variant="ghost" onClick={() => onConfirm(stage, 'failed')}>
-                Falhou
+                {t('components.checkpointPanel.failed')}
               </Button>
               <Button
                 type="button"
                 variant="ghost"
                 onClick={() => onConfirm(stage, 'not-verified')}
               >
-                Não verificado
+                {t('components.checkpointPanel.notVerified')}
               </Button>
             </div>
           </div>

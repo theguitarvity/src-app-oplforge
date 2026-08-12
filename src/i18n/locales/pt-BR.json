@@ -821,6 +821,58 @@
       "cancel": "Cancelar",
       "renaming": "Adequando nomes…",
       "confirm": "Confirmar adequação"
+    },
+    "catalogGameCard": {
+      "unrated": "Sem avaliação",
+      "removeFromList": "Remover da lista",
+      "selected": "Selecionado",
+      "select": "Selecionar"
+    },
+    "downloadPlanModal": {
+      "title": "Plano Smart Fill 500GB",
+      "estimatedTotal": "Total estimado: {{total}} - restante: {{remaining}}",
+      "cancel": "Cancelar",
+      "usePlan": "Usar plano"
+    },
+    "legalConfirmationModal": {
+      "title": "Confirmação legal obrigatória",
+      "description": "Esta confirmação será registrada no histórico por item antes de adicionar qualquer jogo à fila.",
+      "cancel": "Cancelar",
+      "confirmAndQueue": "Confirmar e adicionar à fila"
+    },
+    "smartFillButton": {
+      "label": "Smart Fill 500GB"
+    },
+    "checkpointPanel": {
+      "labels": [
+        "BIOS inicializada",
+        "OPL abriu sem crash",
+        "USB emulado detectado",
+        "Lista de jogos carregada",
+        "Game ID e título exibidos",
+        "Capa COV/COV2 exibida",
+        "Jogo selecionável",
+        "Sem erro de fragmentação",
+        "Marco do jogo alcançado"
+      ],
+      "waiting": "aguardando",
+      "passed": "Passou",
+      "failed": "Falhou",
+      "notVerified": "Não verificado"
+    },
+    "readinessReportView": {
+      "title": "Relatório de prontidão",
+      "exportJson": "Exportar JSON sanitizado",
+      "structural": "Estrutural",
+      "ps2Real": "PS2 real",
+      "pcsx2Disclaimer": "A validação PCSX2 não é garantia de funcionamento em hardware real.",
+      "consoleModelPlaceholder": "Modelo do console",
+      "adapterPlaceholder": "Adaptador/dispositivo",
+      "deviceDetected": "Dispositivo detectado",
+      "artDisplayed": "Arte exibida",
+      "noFragmentationError": "Sem erro de fragmentação",
+      "milestoneReached": "Marco do jogo alcançado",
+      "recordSmokeTest": "Registrar smoke test no PS2 real"
     }
   }
 }

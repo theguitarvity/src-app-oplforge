@@ -821,6 +821,58 @@
       "cancel": "Отмена",
       "renaming": "Исправление имён…",
       "confirm": "Подтвердить исправление"
+    },
+    "catalogGameCard": {
+      "unrated": "Без оценки",
+      "removeFromList": "Удалить из списка",
+      "selected": "Выбрано",
+      "select": "Выбрать"
+    },
+    "downloadPlanModal": {
+      "title": "План Smart Fill 500ГБ",
+      "estimatedTotal": "Ориентировочно всего: {{total}} - осталось: {{remaining}}",
+      "cancel": "Отмена",
+      "usePlan": "Использовать план"
+    },
+    "legalConfirmationModal": {
+      "title": "Требуется юридическое подтверждение",
+      "description": "Это подтверждение будет записано в историю по каждому элементу перед добавлением игры в очередь.",
+      "cancel": "Отмена",
+      "confirmAndQueue": "Подтвердить и добавить в очередь"
+    },
+    "smartFillButton": {
+      "label": "Smart Fill 500ГБ"
+    },
+    "checkpointPanel": {
+      "labels": [
+        "BIOS загружен",
+        "OPL открылся без сбоев",
+        "Обнаружен эмулированный USB",
+        "Список игр загружен",
+        "Game ID и название отображены",
+        "Обложка COV/COV2 отображена",
+        "Игра доступна для выбора",
+        "Нет ошибок фрагментации",
+        "Достигнута контрольная точка игры"
+      ],
+      "waiting": "ожидание",
+      "passed": "Пройдено",
+      "failed": "Не пройдено",
+      "notVerified": "Не проверено"
+    },
+    "readinessReportView": {
+      "title": "Отчёт о готовности",
+      "exportJson": "Экспортировать очищенный JSON",
+      "structural": "Структурная",
+      "ps2Real": "Настоящая PS2",
+      "pcsx2Disclaimer": "Проверка в PCSX2 не гарантирует работу на реальном железе.",
+      "consoleModelPlaceholder": "Модель консоли",
+      "adapterPlaceholder": "Адаптер/устройство",
+      "deviceDetected": "Устройство обнаружено",
+      "artDisplayed": "Обложка отображена",
+      "noFragmentationError": "Нет ошибок фрагментации",
+      "milestoneReached": "Достигнута контрольная точка игры",
+      "recordSmokeTest": "Записать дымовой тест на реальной PS2"
     }
   }
 }

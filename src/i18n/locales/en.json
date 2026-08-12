@@ -821,6 +821,58 @@
       "cancel": "Cancel",
       "renaming": "Adjusting names…",
       "confirm": "Confirm adjustment"
+    },
+    "catalogGameCard": {
+      "unrated": "Unrated",
+      "removeFromList": "Remove from list",
+      "selected": "Selected",
+      "select": "Select"
+    },
+    "downloadPlanModal": {
+      "title": "Smart Fill 500GB Plan",
+      "estimatedTotal": "Estimated total: {{total}} - remaining: {{remaining}}",
+      "cancel": "Cancel",
+      "usePlan": "Use plan"
+    },
+    "legalConfirmationModal": {
+      "title": "Legal confirmation required",
+      "description": "This confirmation will be recorded in the per-item history before adding any game to the queue.",
+      "cancel": "Cancel",
+      "confirmAndQueue": "Confirm and add to queue"
+    },
+    "smartFillButton": {
+      "label": "Smart Fill 500GB"
+    },
+    "checkpointPanel": {
+      "labels": [
+        "BIOS booted",
+        "OPL opened without crashing",
+        "Emulated USB detected",
+        "Game list loaded",
+        "Game ID and title shown",
+        "COV/COV2 cover art shown",
+        "Game selectable",
+        "No fragmentation error",
+        "Game milestone reached"
+      ],
+      "waiting": "waiting",
+      "passed": "Passed",
+      "failed": "Failed",
+      "notVerified": "Not verified"
+    },
+    "readinessReportView": {
+      "title": "Readiness report",
+      "exportJson": "Export sanitized JSON",
+      "structural": "Structural",
+      "ps2Real": "Real PS2",
+      "pcsx2Disclaimer": "PCSX2 validation is not a guarantee of working on real hardware.",
+      "consoleModelPlaceholder": "Console model",
+      "adapterPlaceholder": "Adapter/device",
+      "deviceDetected": "Device detected",
+      "artDisplayed": "Art displayed",
+      "noFragmentationError": "No fragmentation error",
+      "milestoneReached": "Game milestone reached",
+      "recordSmokeTest": "Record smoke test on real PS2"
     }
   }
 }

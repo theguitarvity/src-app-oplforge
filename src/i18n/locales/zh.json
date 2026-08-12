@@ -821,6 +821,58 @@
       "cancel": "取消",
       "renaming": "正在调整名称…",
       "confirm": "确认调整"
+    },
+    "catalogGameCard": {
+      "unrated": "未评级",
+      "removeFromList": "从列表中移除",
+      "selected": "已选择",
+      "select": "选择"
+    },
+    "downloadPlanModal": {
+      "title": "Smart Fill 500GB 计划",
+      "estimatedTotal": "预计总计：{{total}} - 剩余：{{remaining}}",
+      "cancel": "取消",
+      "usePlan": "使用计划"
+    },
+    "legalConfirmationModal": {
+      "title": "需要法律确认",
+      "description": "在将任何游戏加入队列之前，此确认将按项目记录在历史记录中。",
+      "cancel": "取消",
+      "confirmAndQueue": "确认并加入队列"
+    },
+    "smartFillButton": {
+      "label": "Smart Fill 500GB"
+    },
+    "checkpointPanel": {
+      "labels": [
+        "BIOS 已启动",
+        "OPL 打开未崩溃",
+        "检测到模拟 USB",
+        "游戏列表已加载",
+        "已显示 Game ID 和标题",
+        "已显示 COV/COV2 封面",
+        "游戏可选择",
+        "无碎片化错误",
+        "已达到游戏里程碑"
+      ],
+      "waiting": "等待中",
+      "passed": "通过",
+      "failed": "未通过",
+      "notVerified": "未验证"
+    },
+    "readinessReportView": {
+      "title": "就绪报告",
+      "exportJson": "导出已脱敏的 JSON",
+      "structural": "结构性",
+      "ps2Real": "真实 PS2",
+      "pcsx2Disclaimer": "PCSX2 验证不保证在真实硬件上正常运行。",
+      "consoleModelPlaceholder": "主机型号",
+      "adapterPlaceholder": "适配器/设备",
+      "deviceDetected": "已检测到设备",
+      "artDisplayed": "已显示封面",
+      "noFragmentationError": "无碎片化错误",
+      "milestoneReached": "已达到游戏里程碑",
+      "recordSmokeTest": "在真实 PS2 上记录冒烟测试"
     }
   }
 }

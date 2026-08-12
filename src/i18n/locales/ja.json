@@ -821,6 +821,58 @@
       "cancel": "キャンセル",
       "renaming": "名前を適合中…",
       "confirm": "適合を確認"
+    },
+    "catalogGameCard": {
+      "unrated": "未評価",
+      "removeFromList": "リストから削除",
+      "selected": "選択済み",
+      "select": "選択"
+    },
+    "downloadPlanModal": {
+      "title": "Smart Fill 500GB プラン",
+      "estimatedTotal": "推定合計：{{total}} - 残り：{{remaining}}",
+      "cancel": "キャンセル",
+      "usePlan": "プランを使用"
+    },
+    "legalConfirmationModal": {
+      "title": "法的確認が必要です",
+      "description": "この確認は、ゲームをキューに追加する前に項目ごとに履歴に記録されます。",
+      "cancel": "キャンセル",
+      "confirmAndQueue": "確認してキューに追加"
+    },
+    "smartFillButton": {
+      "label": "Smart Fill 500GB"
+    },
+    "checkpointPanel": {
+      "labels": [
+        "BIOS起動",
+        "OPLがクラッシュせずに起動",
+        "エミュレートされたUSBを検出",
+        "ゲームリストを読み込み",
+        "Game IDとタイトルを表示",
+        "COV/COV2カバーを表示",
+        "ゲームが選択可能",
+        "フラグメンテーションエラーなし",
+        "ゲームのマイルストーンに到達"
+      ],
+      "waiting": "待機中",
+      "passed": "合格",
+      "failed": "不合格",
+      "notVerified": "未確認"
+    },
+    "readinessReportView": {
+      "title": "レディネスレポート",
+      "exportJson": "サニタイズ済みJSONをエクスポート",
+      "structural": "構造",
+      "ps2Real": "実機PS2",
+      "pcsx2Disclaimer": "PCSX2での検証は実機での動作を保証するものではありません。",
+      "consoleModelPlaceholder": "コンソール機種",
+      "adapterPlaceholder": "アダプター/デバイス",
+      "deviceDetected": "デバイスを検出",
+      "artDisplayed": "アートを表示",
+      "noFragmentationError": "フラグメンテーションエラーなし",
+      "milestoneReached": "ゲームのマイルストーンに到達",
+      "recordSmokeTest": "実機PS2でスモークテストを記録"
     }
   }
 }

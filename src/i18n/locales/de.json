@@ -821,6 +821,58 @@
       "cancel": "Abbrechen",
       "renaming": "Namen werden angepasst…",
       "confirm": "Anpassung bestätigen"
+    },
+    "catalogGameCard": {
+      "unrated": "Unbewertet",
+      "removeFromList": "Aus Liste entfernen",
+      "selected": "Ausgewählt",
+      "select": "Auswählen"
+    },
+    "downloadPlanModal": {
+      "title": "Smart-Fill-500-GB-Plan",
+      "estimatedTotal": "Geschätzt gesamt: {{total}} - verbleibend: {{remaining}}",
+      "cancel": "Abbrechen",
+      "usePlan": "Plan verwenden"
+    },
+    "legalConfirmationModal": {
+      "title": "Rechtliche Bestätigung erforderlich",
+      "description": "Diese Bestätigung wird pro Element im Verlauf gespeichert, bevor ein Spiel zur Warteschlange hinzugefügt wird.",
+      "cancel": "Abbrechen",
+      "confirmAndQueue": "Bestätigen und zur Warteschlange hinzufügen"
+    },
+    "smartFillButton": {
+      "label": "Smart Fill 500GB"
+    },
+    "checkpointPanel": {
+      "labels": [
+        "BIOS gestartet",
+        "OPL ohne Absturz geöffnet",
+        "Emuliertes USB erkannt",
+        "Spieleliste geladen",
+        "Game-ID und Titel angezeigt",
+        "COV/COV2-Cover angezeigt",
+        "Spiel auswählbar",
+        "Kein Fragmentierungsfehler",
+        "Meilenstein erreicht"
+      ],
+      "waiting": "wartend",
+      "passed": "Bestanden",
+      "failed": "Fehlgeschlagen",
+      "notVerified": "Nicht überprüft"
+    },
+    "readinessReportView": {
+      "title": "Bereitschaftsbericht",
+      "exportJson": "Bereinigtes JSON exportieren",
+      "structural": "Strukturell",
+      "ps2Real": "Echte PS2",
+      "pcsx2Disclaimer": "Die PCSX2-Validierung garantiert keine Funktion auf echter Hardware.",
+      "consoleModelPlaceholder": "Konsolenmodell",
+      "adapterPlaceholder": "Adapter/Gerät",
+      "deviceDetected": "Gerät erkannt",
+      "artDisplayed": "Cover angezeigt",
+      "noFragmentationError": "Kein Fragmentierungsfehler",
+      "milestoneReached": "Meilenstein erreicht",
+      "recordSmokeTest": "Smoke-Test auf echter PS2 aufzeichnen"
     }
   }
 }
