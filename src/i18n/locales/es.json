@@ -4,7 +4,8 @@
     "save": "Guardar",
     "cancel": "Cancelar",
     "close": "Cerrar",
-    "continue": "Continuar"
+    "continue": "Continuar",
+    "confirm": "Confirmar"
   },
   "nav": {
     "home": "Inicio",

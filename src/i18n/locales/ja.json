@@ -4,7 +4,8 @@
     "save": "保存",
     "cancel": "キャンセル",
     "close": "閉じる",
-    "continue": "続ける"
+    "continue": "続ける",
+    "confirm": "確認"
   },
   "nav": {
     "home": "ホーム",

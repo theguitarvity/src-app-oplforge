@@ -4,7 +4,8 @@
     "save": "Save",
     "cancel": "Cancel",
     "close": "Close",
-    "continue": "Continue"
+    "continue": "Continue",
+    "confirm": "Confirm"
   },
   "nav": {
     "home": "Home",
