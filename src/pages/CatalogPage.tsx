@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { Search, Sparkles, Images, Download, CheckCircle2, Compass, Globe } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { EssentialsCatalogPage } from '@/pages/EssentialsCatalogPage'
 import { ArtManagerPage } from '@/pages/ArtManagerPage'
 import { DownloadsPage } from '@/pages/DownloadsPage'
@@ -24,6 +25,7 @@ const mockCatalog: CatalogGameEntry[] = [
 ]
 
 function CatalogMetadataView() {
+  const { t } = useTranslation()
   const [query, setQuery] = useState('')
   const [appliedId, setAppliedId] = useState<string | null>(null)
 
@@ -47,7 +49,7 @@ function CatalogMetadataView() {
           type="text"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="Pesquisar título (ex: Shadow of the Colossus) ou Game ID (SLUS_212.59)..."
+          placeholder={t('pages.catalog.searchPlaceholder') ?? ''}
           className="w-full rounded-xl border border-white/10 bg-white/5 py-2.5 pl-10 pr-4 text-xs text-white placeholder-muted-foreground focus:border-violet-500 focus:outline-none"
         />
       </div>
@@ -77,12 +79,14 @@ function CatalogMetadataView() {
               {appliedId === game.id ? (
                 <>
                   <CheckCircle2 className="size-3.5 text-emerald-400" />
-                  <span className="text-emerald-400 font-semibold">Aplicado!</span>
+                  <span className="text-emerald-400 font-semibold">
+                    {t('pages.catalog.applied')}
+                  </span>
                 </>
               ) : (
                 <>
                   <Download className="size-3.5 text-violet-400" />
-                  <span>Baixar Capa</span>
+                  <span>{t('pages.catalog.downloadCover')}</span>
                 </>
               )}
             </button>
@@ -93,29 +97,27 @@ function CatalogMetadataView() {
   )
 }
 
-const tabs = [
-  { id: 'discover', label: 'Descobrir & Instalar', icon: Compass },
-  { id: 'metadata', label: 'Metadados & Artes', icon: Search },
-  { id: 'online', label: 'Buscar Online', icon: Globe },
-  { id: 'artsync', label: 'Sincronizar Artes', icon: Images },
-  { id: 'downloads', label: 'Downloads', icon: Download }
-] as const
-
 export function CatalogPage() {
+  const { t } = useTranslation()
   const [searchParams, setSearchParams] = useSearchParams()
   const activeTab = searchParams.get('tab') || 'discover'
   const downloadAttention = useDownloadFeedbackStore((state) => state.attention)
   const clearDownloadAttention = useDownloadFeedbackStore((state) => state.clearAttention)
 
+  const tabs = [
+    { id: 'discover', label: t('pages.catalog.tabDiscover'), icon: Compass },
+    { id: 'metadata', label: t('pages.catalog.tabMetadata'), icon: Search },
+    { id: 'online', label: t('pages.catalog.tabOnline'), icon: Globe },
+    { id: 'artsync', label: t('pages.catalog.tabArtsync'), icon: Images },
+    { id: 'downloads', label: t('pages.catalog.tabDownloads'), icon: Download }
+  ] as const
+
   return (
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h2 className="text-2xl font-bold tracking-tight text-white">Catálogo</h2>
-        <p className="text-sm text-muted-foreground">
-          Descubra e instale jogos essenciais, pesquise Game IDs e sincronize artes com sua
-          biblioteca.
-        </p>
+        <h2 className="text-2xl font-bold tracking-tight text-white">{t('pages.catalog.title')}</h2>
+        <p className="text-sm text-muted-foreground">{t('pages.catalog.subtitle')}</p>
       </div>
 
       {/* Sub-tabs */}

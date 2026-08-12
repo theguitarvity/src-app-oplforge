@@ -150,6 +150,35 @@
       "inactive": "неактивен",
       "noUrl": "нет URL",
       "removeButton": "Удалить"
+    },
+    "catalog": {
+      "title": "Каталог",
+      "subtitle": "Находите и устанавливайте важные игры, ищите Game ID и синхронизируйте обложки с вашей библиотекой.",
+      "tabDiscover": "Найти и установить",
+      "tabMetadata": "Метаданные и обложки",
+      "tabOnline": "Поиск онлайн",
+      "tabArtsync": "Синхронизировать обложки",
+      "tabDownloads": "Загрузки",
+      "searchPlaceholder": "Поиск по названию (напр. Shadow of the Colossus) или Game ID (SLUS_212.59)...",
+      "applied": "Применено!",
+      "downloadCover": "Скачать обложку"
+    },
+    "onlineSources": {
+      "title": "Онлайн-источники",
+      "subtitle": "Ищите настроенные удалённые источники и добавляйте поддерживаемые файлы в очередь P2P.",
+      "searchLabel": "Поиск",
+      "searchPlaceholder": "Поисковый запрос",
+      "creatorLabel": "Creator",
+      "collectionLabel": "Collection",
+      "fileTypeLabel": "Тип файла",
+      "fileTypeAll": "Все",
+      "searchButton": "Искать",
+      "selectResultPrompt": "Выберите результат, чтобы увидеть детали и файлы.",
+      "openSourceDetails": "Открыть детали источника",
+      "noFormat": "без формата",
+      "addToQueue": "Добавить в очередь",
+      "deviceRequiredError": "Выберите устройство.",
+      "magnetRequiredError": "Этот источник пока не предлагает безопасный magnet-ссылку для устойчивой очереди."
     }
   }
 }

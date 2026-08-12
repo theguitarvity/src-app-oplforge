@@ -150,6 +150,35 @@
       "inactive": "inaktiv",
       "noUrl": "keine URL",
       "removeButton": "Entfernen"
+    },
+    "catalog": {
+      "title": "Katalog",
+      "subtitle": "Entdecke und installiere wichtige Spiele, suche nach Game-IDs und synchronisiere Artwork mit deiner Bibliothek.",
+      "tabDiscover": "Entdecken & Installieren",
+      "tabMetadata": "Metadaten & Artwork",
+      "tabOnline": "Online suchen",
+      "tabArtsync": "Artwork synchronisieren",
+      "tabDownloads": "Downloads",
+      "searchPlaceholder": "Titel suchen (z. B. Shadow of the Colossus) oder Game-ID (SLUS_212.59)...",
+      "applied": "Angewendet!",
+      "downloadCover": "Cover herunterladen"
+    },
+    "onlineSources": {
+      "title": "Online-Quellen",
+      "subtitle": "Durchsuche konfigurierte Remote-Quellen und füge unterstützte Dateien der P2P-Warteschlange hinzu.",
+      "searchLabel": "Suche",
+      "searchPlaceholder": "Suchbegriff",
+      "creatorLabel": "Creator",
+      "collectionLabel": "Collection",
+      "fileTypeLabel": "Dateityp",
+      "fileTypeAll": "Alle",
+      "searchButton": "Suchen",
+      "selectResultPrompt": "Wähle ein Ergebnis, um Details und Dateien zu sehen.",
+      "openSourceDetails": "Quelldetails öffnen",
+      "noFormat": "kein Format",
+      "addToQueue": "Zur Warteschlange hinzufügen",
+      "deviceRequiredError": "Wähle ein Gerät aus.",
+      "magnetRequiredError": "Diese Quelle bietet noch keinen sicheren Magnet-Link für die dauerhafte Warteschlange."
     }
   }
 }

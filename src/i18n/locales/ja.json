@@ -150,6 +150,35 @@
       "inactive": "無効",
       "noUrl": "URLなし",
       "removeButton": "削除"
+    },
+    "catalog": {
+      "title": "カタログ",
+      "subtitle": "必須ゲームを発見してインストールし、Game IDを検索し、アートをライブラリと同期します。",
+      "tabDiscover": "発見とインストール",
+      "tabMetadata": "メタデータとアート",
+      "tabOnline": "オンライン検索",
+      "tabArtsync": "アートを同期",
+      "tabDownloads": "ダウンロード",
+      "searchPlaceholder": "タイトルを検索（例: Shadow of the Colossus）またはGame ID（SLUS_212.59）...",
+      "applied": "適用済み！",
+      "downloadCover": "カバーをダウンロード"
+    },
+    "onlineSources": {
+      "title": "オンラインソース",
+      "subtitle": "設定済みのリモートソースを検索し、対応ファイルをP2Pキューに追加します。",
+      "searchLabel": "検索",
+      "searchPlaceholder": "検索キーワード",
+      "creatorLabel": "Creator",
+      "collectionLabel": "Collection",
+      "fileTypeLabel": "ファイルタイプ",
+      "fileTypeAll": "すべて",
+      "searchButton": "検索",
+      "selectResultPrompt": "詳細とファイルを表示する結果を選択してください。",
+      "openSourceDetails": "ソースの詳細を開く",
+      "noFormat": "フォーマットなし",
+      "addToQueue": "キューに追加",
+      "deviceRequiredError": "デバイスを選択してください。",
+      "magnetRequiredError": "このソースはまだ永続キュー用の安全なマグネットリンクを提供していません。"
     }
   }
 }

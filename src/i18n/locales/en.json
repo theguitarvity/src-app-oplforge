@@ -150,6 +150,35 @@
       "inactive": "inactive",
       "noUrl": "no URL",
       "removeButton": "Remove"
+    },
+    "catalog": {
+      "title": "Catalog",
+      "subtitle": "Discover and install essential games, search Game IDs and sync art with your library.",
+      "tabDiscover": "Discover & Install",
+      "tabMetadata": "Metadata & Art",
+      "tabOnline": "Search Online",
+      "tabArtsync": "Sync Art",
+      "tabDownloads": "Downloads",
+      "searchPlaceholder": "Search title (e.g. Shadow of the Colossus) or Game ID (SLUS_212.59)...",
+      "applied": "Applied!",
+      "downloadCover": "Download Cover"
+    },
+    "onlineSources": {
+      "title": "Online Sources",
+      "subtitle": "Search configured remote sources and add supported files to the P2P queue.",
+      "searchLabel": "Search",
+      "searchPlaceholder": "Search term",
+      "creatorLabel": "Creator",
+      "collectionLabel": "Collection",
+      "fileTypeLabel": "File type",
+      "fileTypeAll": "All",
+      "searchButton": "Search",
+      "selectResultPrompt": "Select a result to see details and files.",
+      "openSourceDetails": "Open source details",
+      "noFormat": "no format",
+      "addToQueue": "Add to queue",
+      "deviceRequiredError": "Select a device.",
+      "magnetRequiredError": "This source doesn't offer a safe magnet for the durable queue yet."
     }
   }
 }

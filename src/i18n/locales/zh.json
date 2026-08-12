@@ -150,6 +150,35 @@
       "inactive": "未启用",
       "noUrl": "无 URL",
       "removeButton": "移除"
+    },
+    "catalog": {
+      "title": "目录",
+      "subtitle": "发现并安装必备游戏，搜索 Game ID，并将封面与您的游戏库同步。",
+      "tabDiscover": "发现与安装",
+      "tabMetadata": "元数据与封面",
+      "tabOnline": "在线搜索",
+      "tabArtsync": "同步封面",
+      "tabDownloads": "下载",
+      "searchPlaceholder": "搜索标题（例如 Shadow of the Colossus）或 Game ID（SLUS_212.59）...",
+      "applied": "已应用！",
+      "downloadCover": "下载封面"
+    },
+    "onlineSources": {
+      "title": "在线来源",
+      "subtitle": "搜索已配置的远程来源，并将支持的文件添加到 P2P 队列。",
+      "searchLabel": "搜索",
+      "searchPlaceholder": "搜索关键词",
+      "creatorLabel": "Creator",
+      "collectionLabel": "Collection",
+      "fileTypeLabel": "文件类型",
+      "fileTypeAll": "全部",
+      "searchButton": "搜索",
+      "selectResultPrompt": "选择一个结果以查看详情和文件。",
+      "openSourceDetails": "打开来源详情",
+      "noFormat": "无格式",
+      "addToQueue": "添加到队列",
+      "deviceRequiredError": "请选择一个设备。",
+      "magnetRequiredError": "此来源尚未提供可用于持久队列的安全磁力链接。"
     }
   }
 }

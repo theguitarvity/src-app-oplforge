@@ -150,6 +150,35 @@
       "inactive": "inativa",
       "noUrl": "sem URL",
       "removeButton": "Remover"
+    },
+    "catalog": {
+      "title": "Catálogo",
+      "subtitle": "Descubra e instale jogos essenciais, pesquise Game IDs e sincronize artes com sua biblioteca.",
+      "tabDiscover": "Descobrir & Instalar",
+      "tabMetadata": "Metadados & Artes",
+      "tabOnline": "Buscar Online",
+      "tabArtsync": "Sincronizar Artes",
+      "tabDownloads": "Downloads",
+      "searchPlaceholder": "Pesquisar título (ex: Shadow of the Colossus) ou Game ID (SLUS_212.59)...",
+      "applied": "Aplicado!",
+      "downloadCover": "Baixar Capa"
+    },
+    "onlineSources": {
+      "title": "Fontes Online",
+      "subtitle": "Pesquise fontes remotas configuradas e adicione arquivos suportados à fila P2P.",
+      "searchLabel": "Busca",
+      "searchPlaceholder": "Termo de busca",
+      "creatorLabel": "Creator",
+      "collectionLabel": "Collection",
+      "fileTypeLabel": "Tipo de arquivo",
+      "fileTypeAll": "Todos",
+      "searchButton": "Pesquisar",
+      "selectResultPrompt": "Selecione um resultado para ver detalhes e arquivos.",
+      "openSourceDetails": "Abrir detalhes da fonte",
+      "noFormat": "sem formato",
+      "addToQueue": "Adicionar à fila",
+      "deviceRequiredError": "Selecione um dispositivo.",
+      "magnetRequiredError": "Esta fonte ainda não oferece um magnet seguro para a fila durável."
     }
   }
 }
