@@ -1,5 +1,7 @@
 appId: com.oplforge.app
 productName: OPL Forge
+download:
+  retryMaxAttempts: 5
 directories:
   output: release
   buildResources: build
