@@ -214,9 +214,9 @@ export function Sidebar() {
 
       {/* Legal Footer Notice */}
       <div className="mx-4 mb-4 shrink-0 rounded-xl border border-white/5 bg-white/5 p-3.5">
-        <p className="text-xs font-medium text-white">Uso legal</p>
+        <p className="text-xs font-medium text-white">{t('shell.sidebar.legalTitle')}</p>
         <p className="mt-1 text-[11px] leading-relaxed text-muted-foreground">
-          Utilize apenas backups de jogos que você possua legalmente.
+          {t('shell.sidebar.legalDescription')}
         </p>
       </div>
     </aside>

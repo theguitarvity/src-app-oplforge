@@ -1,7 +1,9 @@
 import { useLogStore } from '@/stores/log-store'
 import { ChevronUp, ChevronDown, Activity, AlertTriangle, CheckCircle2 } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 
 export function ActivityStatusBar() {
+  const { t } = useTranslation()
   const { progress, logs, isDrawerOpen, toggleDrawer } = useLogStore()
 
   const activeLogsCount = logs.length
@@ -17,18 +19,18 @@ export function ActivityStatusBar() {
           <div className="flex items-center gap-2 font-medium text-violet-300">
             <Activity className="size-3.5 animate-pulse text-violet-400" />
             <span className="truncate max-w-[280px]">
-              {progress?.label || 'Processando operação...'}
+              {progress?.label || t('shell.activityBar.processing')}
             </span>
           </div>
         ) : isError ? (
           <div className="flex items-center gap-2 font-medium text-amber-400">
             <AlertTriangle className="size-3.5" />
-            <span className="truncate">Operação requer atenção</span>
+            <span className="truncate">{t('shell.activityBar.needsAttention')}</span>
           </div>
         ) : (
           <div className="flex items-center gap-2 text-muted-foreground">
             <CheckCircle2 className="size-3.5 text-emerald-400" />
-            <span>Sistema pronto</span>
+            <span>{t('shell.activityBar.ready')}</span>
           </div>
         )}
 
@@ -52,14 +54,17 @@ export function ActivityStatusBar() {
       <div className="flex items-center gap-3">
         {activeLogsCount > 0 && (
           <span className="text-[11px] text-muted-foreground">
-            {activeLogsCount} evento(s) {errorLogsCount > 0 && `(${errorLogsCount} erro(s))`}
+            {t('shell.activityBar.events', { count: activeLogsCount })}{' '}
+            {errorLogsCount > 0 && t('shell.activityBar.errors', { count: errorLogsCount })}
           </span>
         )}
         <button
           onClick={() => toggleDrawer()}
           className="flex items-center gap-1.5 rounded-md px-2.5 py-1 text-xs font-medium text-muted-foreground transition hover:bg-white/10 hover:text-white"
         >
-          <span>{isDrawerOpen ? 'Ocultar Detalhes' : 'Mostrar Detalhes'}</span>
+          <span>
+            {isDrawerOpen ? t('shell.activityBar.hideDetails') : t('shell.activityBar.showDetails')}
+          </span>
           {isDrawerOpen ? <ChevronDown className="size-3.5" /> : <ChevronUp className="size-3.5" />}
         </button>
       </div>

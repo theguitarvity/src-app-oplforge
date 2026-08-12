@@ -43,5 +43,113 @@
       "designTitle": "モダンなダークデザイン",
       "designDescription": "Rocketseat、Linear、Raycast、Arcにインスパイアされたインターフェースで、控えめなグラスモーフィズム、さりげないグラデーション、洗練されたサイドバーを備えています。"
     }
+  },
+  "shell": {
+    "header": {
+      "subtitle": "PS2のHDDを簡単に準備、整理、管理できます。",
+      "selectDevice": "デバイスを選択",
+      "noDeviceDetected": "デバイスが検出されません",
+      "refresh": "更新"
+    },
+    "sidebar": {
+      "legalTitle": "合法的な使用",
+      "legalDescription": "合法的に所有しているゲームのバックアップのみを使用してください。"
+    },
+    "activityBar": {
+      "processing": "操作を処理しています...",
+      "needsAttention": "操作に注意が必要です",
+      "ready": "システム準備完了",
+      "events": "{{count}} 件のイベント",
+      "errors": "（{{count}} 件のエラー）",
+      "hideDetails": "詳細を隠す",
+      "showDetails": "詳細を表示"
+    },
+    "disconnectedEmptyState": {
+      "title": "PS2デバイスが選択されていません",
+      "description": "exFAT/FAT32でフォーマットされた外付けHDDまたはUSBデバイスを接続して、ゲームの管理、断片化の確認、OPL構造の確認を行ってください。",
+      "scanning": "デバイスを検索しています...",
+      "detectDevices": "デバイスを検出",
+      "prepareDevice": "新しいデバイスを準備",
+      "openLocalLibrary": "ローカルライブラリを開く",
+      "exploreCatalog": "カタログを見る"
+    },
+    "localLibraryChooser": {
+      "title": "このコンピューターにダウンロード",
+      "description": "既存のフォルダを使用するか、新しいライブラリを作成してください。OPLデバイスは不要です。",
+      "selectExisting": "既存のフォルダを選択",
+      "createNew": "新しいフォルダを作成",
+      "defaultName": "PS2ゲーム",
+      "chooseAndCreate": "場所を選んで作成",
+      "genericError": "フォルダを準備できませんでした。"
+    }
+  },
+  "pages": {
+    "history": {
+      "title": "履歴",
+      "subtitle": "元、宛先、結果を含む記録された操作。",
+      "clearButton": "履歴を消去",
+      "emptyTitle": "履歴は空です",
+      "emptyDescription": "インポート、デバイスの準備、インストール済みアプリがここに表示されます。",
+      "origin": "元: {{value}}",
+      "destination": "宛先: {{value}}",
+      "confirmTitle": "履歴を消去しますか？",
+      "confirmDescription": "すべてのローカル操作記録が history.json から削除されます。",
+      "confirmLabel": "消去"
+    },
+    "ps1Import": {
+      "selectDeviceTitle": "デバイスを選択",
+      "selectDeviceDescription": "PS1ゲームをインポートする前にアクティブなデバイスを選択してください。",
+      "title": "PS1インポーター",
+      "subtitle": ".bin、.cue、.iso に対応しています。関連性を維持するため、BIN/CUEは一緒に選択してください。",
+      "selectFiles": "ファイルを選択",
+      "nameLabel": "任意の名前",
+      "namePlaceholder": "空欄のままにすると各ファイルの名前が保持されます",
+      "filesSelected": "選択したファイル数: {{count}}",
+      "importButton": "/PS1へインポート"
+    },
+    "tools": {
+      "title": "ツールと診断",
+      "subtitle": "デバイス診断、OPLエコシステムのコンポーネント、メンテナンスユーティリティ。",
+      "tabDiagnostics": "デバイス診断",
+      "tabComponents": "OPLコンポーネント",
+      "tabHistory": "履歴"
+    },
+    "prepare": {
+      "selectDeviceTitle": "デバイスを選択",
+      "selectDeviceDescription": "OPL構造を作成する前にアクティブなデバイスを選択してください。",
+      "title": "OPL用に準備",
+      "subtitle": "既存のファイルをフォーマットまたは削除せずに標準構造を作成します。",
+      "prepareButton": "OPL用に準備",
+      "safeTitle": "安全な操作",
+      "safeDescription": "実際のフォーマットはデフォルトで ENABLE_REAL_FORMAT=false によりブロックされています。このフローはフォルダとREADMEのみを作成します。",
+      "confirmTitle": "OPL構造を作成しますか？",
+      "confirmDescription": "デバイス {{name}} にOPLフォルダが作成されます。既存のファイルは削除されません。",
+      "confirmLabel": "準備"
+    },
+    "sourceSettings": {
+      "title": "ソース設定",
+      "subtitle": "検索とダウンロード用の外部ソースを登録します。",
+      "nameLabel": "名前",
+      "typeLabel": "タイプ",
+      "typeInternetArchiveSearch": "Internet Archive Search",
+      "typeInternetArchiveDirectory": "Internet Archive Directory",
+      "typeInternetArchiveArtPack": "Internet Archive ART Pack",
+      "typeLocalFolder": "ローカルフォルダ",
+      "typeDirectUrl": "直接HTTP/HTTPS",
+      "typeTorrent": "Torrent",
+      "typeMagnet": "Magnet",
+      "baseUrlLabel": "ベースURL",
+      "defaultQueryLabel": "デフォルトクエリ",
+      "creatorLabel": "Creator",
+      "collectionLabel": "Collection",
+      "activeLabel": "有効",
+      "nameRequired": "名前を入力してください。",
+      "saveButton": "ソースを保存",
+      "newButton": "新規",
+      "active": "有効",
+      "inactive": "無効",
+      "noUrl": "URLなし",
+      "removeButton": "削除"
+    }
   }
 }

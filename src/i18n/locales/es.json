@@ -43,5 +43,113 @@
       "designTitle": "Diseño oscuro moderno",
       "designDescription": "Interfaz inspirada en Rocketseat, Linear, Raycast y Arc, con glassmorphism sutil, degradados discretos y una barra lateral elegante."
     }
+  },
+  "shell": {
+    "header": {
+      "subtitle": "Prepara, organiza y gestiona tu HD de PS2 con facilidad.",
+      "selectDevice": "Selecciona un dispositivo",
+      "noDeviceDetected": "Ningún dispositivo detectado",
+      "refresh": "Actualizar"
+    },
+    "sidebar": {
+      "legalTitle": "Uso legal",
+      "legalDescription": "Usa solo copias de seguridad de juegos que poseas legalmente."
+    },
+    "activityBar": {
+      "processing": "Procesando operación...",
+      "needsAttention": "La operación requiere atención",
+      "ready": "Sistema listo",
+      "events": "{{count}} evento(s)",
+      "errors": "({{count}} error(es))",
+      "hideDetails": "Ocultar Detalles",
+      "showDetails": "Mostrar Detalles"
+    },
+    "disconnectedEmptyState": {
+      "title": "Ningún dispositivo PS2 seleccionado",
+      "description": "Conecta un HD externo o dispositivo USB formateado en exFAT/FAT32 para gestionar tus juegos, verificar la fragmentación y la estructura OPL.",
+      "scanning": "Buscando dispositivos...",
+      "detectDevices": "Detectar dispositivos",
+      "prepareDevice": "Preparar nuevo dispositivo",
+      "openLocalLibrary": "Abrir biblioteca local",
+      "exploreCatalog": "Explorar catálogo"
+    },
+    "localLibraryChooser": {
+      "title": "Descargar a este equipo",
+      "description": "Usa una carpeta existente o crea una nueva biblioteca. No se necesita ningún dispositivo OPL.",
+      "selectExisting": "Seleccionar carpeta existente",
+      "createNew": "Crear nueva carpeta",
+      "defaultName": "Juegos PS2",
+      "chooseAndCreate": "Elegir ubicación y crear",
+      "genericError": "No se pudo preparar la carpeta."
+    }
+  },
+  "pages": {
+    "history": {
+      "title": "Historial",
+      "subtitle": "Operaciones registradas con origen, destino y resultado.",
+      "clearButton": "Limpiar historial",
+      "emptyTitle": "Historial vacío",
+      "emptyDescription": "Las importaciones, la preparación de dispositivos y las apps instaladas aparecerán aquí.",
+      "origin": "Origen: {{value}}",
+      "destination": "Destino: {{value}}",
+      "confirmTitle": "¿Limpiar historial?",
+      "confirmDescription": "Todos los registros locales de operaciones se eliminarán de history.json.",
+      "confirmLabel": "Limpiar"
+    },
+    "ps1Import": {
+      "selectDeviceTitle": "Selecciona un dispositivo",
+      "selectDeviceDescription": "Elige el dispositivo activo antes de importar juegos PS1.",
+      "title": "Importador PS1",
+      "subtitle": "Acepta .bin, .cue e .iso. Selecciona BIN/CUE juntos para preservar la relación.",
+      "selectFiles": "Seleccionar archivos",
+      "nameLabel": "Nombre opcional",
+      "namePlaceholder": "Déjalo vacío para mantener el nombre de cada archivo",
+      "filesSelected": "Archivos seleccionados: {{count}}",
+      "importButton": "Importar a /PS1"
+    },
+    "tools": {
+      "title": "Herramientas y Diagnóstico",
+      "subtitle": "Diagnóstico del dispositivo, componentes del ecosistema OPL y utilidades de mantenimiento.",
+      "tabDiagnostics": "Diagnóstico del Dispositivo",
+      "tabComponents": "Componentes OPL",
+      "tabHistory": "Historial"
+    },
+    "prepare": {
+      "selectDeviceTitle": "Selecciona un dispositivo",
+      "selectDeviceDescription": "Elige un dispositivo activo antes de crear la estructura OPL.",
+      "title": "Preparar para OPL",
+      "subtitle": "Crea la estructura estándar sin formatear ni borrar archivos existentes.",
+      "prepareButton": "Preparar para OPL",
+      "safeTitle": "Operación segura",
+      "safeDescription": "El formateo real permanece bloqueado por defecto mediante ENABLE_REAL_FORMAT=false. Este flujo solo crea carpetas y un README.",
+      "confirmTitle": "¿Crear estructura OPL?",
+      "confirmDescription": "El dispositivo {{name}} recibirá las carpetas OPL. Los archivos existentes no se eliminarán.",
+      "confirmLabel": "Preparar"
+    },
+    "sourceSettings": {
+      "title": "Configuración de Fuentes",
+      "subtitle": "Registra fuentes externas para búsqueda y descargas.",
+      "nameLabel": "Nombre",
+      "typeLabel": "Tipo",
+      "typeInternetArchiveSearch": "Internet Archive Search",
+      "typeInternetArchiveDirectory": "Internet Archive Directory",
+      "typeInternetArchiveArtPack": "Internet Archive ART Pack",
+      "typeLocalFolder": "Carpeta local",
+      "typeDirectUrl": "HTTP/HTTPS directo",
+      "typeTorrent": "Torrent",
+      "typeMagnet": "Magnet",
+      "baseUrlLabel": "URL base",
+      "defaultQueryLabel": "Consulta predeterminada",
+      "creatorLabel": "Creator",
+      "collectionLabel": "Collection",
+      "activeLabel": "Activa",
+      "nameRequired": "Ingresa un nombre.",
+      "saveButton": "Guardar fuente",
+      "newButton": "Nueva",
+      "active": "activa",
+      "inactive": "inactiva",
+      "noUrl": "sin URL",
+      "removeButton": "Eliminar"
+    }
   }
 }

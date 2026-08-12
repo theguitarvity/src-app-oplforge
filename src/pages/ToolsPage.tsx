@@ -1,10 +1,12 @@
 import { useSearchParams } from 'react-router-dom'
 import { ScanSearch, Trophy, Clock3 } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { DeviceDiagnosticsView } from '@/components/tools/DeviceDiagnosticsView'
 import { OplComponentsList } from '@/components/tools/OplComponentsList'
 import { HistoryPage } from '@/pages/HistoryPage'
 
 export function ToolsPage() {
+  const { t } = useTranslation()
   const [searchParams, setSearchParams] = useSearchParams()
   const activeTab = searchParams.get('tab') || 'diagnostics'
 
@@ -12,10 +14,8 @@ export function ToolsPage() {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h2 className="text-2xl font-bold tracking-tight text-white">Ferramentas & Diagnósticos</h2>
-        <p className="text-sm text-muted-foreground">
-          Diagnóstico do dispositivo, componentes do ecossistema OPL e utilitários de manutenção.
-        </p>
+        <h2 className="text-2xl font-bold tracking-tight text-white">{t('pages.tools.title')}</h2>
+        <p className="text-sm text-muted-foreground">{t('pages.tools.subtitle')}</p>
       </div>
 
       {/* Sub-tabs */}
@@ -29,7 +29,7 @@ export function ToolsPage() {
           }`}
         >
           <ScanSearch className="size-4 text-violet-400" />
-          Diagnóstico do Dispositivo
+          {t('pages.tools.tabDiagnostics')}
         </button>
         <button
           onClick={() => setSearchParams({ tab: 'components' })}
@@ -40,7 +40,7 @@ export function ToolsPage() {
           }`}
         >
           <Trophy className="size-4 text-violet-400" />
-          Componentes OPL
+          {t('pages.tools.tabComponents')}
         </button>
         <button
           onClick={() => setSearchParams({ tab: 'history' })}
@@ -51,7 +51,7 @@ export function ToolsPage() {
           }`}
         >
           <Clock3 className="size-4 text-violet-400" />
-          Histórico
+          {t('pages.tools.tabHistory')}
         </button>
       </div>
 

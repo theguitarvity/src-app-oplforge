@@ -43,5 +43,113 @@
       "designTitle": "Современный тёмный дизайн",
       "designDescription": "Интерфейс вдохновлён Rocketseat, Linear, Raycast и Arc, с лёгким глассморфизмом, сдержанными градиентами и элегантной боковой панелью."
     }
+  },
+  "shell": {
+    "header": {
+      "subtitle": "Подготавливайте, организуйте и управляйте вашим HDD PS2 с лёгкостью.",
+      "selectDevice": "Выберите устройство",
+      "noDeviceDetected": "Устройство не обнаружено",
+      "refresh": "Обновить"
+    },
+    "sidebar": {
+      "legalTitle": "Законное использование",
+      "legalDescription": "Используйте только резервные копии игр, которыми вы законно владеете."
+    },
+    "activityBar": {
+      "processing": "Выполняется операция...",
+      "needsAttention": "Операция требует внимания",
+      "ready": "Система готова",
+      "events": "{{count}} событие(й)",
+      "errors": "({{count}} ошибка(и))",
+      "hideDetails": "Скрыть детали",
+      "showDetails": "Показать детали"
+    },
+    "disconnectedEmptyState": {
+      "title": "Устройство PS2 не выбрано",
+      "description": "Подключите внешний HDD или USB-устройство, отформатированное в exFAT/FAT32, чтобы управлять играми, проверять фрагментацию и структуру OPL.",
+      "scanning": "Поиск устройств...",
+      "detectDevices": "Обнаружить устройства",
+      "prepareDevice": "Подготовить новое устройство",
+      "openLocalLibrary": "Открыть локальную библиотеку",
+      "exploreCatalog": "Просмотреть каталог"
+    },
+    "localLibraryChooser": {
+      "title": "Загрузить на этот компьютер",
+      "description": "Используйте существующую папку или создайте новую библиотеку. Устройство OPL не требуется.",
+      "selectExisting": "Выбрать существующую папку",
+      "createNew": "Создать новую папку",
+      "defaultName": "Игры PS2",
+      "chooseAndCreate": "Выбрать место и создать",
+      "genericError": "Не удалось подготовить папку."
+    }
+  },
+  "pages": {
+    "history": {
+      "title": "История",
+      "subtitle": "Записанные операции с источником, назначением и результатом.",
+      "clearButton": "Очистить историю",
+      "emptyTitle": "История пуста",
+      "emptyDescription": "Импорт, подготовка устройства и установленные приложения появятся здесь.",
+      "origin": "Источник: {{value}}",
+      "destination": "Назначение: {{value}}",
+      "confirmTitle": "Очистить историю?",
+      "confirmDescription": "Все локальные записи операций будут удалены из history.json.",
+      "confirmLabel": "Очистить"
+    },
+    "ps1Import": {
+      "selectDeviceTitle": "Выберите устройство",
+      "selectDeviceDescription": "Выберите активное устройство перед импортом игр PS1.",
+      "title": "Импорт PS1",
+      "subtitle": "Поддерживаются .bin, .cue и .iso. Выбирайте BIN/CUE вместе, чтобы сохранить связь.",
+      "selectFiles": "Выбрать файлы",
+      "nameLabel": "Необязательное имя",
+      "namePlaceholder": "Оставьте пустым, чтобы сохранить имя каждого файла",
+      "filesSelected": "Выбрано файлов: {{count}}",
+      "importButton": "Импортировать в /PS1"
+    },
+    "tools": {
+      "title": "Инструменты и диагностика",
+      "subtitle": "Диагностика устройства, компоненты экосистемы OPL и утилиты обслуживания.",
+      "tabDiagnostics": "Диагностика устройства",
+      "tabComponents": "Компоненты OPL",
+      "tabHistory": "История"
+    },
+    "prepare": {
+      "selectDeviceTitle": "Выберите устройство",
+      "selectDeviceDescription": "Выберите активное устройство перед созданием структуры OPL.",
+      "title": "Подготовить для OPL",
+      "subtitle": "Создаёт стандартную структуру без форматирования или удаления существующих файлов.",
+      "prepareButton": "Подготовить для OPL",
+      "safeTitle": "Безопасная операция",
+      "safeDescription": "Реальное форматирование по умолчанию заблокировано через ENABLE_REAL_FORMAT=false. Этот процесс только создаёт папки и README.",
+      "confirmTitle": "Создать структуру OPL?",
+      "confirmDescription": "Устройство {{name}} получит папки OPL. Существующие файлы не будут удалены.",
+      "confirmLabel": "Подготовить"
+    },
+    "sourceSettings": {
+      "title": "Настройки источников",
+      "subtitle": "Зарегистрируйте внешние источники для поиска и загрузок.",
+      "nameLabel": "Имя",
+      "typeLabel": "Тип",
+      "typeInternetArchiveSearch": "Internet Archive Search",
+      "typeInternetArchiveDirectory": "Internet Archive Directory",
+      "typeInternetArchiveArtPack": "Internet Archive ART Pack",
+      "typeLocalFolder": "Локальная папка",
+      "typeDirectUrl": "Прямой HTTP/HTTPS",
+      "typeTorrent": "Torrent",
+      "typeMagnet": "Magnet",
+      "baseUrlLabel": "Базовый URL",
+      "defaultQueryLabel": "Запрос по умолчанию",
+      "creatorLabel": "Creator",
+      "collectionLabel": "Collection",
+      "activeLabel": "Активен",
+      "nameRequired": "Введите имя.",
+      "saveButton": "Сохранить источник",
+      "newButton": "Новый",
+      "active": "активен",
+      "inactive": "неактивен",
+      "noUrl": "нет URL",
+      "removeButton": "Удалить"
+    }
   }
 }

@@ -43,5 +43,113 @@
       "designTitle": "Modern dark design",
       "designDescription": "Interface inspired by Rocketseat, Linear, Raycast and Arc, with light glassmorphism, subtle gradients and an elegant sidebar."
     }
+  },
+  "shell": {
+    "header": {
+      "subtitle": "Prepare, organize and manage your PS2 HDD with ease.",
+      "selectDevice": "Select a device",
+      "noDeviceDetected": "No device detected",
+      "refresh": "Refresh"
+    },
+    "sidebar": {
+      "legalTitle": "Legal use",
+      "legalDescription": "Only use game backups that you legally own."
+    },
+    "activityBar": {
+      "processing": "Processing operation...",
+      "needsAttention": "Operation needs attention",
+      "ready": "System ready",
+      "events": "{{count}} event(s)",
+      "errors": "({{count}} error(s))",
+      "hideDetails": "Hide Details",
+      "showDetails": "Show Details"
+    },
+    "disconnectedEmptyState": {
+      "title": "No PS2 device selected",
+      "description": "Connect an external HDD or USB device formatted as exFAT/FAT32 to manage your games, check fragmentation and OPL structure.",
+      "scanning": "Scanning for devices...",
+      "detectDevices": "Detect devices",
+      "prepareDevice": "Prepare new device",
+      "openLocalLibrary": "Open local library",
+      "exploreCatalog": "Explore catalog"
+    },
+    "localLibraryChooser": {
+      "title": "Download to this computer",
+      "description": "Use an existing folder or create a new library. No OPL device required.",
+      "selectExisting": "Select existing folder",
+      "createNew": "Create new folder",
+      "defaultName": "PS2 Games",
+      "chooseAndCreate": "Choose location and create",
+      "genericError": "Could not prepare the folder."
+    }
+  },
+  "pages": {
+    "history": {
+      "title": "History",
+      "subtitle": "Recorded operations with origin, destination and result.",
+      "clearButton": "Clear history",
+      "emptyTitle": "History is empty",
+      "emptyDescription": "Imports, device preparation and installed apps will appear here.",
+      "origin": "Origin: {{value}}",
+      "destination": "Destination: {{value}}",
+      "confirmTitle": "Clear history?",
+      "confirmDescription": "All local operation records will be removed from history.json.",
+      "confirmLabel": "Clear"
+    },
+    "ps1Import": {
+      "selectDeviceTitle": "Select a device",
+      "selectDeviceDescription": "Choose the active device before importing PS1 games.",
+      "title": "PS1 Importer",
+      "subtitle": "Accepts .bin, .cue and .iso. Select BIN/CUE together to preserve the relationship.",
+      "selectFiles": "Select files",
+      "nameLabel": "Optional name",
+      "namePlaceholder": "Leave empty to keep each file's name",
+      "filesSelected": "Files selected: {{count}}",
+      "importButton": "Import to /PS1"
+    },
+    "tools": {
+      "title": "Tools & Diagnostics",
+      "subtitle": "Device diagnostics, OPL ecosystem components and maintenance utilities.",
+      "tabDiagnostics": "Device Diagnostics",
+      "tabComponents": "OPL Components",
+      "tabHistory": "History"
+    },
+    "prepare": {
+      "selectDeviceTitle": "Select a device",
+      "selectDeviceDescription": "Choose an active device before creating the OPL structure.",
+      "title": "Prepare for OPL",
+      "subtitle": "Creates the standard structure without formatting or deleting existing files.",
+      "prepareButton": "Prepare for OPL",
+      "safeTitle": "Safe operation",
+      "safeDescription": "Real formatting stays blocked by default via ENABLE_REAL_FORMAT=false. This flow only creates folders and a README.",
+      "confirmTitle": "Create OPL structure?",
+      "confirmDescription": "Device {{name}} will receive the OPL folders. Existing files will not be removed.",
+      "confirmLabel": "Prepare"
+    },
+    "sourceSettings": {
+      "title": "Source Settings",
+      "subtitle": "Register external sources for search and downloads.",
+      "nameLabel": "Name",
+      "typeLabel": "Type",
+      "typeInternetArchiveSearch": "Internet Archive Search",
+      "typeInternetArchiveDirectory": "Internet Archive Directory",
+      "typeInternetArchiveArtPack": "Internet Archive ART Pack",
+      "typeLocalFolder": "Local Folder",
+      "typeDirectUrl": "Direct HTTP/HTTPS",
+      "typeTorrent": "Torrent",
+      "typeMagnet": "Magnet",
+      "baseUrlLabel": "Base URL",
+      "defaultQueryLabel": "Default query",
+      "creatorLabel": "Creator",
+      "collectionLabel": "Collection",
+      "activeLabel": "Active",
+      "nameRequired": "Enter a name.",
+      "saveButton": "Save source",
+      "newButton": "New",
+      "active": "active",
+      "inactive": "inactive",
+      "noUrl": "no URL",
+      "removeButton": "Remove"
+    }
   }
 }

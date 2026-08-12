@@ -43,5 +43,113 @@
       "designTitle": "Modernes dunkles Design",
       "designDescription": "Inspiriert von Rocketseat, Linear, Raycast und Arc, mit leichtem Glassmorphism, dezenten Verläufen und einer eleganten Seitenleiste."
     }
+  },
+  "shell": {
+    "header": {
+      "subtitle": "Bereite deine PS2-Festplatte vor, organisiere und verwalte sie mühelos.",
+      "selectDevice": "Gerät auswählen",
+      "noDeviceDetected": "Kein Gerät erkannt",
+      "refresh": "Aktualisieren"
+    },
+    "sidebar": {
+      "legalTitle": "Legale Nutzung",
+      "legalDescription": "Verwende nur Spielsicherungen, die du legal besitzt."
+    },
+    "activityBar": {
+      "processing": "Vorgang wird verarbeitet...",
+      "needsAttention": "Vorgang erfordert Aufmerksamkeit",
+      "ready": "System bereit",
+      "events": "{{count}} Ereignis(se)",
+      "errors": "({{count}} Fehler)",
+      "hideDetails": "Details ausblenden",
+      "showDetails": "Details anzeigen"
+    },
+    "disconnectedEmptyState": {
+      "title": "Kein PS2-Gerät ausgewählt",
+      "description": "Schließe eine externe Festplatte oder ein USB-Gerät im Format exFAT/FAT32 an, um deine Spiele zu verwalten, die Fragmentierung zu prüfen und die OPL-Struktur zu sehen.",
+      "scanning": "Suche nach Geräten...",
+      "detectDevices": "Geräte erkennen",
+      "prepareDevice": "Neues Gerät vorbereiten",
+      "openLocalLibrary": "Lokale Bibliothek öffnen",
+      "exploreCatalog": "Katalog durchsuchen"
+    },
+    "localLibraryChooser": {
+      "title": "Auf diesen Computer herunterladen",
+      "description": "Verwende einen vorhandenen Ordner oder erstelle eine neue Bibliothek. Kein OPL-Gerät erforderlich.",
+      "selectExisting": "Vorhandenen Ordner auswählen",
+      "createNew": "Neuen Ordner erstellen",
+      "defaultName": "PS2-Spiele",
+      "chooseAndCreate": "Speicherort wählen und erstellen",
+      "genericError": "Der Ordner konnte nicht vorbereitet werden."
+    }
+  },
+  "pages": {
+    "history": {
+      "title": "Verlauf",
+      "subtitle": "Aufgezeichnete Vorgänge mit Ursprung, Ziel und Ergebnis.",
+      "clearButton": "Verlauf löschen",
+      "emptyTitle": "Verlauf ist leer",
+      "emptyDescription": "Importe, Geräte-Vorbereitung und installierte Apps erscheinen hier.",
+      "origin": "Ursprung: {{value}}",
+      "destination": "Ziel: {{value}}",
+      "confirmTitle": "Verlauf löschen?",
+      "confirmDescription": "Alle lokalen Vorgangsprotokolle werden aus history.json entfernt.",
+      "confirmLabel": "Löschen"
+    },
+    "ps1Import": {
+      "selectDeviceTitle": "Gerät auswählen",
+      "selectDeviceDescription": "Wähle das aktive Gerät, bevor du PS1-Spiele importierst.",
+      "title": "PS1-Importer",
+      "subtitle": "Akzeptiert .bin, .cue und .iso. Wähle BIN/CUE gemeinsam aus, um die Zuordnung zu erhalten.",
+      "selectFiles": "Dateien auswählen",
+      "nameLabel": "Optionaler Name",
+      "namePlaceholder": "Leer lassen, um den Namen jeder Datei beizubehalten",
+      "filesSelected": "Ausgewählte Dateien: {{count}}",
+      "importButton": "Nach /PS1 importieren"
+    },
+    "tools": {
+      "title": "Werkzeuge & Diagnose",
+      "subtitle": "Gerätediagnose, Komponenten des OPL-Ökosystems und Wartungstools.",
+      "tabDiagnostics": "Gerätediagnose",
+      "tabComponents": "OPL-Komponenten",
+      "tabHistory": "Verlauf"
+    },
+    "prepare": {
+      "selectDeviceTitle": "Gerät auswählen",
+      "selectDeviceDescription": "Wähle ein aktives Gerät, bevor du die OPL-Struktur erstellst.",
+      "title": "Für OPL vorbereiten",
+      "subtitle": "Erstellt die Standardstruktur, ohne vorhandene Dateien zu formatieren oder zu löschen.",
+      "prepareButton": "Für OPL vorbereiten",
+      "safeTitle": "Sicherer Vorgang",
+      "safeDescription": "Die tatsächliche Formatierung bleibt standardmäßig über ENABLE_REAL_FORMAT=false blockiert. Dieser Ablauf erstellt nur Ordner und eine README.",
+      "confirmTitle": "OPL-Struktur erstellen?",
+      "confirmDescription": "Das Gerät {{name}} erhält die OPL-Ordner. Vorhandene Dateien werden nicht entfernt.",
+      "confirmLabel": "Vorbereiten"
+    },
+    "sourceSettings": {
+      "title": "Quelleneinstellungen",
+      "subtitle": "Registriere externe Quellen für Suche und Downloads.",
+      "nameLabel": "Name",
+      "typeLabel": "Typ",
+      "typeInternetArchiveSearch": "Internet Archive Search",
+      "typeInternetArchiveDirectory": "Internet Archive Directory",
+      "typeInternetArchiveArtPack": "Internet Archive ART Pack",
+      "typeLocalFolder": "Lokaler Ordner",
+      "typeDirectUrl": "Direktes HTTP/HTTPS",
+      "typeTorrent": "Torrent",
+      "typeMagnet": "Magnet",
+      "baseUrlLabel": "Basis-URL",
+      "defaultQueryLabel": "Standardabfrage",
+      "creatorLabel": "Creator",
+      "collectionLabel": "Collection",
+      "activeLabel": "Aktiv",
+      "nameRequired": "Gib einen Namen ein.",
+      "saveButton": "Quelle speichern",
+      "newButton": "Neu",
+      "active": "aktiv",
+      "inactive": "inaktiv",
+      "noUrl": "keine URL",
+      "removeButton": "Entfernen"
+    }
   }
 }

@@ -43,5 +43,113 @@
       "designTitle": "现代深色设计",
       "designDescription": "灵感来自 Rocketseat、Linear、Raycast 和 Arc，具有轻量玻璃拟态效果、低调渐变和优雅的侧边栏。"
     }
+  },
+  "shell": {
+    "header": {
+      "subtitle": "轻松准备、整理和管理您的 PS2 硬盘。",
+      "selectDevice": "选择设备",
+      "noDeviceDetected": "未检测到设备",
+      "refresh": "刷新"
+    },
+    "sidebar": {
+      "legalTitle": "合法使用",
+      "legalDescription": "仅使用您合法拥有的游戏备份。"
+    },
+    "activityBar": {
+      "processing": "正在处理操作...",
+      "needsAttention": "操作需要注意",
+      "ready": "系统就绪",
+      "events": "{{count}} 个事件",
+      "errors": "（{{count}} 个错误）",
+      "hideDetails": "隐藏详情",
+      "showDetails": "显示详情"
+    },
+    "disconnectedEmptyState": {
+      "title": "未选择 PS2 设备",
+      "description": "连接一个格式化为 exFAT/FAT32 的外置硬盘或 U 盘，以管理您的游戏、检查碎片和 OPL 结构。",
+      "scanning": "正在搜索设备...",
+      "detectDevices": "检测设备",
+      "prepareDevice": "准备新设备",
+      "openLocalLibrary": "打开本地游戏库",
+      "exploreCatalog": "浏览目录"
+    },
+    "localLibraryChooser": {
+      "title": "下载到本电脑",
+      "description": "使用现有文件夹或创建新的游戏库。无需 OPL 设备。",
+      "selectExisting": "选择现有文件夹",
+      "createNew": "创建新文件夹",
+      "defaultName": "PS2 游戏",
+      "chooseAndCreate": "选择位置并创建",
+      "genericError": "无法准备该文件夹。"
+    }
+  },
+  "pages": {
+    "history": {
+      "title": "历史记录",
+      "subtitle": "记录的操作，包含来源、目标和结果。",
+      "clearButton": "清除历史记录",
+      "emptyTitle": "历史记录为空",
+      "emptyDescription": "导入、设备准备和已安装的应用将显示在此处。",
+      "origin": "来源：{{value}}",
+      "destination": "目标：{{value}}",
+      "confirmTitle": "清除历史记录？",
+      "confirmDescription": "所有本地操作记录将从 history.json 中移除。",
+      "confirmLabel": "清除"
+    },
+    "ps1Import": {
+      "selectDeviceTitle": "选择设备",
+      "selectDeviceDescription": "在导入 PS1 游戏之前选择活动设备。",
+      "title": "PS1 导入工具",
+      "subtitle": "支持 .bin、.cue 和 .iso。请同时选择 BIN/CUE 以保留其关联关系。",
+      "selectFiles": "选择文件",
+      "nameLabel": "可选名称",
+      "namePlaceholder": "留空将保留每个文件的原名称",
+      "filesSelected": "已选择文件：{{count}}",
+      "importButton": "导入到 /PS1"
+    },
+    "tools": {
+      "title": "工具与诊断",
+      "subtitle": "设备诊断、OPL 生态系统组件和维护实用工具。",
+      "tabDiagnostics": "设备诊断",
+      "tabComponents": "OPL 组件",
+      "tabHistory": "历史记录"
+    },
+    "prepare": {
+      "selectDeviceTitle": "选择设备",
+      "selectDeviceDescription": "在创建 OPL 结构之前选择一个活动设备。",
+      "title": "为 OPL 做准备",
+      "subtitle": "创建标准结构，不会格式化或删除现有文件。",
+      "prepareButton": "为 OPL 做准备",
+      "safeTitle": "安全操作",
+      "safeDescription": "真实格式化默认通过 ENABLE_REAL_FORMAT=false 被阻止。此流程仅创建文件夹和 README。",
+      "confirmTitle": "创建 OPL 结构？",
+      "confirmDescription": "设备 {{name}} 将获得 OPL 文件夹。现有文件不会被删除。",
+      "confirmLabel": "准备"
+    },
+    "sourceSettings": {
+      "title": "来源设置",
+      "subtitle": "注册用于搜索和下载的外部来源。",
+      "nameLabel": "名称",
+      "typeLabel": "类型",
+      "typeInternetArchiveSearch": "Internet Archive Search",
+      "typeInternetArchiveDirectory": "Internet Archive Directory",
+      "typeInternetArchiveArtPack": "Internet Archive ART Pack",
+      "typeLocalFolder": "本地文件夹",
+      "typeDirectUrl": "直接 HTTP/HTTPS",
+      "typeTorrent": "Torrent",
+      "typeMagnet": "Magnet",
+      "baseUrlLabel": "基础 URL",
+      "defaultQueryLabel": "默认查询",
+      "creatorLabel": "Creator",
+      "collectionLabel": "Collection",
+      "activeLabel": "启用",
+      "nameRequired": "请输入名称。",
+      "saveButton": "保存来源",
+      "newButton": "新建",
+      "active": "启用",
+      "inactive": "未启用",
+      "noUrl": "无 URL",
+      "removeButton": "移除"
+    }
   }
 }

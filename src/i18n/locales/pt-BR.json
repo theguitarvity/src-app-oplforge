@@ -43,5 +43,113 @@
       "designTitle": "Design dark moderno",
       "designDescription": "Interface inspirada em Rocketseat, Linear, Raycast e Arc, com glassmorphism leve, gradientes discretos e sidebar elegante."
     }
+  },
+  "shell": {
+    "header": {
+      "subtitle": "Prepare, organize e gerencie seu HD do PS2 com facilidade.",
+      "selectDevice": "Selecione um dispositivo",
+      "noDeviceDetected": "Nenhum dispositivo detectado",
+      "refresh": "Atualizar"
+    },
+    "sidebar": {
+      "legalTitle": "Uso legal",
+      "legalDescription": "Utilize apenas backups de jogos que você possua legalmente."
+    },
+    "activityBar": {
+      "processing": "Processando operação...",
+      "needsAttention": "Operação requer atenção",
+      "ready": "Sistema pronto",
+      "events": "{{count}} evento(s)",
+      "errors": "({{count}} erro(s))",
+      "hideDetails": "Ocultar Detalhes",
+      "showDetails": "Mostrar Detalhes"
+    },
+    "disconnectedEmptyState": {
+      "title": "Nenhum dispositivo PS2 selecionado",
+      "description": "Conecte um HD externo ou dispositivo USB formatado em exFAT/FAT32 para gerenciar seus jogos, verificar fragmentação e estrutura OPL.",
+      "scanning": "Procurando dispositivos...",
+      "detectDevices": "Detectar dispositivos",
+      "prepareDevice": "Preparar novo dispositivo",
+      "openLocalLibrary": "Abrir biblioteca local",
+      "exploreCatalog": "Explorar catálogo"
+    },
+    "localLibraryChooser": {
+      "title": "Baixar para este computador",
+      "description": "Use uma pasta existente ou crie uma nova biblioteca. Nenhum dispositivo OPL é necessário.",
+      "selectExisting": "Selecionar pasta existente",
+      "createNew": "Criar nova pasta",
+      "defaultName": "Jogos PS2",
+      "chooseAndCreate": "Escolher local e criar",
+      "genericError": "Não foi possível preparar a pasta."
+    }
+  },
+  "pages": {
+    "history": {
+      "title": "Historico",
+      "subtitle": "Operacoes registradas com origem, destino e resultado.",
+      "clearButton": "Limpar historico",
+      "emptyTitle": "Historico vazio",
+      "emptyDescription": "Importacoes, preparo de dispositivo e apps instalados aparecerao aqui.",
+      "origin": "Origem: {{value}}",
+      "destination": "Destino: {{value}}",
+      "confirmTitle": "Limpar historico?",
+      "confirmDescription": "Todos os registros locais de operacoes serao removidos de history.json.",
+      "confirmLabel": "Limpar"
+    },
+    "ps1Import": {
+      "selectDeviceTitle": "Selecione um dispositivo",
+      "selectDeviceDescription": "Escolha o dispositivo ativo antes de importar jogos PS1.",
+      "title": "Importador PS1",
+      "subtitle": "Aceita .bin, .cue e .iso. Selecione BIN/CUE juntos para preservar o relacionamento.",
+      "selectFiles": "Selecionar arquivos",
+      "nameLabel": "Nome opcional",
+      "namePlaceholder": "Vazio mantem o nome de cada arquivo",
+      "filesSelected": "Arquivos selecionados: {{count}}",
+      "importButton": "Importar para /PS1"
+    },
+    "tools": {
+      "title": "Ferramentas & Diagnósticos",
+      "subtitle": "Diagnóstico do dispositivo, componentes do ecossistema OPL e utilitários de manutenção.",
+      "tabDiagnostics": "Diagnóstico do Dispositivo",
+      "tabComponents": "Componentes OPL",
+      "tabHistory": "Histórico"
+    },
+    "prepare": {
+      "selectDeviceTitle": "Selecione um dispositivo",
+      "selectDeviceDescription": "Escolha um dispositivo ativo antes de criar a estrutura OPL.",
+      "title": "Preparar para OPL",
+      "subtitle": "Cria a estrutura padrao sem formatar ou apagar arquivos existentes.",
+      "prepareButton": "Preparar para OPL",
+      "safeTitle": "Operacao segura",
+      "safeDescription": "Formatacao real permanece bloqueada por padrao via ENABLE_REAL_FORMAT=false. Este fluxo apenas cria pastas e README.",
+      "confirmTitle": "Criar estrutura OPL?",
+      "confirmDescription": "O dispositivo {{name}} recebera as pastas OPL. Arquivos existentes nao serao removidos.",
+      "confirmLabel": "Preparar"
+    },
+    "sourceSettings": {
+      "title": "Configurações de Fonte",
+      "subtitle": "Cadastre fontes externas para busca e downloads.",
+      "nameLabel": "Nome",
+      "typeLabel": "Tipo",
+      "typeInternetArchiveSearch": "Internet Archive Search",
+      "typeInternetArchiveDirectory": "Internet Archive Directory",
+      "typeInternetArchiveArtPack": "Internet Archive ART Pack",
+      "typeLocalFolder": "Local Folder",
+      "typeDirectUrl": "HTTP/HTTPS direto",
+      "typeTorrent": "Torrent",
+      "typeMagnet": "Magnet",
+      "baseUrlLabel": "URL base",
+      "defaultQueryLabel": "Query padrão",
+      "creatorLabel": "Creator",
+      "collectionLabel": "Collection",
+      "activeLabel": "Ativa",
+      "nameRequired": "Informe um nome.",
+      "saveButton": "Salvar fonte",
+      "newButton": "Nova",
+      "active": "ativa",
+      "inactive": "inativa",
+      "noUrl": "sem URL",
+      "removeButton": "Remover"
+    }
   }
 }
