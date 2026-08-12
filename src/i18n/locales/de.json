@@ -338,6 +338,26 @@
       "confirmInstallation": "Installation bestätigen",
       "validateAndCreatePlan": "Validieren und Plan erstellen",
       "cancelPlan": "Plan abbrechen"
+    },
+    "downloads": {
+      "title": "Download-Zentrale",
+      "subtitle": "Fortsetzbare, lokal zwischengespeicherte Downloads mit sicherer, serialisierter OPL-Installation auf dem Gerät.",
+      "inProgress": "läuft",
+      "completed": "abgeschlossen",
+      "showDownloads": "Downloads anzeigen",
+      "filterAll": "Alle",
+      "filterOplDevice": "OPL-Gerät",
+      "filterLocalFolder": "Dieser Computer",
+      "allDestinations": "Alle Ziele",
+      "taskCount": "{{count}} Aufgabe(n)",
+      "realtimeUpdate": "Echtzeit-Aktualisierung",
+      "clearFinished": "Abgeschlossene löschen",
+      "actionError": "Aktion konnte nicht ausgeführt werden: {{message}}",
+      "emptyQueueTitle": "Warteschlange leer",
+      "emptyQueueDescription": "Gespeicherte Downloads erscheinen hier auch nach einem Neustart von Forge.",
+      "clearHistoryTitle": "Download-Verlauf löschen?",
+      "clearHistoryDescription": "{{count}} abgeschlossene, abgebrochene oder fehlgeschlagene Aufgabe(n) aus dieser Liste entfernen. Laufende Downloads und installierte Dateien bleiben unverändert.",
+      "clearRecords": "Einträge löschen"
     }
   },
   "components": {

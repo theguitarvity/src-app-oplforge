@@ -338,6 +338,26 @@
       "confirmInstallation": "インストールを確認",
       "validateAndCreatePlan": "検証して計画を作成",
       "cancelPlan": "計画をキャンセル"
+    },
+    "downloads": {
+      "title": "ダウンロードセンター",
+      "subtitle": "ローカルにキャッシュされた再開可能なダウンロードと、デバイス上での安全でシリアルなOPLインストール。",
+      "inProgress": "進行中",
+      "completed": "完了",
+      "showDownloads": "ダウンロードを表示",
+      "filterAll": "すべて",
+      "filterOplDevice": "OPLデバイス",
+      "filterLocalFolder": "このコンピューター",
+      "allDestinations": "すべての保存先",
+      "taskCount": "{{count}} 件のタスク",
+      "realtimeUpdate": "リアルタイム更新",
+      "clearFinished": "完了したものをクリア",
+      "actionError": "操作を実行できませんでした: {{message}}",
+      "emptyQueueTitle": "キューは空です",
+      "emptyQueueDescription": "永続化されたダウンロードは、Forgeを再起動してもここに表示されます。",
+      "clearHistoryTitle": "ダウンロード履歴をクリアしますか？",
+      "clearHistoryDescription": "このリストから {{count}} 件の完了、キャンセル、または失敗したタスクを削除します。進行中のダウンロードとインストール済みのファイルは変更されません。",
+      "clearRecords": "記録をクリア"
     }
   },
   "components": {

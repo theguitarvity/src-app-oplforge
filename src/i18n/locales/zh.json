@@ -338,6 +338,26 @@
       "confirmInstallation": "确认安装",
       "validateAndCreatePlan": "验证并创建计划",
       "cancelPlan": "取消计划"
+    },
+    "downloads": {
+      "title": "下载中心",
+      "subtitle": "本地缓存的可恢复下载，并在设备上进行安全、串行的 OPL 安装。",
+      "inProgress": "进行中",
+      "completed": "已完成",
+      "showDownloads": "显示下载",
+      "filterAll": "全部",
+      "filterOplDevice": "OPL 设备",
+      "filterLocalFolder": "此电脑",
+      "allDestinations": "所有目标位置",
+      "taskCount": "{{count}} 个任务",
+      "realtimeUpdate": "实时更新",
+      "clearFinished": "清除已完成",
+      "actionError": "无法执行该操作：{{message}}",
+      "emptyQueueTitle": "队列为空",
+      "emptyQueueDescription": "重启 Forge 后，已保存的下载仍会显示在此处。",
+      "clearHistoryTitle": "清除下载历史记录？",
+      "clearHistoryDescription": "从此列表中移除 {{count}} 个已完成、已取消或失败的任务。进行中的下载和已安装的文件不会受到影响。",
+      "clearRecords": "清除记录"
     }
   },
   "components": {

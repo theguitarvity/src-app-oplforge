@@ -338,6 +338,26 @@
       "confirmInstallation": "Confirmar instalación",
       "validateAndCreatePlan": "Validar y crear plan",
       "cancelPlan": "Cancelar plan"
+    },
+    "downloads": {
+      "title": "Centro de descargas",
+      "subtitle": "Descargas reanudables en caché local, con instalación OPL segura y serializada en el dispositivo.",
+      "inProgress": "en curso",
+      "completed": "completados",
+      "showDownloads": "Mostrar descargas",
+      "filterAll": "Todos",
+      "filterOplDevice": "Dispositivo OPL",
+      "filterLocalFolder": "Este equipo",
+      "allDestinations": "Todos los destinos",
+      "taskCount": "{{count}} tarea(s)",
+      "realtimeUpdate": "Actualización en tiempo real",
+      "clearFinished": "Limpiar finalizados",
+      "actionError": "No se pudo ejecutar la acción: {{message}}",
+      "emptyQueueTitle": "Cola vacía",
+      "emptyQueueDescription": "Las descargas persistidas aparecerán aquí incluso después de reiniciar Forge.",
+      "clearHistoryTitle": "¿Limpiar historial de descargas?",
+      "clearHistoryDescription": "Eliminar {{count}} tarea(s) completada(s), cancelada(s) o fallida(s) de esta lista. Las descargas en curso y los archivos instalados no se modificarán.",
+      "clearRecords": "Limpiar registros"
     }
   },
   "components": {

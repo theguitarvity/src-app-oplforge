@@ -338,6 +338,26 @@
       "confirmInstallation": "Подтвердить установку",
       "validateAndCreatePlan": "Проверить и создать план",
       "cancelPlan": "Отменить план"
+    },
+    "downloads": {
+      "title": "Центр загрузок",
+      "subtitle": "Возобновляемые загрузки с локальным кешем и безопасной последовательной установкой OPL на устройство.",
+      "inProgress": "выполняется",
+      "completed": "завершено",
+      "showDownloads": "Показать загрузки",
+      "filterAll": "Все",
+      "filterOplDevice": "Устройство OPL",
+      "filterLocalFolder": "Этот компьютер",
+      "allDestinations": "Все назначения",
+      "taskCount": "{{count}} задач(и)",
+      "realtimeUpdate": "Обновление в реальном времени",
+      "clearFinished": "Очистить завершённые",
+      "actionError": "Не удалось выполнить действие: {{message}}",
+      "emptyQueueTitle": "Очередь пуста",
+      "emptyQueueDescription": "Сохранённые загрузки появятся здесь даже после перезапуска Forge.",
+      "clearHistoryTitle": "Очистить историю загрузок?",
+      "clearHistoryDescription": "Удалить {{count}} завершённых, отменённых или неудавшихся задач из этого списка. Текущие загрузки и установленные файлы не изменятся.",
+      "clearRecords": "Очистить записи"
     }
   },
   "components": {
