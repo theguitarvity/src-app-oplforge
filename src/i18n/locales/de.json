@@ -243,6 +243,29 @@
       "overwriteConfirmTitle": "Vorhandene Datei überschreiben?",
       "overwriteConfirmDescription": "Am Ziel existiert bereits eine Datei mit dem Namen „{{name}}“. Das Überschreiben ersetzt die vorhandene Datei dauerhaft.",
       "overwriteConfirmLabel": "Überschreiben"
+    },
+    "artManager": {
+      "selectDeviceTitle": "Gerät auswählen",
+      "selectDeviceDescription": "Die Synchronisierung nutzt den vollständigen ISO-, ZSO- und USBExtreme-Katalog.",
+      "title": "OPL-Artwork",
+      "subtitle": "Erkenne die Spiele des Geräts und synchronisiere Cover, Hintergründe und Icons im Format, das OPL liest.",
+      "refreshSource": "Quelle aktualisieren",
+      "readingLibrary": "Bibliothek wird gelesen…",
+      "prepareSync": "Synchronisierung vorbereiten",
+      "artsInIndex": "Artworks im Index",
+      "selectedTypes": "ausgewählte Typen",
+      "activeJobs": "aktive Jobs",
+      "artTypesTitle": "Artwork-Typen",
+      "artTypesDescription": "Wähle, was heruntergeladen werden soll. COV und COV2 decken die am häufigsten verwendeten Cover ab.",
+      "artTypesLegend": "Artwork-Typen",
+      "footnote": "Forge liest CD, DVD und ul.cfg, erkennt Game-IDs und erhält gültiges vorhandenes Artwork.",
+      "prepareError": "Bibliothek konnte nicht gelesen oder Artwork nicht vorbereitet werden: {{message}}",
+      "refreshError": "Artwork-Quelle konnte nicht aktualisiert werden: {{message}}",
+      "activityTitle": "Synchronisierungsaktivität",
+      "jobsCount": "{{count}} Jobs",
+      "loadingSyncs": "Synchronisierungen werden geladen…",
+      "noSyncStarted": "Noch keine Synchronisierung gestartet",
+      "noSyncDescription": "Erstelle einen Plan, um fehlendes Artwork herunterzuladen."
     }
   },
   "components": {
@@ -394,6 +417,36 @@
       "deletedWithFailures": "Mit Fehlern gelöscht: {{paths}}",
       "deletedSuccess": "{{title}} aus der Bibliothek entfernt.",
       "deleteError": "Fehler beim Löschen: {{message}}"
+    },
+    "artSyncJobProgress": {
+      "stateQueued": "In Warteschlange",
+      "stateRunning": "Synchronisiere",
+      "statePaused": "Pausiert",
+      "stateCompleted": "Abgeschlossen",
+      "statePartial": "Teilweise abgeschlossen",
+      "stateFailed": "Fehlgeschlagen",
+      "stateCancelled": "Abgebrochen",
+      "stateRecoveryPending": "Wiederherstellung ausstehend",
+      "ariaLabel": "Artwork-Synchronisierung {{jobId}}",
+      "processed": "{{completed}} von {{total}} Artworks verarbeitet",
+      "ariaProgress": "Artwork-Fortschritt",
+      "installed": "{{count}} installiert",
+      "skipped": "{{count}} beibehalten",
+      "failed": "{{count}} fehlgeschlagen",
+      "pause": "Pausieren",
+      "resume": "Fortsetzen",
+      "retryFailed": "Fehlgeschlagene erneut versuchen"
+    },
+    "artSyncPlanDialog": {
+      "title": "Synchronisierungsplan",
+      "description": "Überprüfe den Umfang, bevor Artwork heruntergeladen und in den ART-Ordner des Geräts geschrieben wird.",
+      "gamesRecognized": "erkannte Spiele",
+      "artsToProcess": "zu verarbeitende Artworks",
+      "policyLabel": "Richtlinie:",
+      "policyMissingOnly": "nur fehlendes Artwork herunterladen",
+      "cancel": "Abbrechen",
+      "starting": "Wird gestartet…",
+      "startSync": "Synchronisierung starten"
     }
   }
 }

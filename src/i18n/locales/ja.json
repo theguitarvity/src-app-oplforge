@@ -243,6 +243,29 @@
       "overwriteConfirmTitle": "既存のファイルを上書きしますか？",
       "overwriteConfirmDescription": "保存先には「{{name}}」という名前のファイルがすでに存在します。上書きすると既存のファイルが完全に置き換えられます。",
       "overwriteConfirmLabel": "上書き"
+    },
+    "artManager": {
+      "selectDeviceTitle": "デバイスを選択",
+      "selectDeviceDescription": "同期にはISO、ZSO、USBExtremeの完全なカタログを使用します。",
+      "title": "OPLアート",
+      "subtitle": "デバイスのゲームを認識し、OPLが読み取る形式でカバー、背景、アイコンを同期します。",
+      "refreshSource": "ソースを更新",
+      "readingLibrary": "ライブラリを読み込み中…",
+      "prepareSync": "同期を準備",
+      "artsInIndex": "インデックス内のアート",
+      "selectedTypes": "選択中のタイプ",
+      "activeJobs": "アクティブなジョブ",
+      "artTypesTitle": "アートタイプ",
+      "artTypesDescription": "ダウンロードするものを選択してください。COVとCOV2は最もよく使われるカバーをカバーします。",
+      "artTypesLegend": "アートタイプ",
+      "footnote": "ForgeはCD、DVD、ul.cfgを読み取り、Game IDを検出し、既存の有効なアートを保持します。",
+      "prepareError": "ライブラリの読み込みまたはアートの準備に失敗しました: {{message}}",
+      "refreshError": "アートソースの更新に失敗しました: {{message}}",
+      "activityTitle": "同期アクティビティ",
+      "jobsCount": "{{count}} 件のジョブ",
+      "loadingSyncs": "同期を読み込み中…",
+      "noSyncStarted": "まだ同期が開始されていません",
+      "noSyncDescription": "不足しているアートをダウンロードするための計画を準備してください。"
     }
   },
   "components": {
@@ -394,6 +417,36 @@
       "deletedWithFailures": "一部失敗して削除されました: {{paths}}",
       "deletedSuccess": "{{title}} をライブラリから削除しました。",
       "deleteError": "削除中にエラーが発生しました: {{message}}"
+    },
+    "artSyncJobProgress": {
+      "stateQueued": "キュー待ち",
+      "stateRunning": "同期中",
+      "statePaused": "一時停止中",
+      "stateCompleted": "完了",
+      "statePartial": "一部完了",
+      "stateFailed": "失敗",
+      "stateCancelled": "キャンセル済み",
+      "stateRecoveryPending": "復旧待ち",
+      "ariaLabel": "アート同期 {{jobId}}",
+      "processed": "{{total}} 件中 {{completed}} 件のアートを処理済み",
+      "ariaProgress": "アート同期の進捗",
+      "installed": "{{count}} 件インストール済み",
+      "skipped": "{{count}} 件保持",
+      "failed": "{{count}} 件失敗",
+      "pause": "一時停止",
+      "resume": "再開",
+      "retryFailed": "失敗分を再試行"
+    },
+    "artSyncPlanDialog": {
+      "title": "同期プラン",
+      "description": "アートをダウンロードしてデバイスのARTフォルダに書き込む前に、量を確認してください。",
+      "gamesRecognized": "認識されたゲーム",
+      "artsToProcess": "処理予定のアート",
+      "policyLabel": "ポリシー:",
+      "policyMissingOnly": "不足しているアートのみダウンロード",
+      "cancel": "キャンセル",
+      "starting": "開始中…",
+      "startSync": "同期を開始"
     }
   }
 }

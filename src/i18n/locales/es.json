@@ -243,6 +243,29 @@
       "overwriteConfirmTitle": "¿Sobrescribir archivo existente?",
       "overwriteConfirmDescription": "Ya existe un archivo llamado \"{{name}}\" en el destino. Sobrescribir reemplaza permanentemente el archivo existente.",
       "overwriteConfirmLabel": "Sobrescribir"
+    },
+    "artManager": {
+      "selectDeviceTitle": "Selecciona un dispositivo",
+      "selectDeviceDescription": "La sincronización usa el catálogo completo de ISO, ZSO y USBExtreme.",
+      "title": "Artes OPL",
+      "subtitle": "Reconoce los juegos del dispositivo y sincroniza carátulas, fondos e iconos en el formato que lee OPL.",
+      "refreshSource": "Actualizar fuente",
+      "readingLibrary": "Leyendo biblioteca…",
+      "prepareSync": "Preparar sincronización",
+      "artsInIndex": "artes en el índice",
+      "selectedTypes": "tipos seleccionados",
+      "activeJobs": "trabajos activos",
+      "artTypesTitle": "Tipos de arte",
+      "artTypesDescription": "Elige qué descargar. COV y COV2 cubren las carátulas más usadas.",
+      "artTypesLegend": "Tipos de arte",
+      "footnote": "Forge lee CD, DVD y ul.cfg, detecta los Game IDs y preserva las artes válidas existentes.",
+      "prepareError": "Error al leer la biblioteca o preparar artes: {{message}}",
+      "refreshError": "Error al actualizar la fuente de artes: {{message}}",
+      "activityTitle": "Actividad de sincronización",
+      "jobsCount": "{{count}} trabajos",
+      "loadingSyncs": "Cargando sincronizaciones…",
+      "noSyncStarted": "No se ha iniciado ninguna sincronización",
+      "noSyncDescription": "Prepara un plan para descargar las artes faltantes."
     }
   },
   "components": {
@@ -394,6 +417,36 @@
       "deletedWithFailures": "Eliminado con errores: {{paths}}",
       "deletedSuccess": "{{title}} eliminado de la biblioteca.",
       "deleteError": "Error al eliminar: {{message}}"
+    },
+    "artSyncJobProgress": {
+      "stateQueued": "En cola",
+      "stateRunning": "Sincronizando",
+      "statePaused": "Pausado",
+      "stateCompleted": "Completado",
+      "statePartial": "Completado parcialmente",
+      "stateFailed": "Con errores",
+      "stateCancelled": "Cancelado",
+      "stateRecoveryPending": "Recuperación pendiente",
+      "ariaLabel": "Sincronización de artes {{jobId}}",
+      "processed": "{{completed}} de {{total}} artes procesadas",
+      "ariaProgress": "Progreso de artes",
+      "installed": "{{count}} instaladas",
+      "skipped": "{{count}} conservadas",
+      "failed": "{{count}} con errores",
+      "pause": "Pausar",
+      "resume": "Reanudar",
+      "retryFailed": "Reintentar errores"
+    },
+    "artSyncPlanDialog": {
+      "title": "Plan de sincronización",
+      "description": "Revisa el volumen antes de descargar y escribir las artes en la carpeta ART del dispositivo.",
+      "gamesRecognized": "juegos reconocidos",
+      "artsToProcess": "artes a procesar",
+      "policyLabel": "Política:",
+      "policyMissingOnly": "descargar solo artes faltantes",
+      "cancel": "Cancelar",
+      "starting": "Iniciando…",
+      "startSync": "Iniciar sincronización"
     }
   }
 }

@@ -243,6 +243,29 @@
       "overwriteConfirmTitle": "覆盖现有文件？",
       "overwriteConfirmDescription": "目标位置已存在名为“{{name}}”的文件。覆盖将永久替换现有文件。",
       "overwriteConfirmLabel": "覆盖"
+    },
+    "artManager": {
+      "selectDeviceTitle": "选择设备",
+      "selectDeviceDescription": "同步使用完整的 ISO、ZSO 和 USBExtreme 目录。",
+      "title": "OPL 封面",
+      "subtitle": "识别设备上的游戏，并以 OPL 可读取的格式同步封面、背景和图标。",
+      "refreshSource": "刷新来源",
+      "readingLibrary": "正在读取游戏库…",
+      "prepareSync": "准备同步",
+      "artsInIndex": "已索引的封面",
+      "selectedTypes": "已选类型",
+      "activeJobs": "活动任务",
+      "artTypesTitle": "封面类型",
+      "artTypesDescription": "选择要下载的内容。COV 和 COV2 涵盖最常用的封面。",
+      "artTypesLegend": "封面类型",
+      "footnote": "Forge 会读取 CD、DVD 和 ul.cfg，检测 Game ID，并保留已存在的有效封面。",
+      "prepareError": "读取游戏库或准备封面失败：{{message}}",
+      "refreshError": "刷新封面来源失败：{{message}}",
+      "activityTitle": "同步活动",
+      "jobsCount": "{{count}} 个任务",
+      "loadingSyncs": "正在加载同步…",
+      "noSyncStarted": "尚未开始任何同步",
+      "noSyncDescription": "准备一个计划以下载缺失的封面。"
     }
   },
   "components": {
@@ -394,6 +417,36 @@
       "deletedWithFailures": "删除时出现失败：{{paths}}",
       "deletedSuccess": "{{title}} 已从游戏库中移除。",
       "deleteError": "删除时出错：{{message}}"
+    },
+    "artSyncJobProgress": {
+      "stateQueued": "排队中",
+      "stateRunning": "同步中",
+      "statePaused": "已暂停",
+      "stateCompleted": "已完成",
+      "statePartial": "部分完成",
+      "stateFailed": "失败",
+      "stateCancelled": "已取消",
+      "stateRecoveryPending": "等待恢复",
+      "ariaLabel": "封面同步 {{jobId}}",
+      "processed": "已处理 {{completed}} / {{total}} 个封面",
+      "ariaProgress": "封面同步进度",
+      "installed": "已安装 {{count}} 个",
+      "skipped": "已保留 {{count}} 个",
+      "failed": "失败 {{count}} 个",
+      "pause": "暂停",
+      "resume": "继续",
+      "retryFailed": "重试失败项"
+    },
+    "artSyncPlanDialog": {
+      "title": "同步计划",
+      "description": "在下载并将封面写入设备的 ART 文件夹之前，请先查看数据量。",
+      "gamesRecognized": "已识别游戏",
+      "artsToProcess": "待处理封面",
+      "policyLabel": "策略：",
+      "policyMissingOnly": "仅下载缺失的封面",
+      "cancel": "取消",
+      "starting": "启动中…",
+      "startSync": "开始同步"
     }
   }
 }

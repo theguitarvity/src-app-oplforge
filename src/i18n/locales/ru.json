@@ -243,6 +243,29 @@
       "overwriteConfirmTitle": "Перезаписать существующий файл?",
       "overwriteConfirmDescription": "Файл с именем «{{name}}» уже существует в месте назначения. Перезапись безвозвратно заменит существующий файл.",
       "overwriteConfirmLabel": "Перезаписать"
+    },
+    "artManager": {
+      "selectDeviceTitle": "Выберите устройство",
+      "selectDeviceDescription": "Синхронизация использует полный каталог ISO, ZSO и USBExtreme.",
+      "title": "Обложки OPL",
+      "subtitle": "Распознайте игры устройства и синхронизируйте обложки, фоны и значки в формате, который читает OPL.",
+      "refreshSource": "Обновить источник",
+      "readingLibrary": "Чтение библиотеки…",
+      "prepareSync": "Подготовить синхронизацию",
+      "artsInIndex": "обложек в индексе",
+      "selectedTypes": "выбрано типов",
+      "activeJobs": "активных задач",
+      "artTypesTitle": "Типы обложек",
+      "artTypesDescription": "Выберите, что загрузить. COV и COV2 охватывают самые используемые обложки.",
+      "artTypesLegend": "Типы обложек",
+      "footnote": "Forge читает CD, DVD и ul.cfg, определяет Game ID и сохраняет уже существующие корректные обложки.",
+      "prepareError": "Не удалось прочитать библиотеку или подготовить обложки: {{message}}",
+      "refreshError": "Не удалось обновить источник обложек: {{message}}",
+      "activityTitle": "Активность синхронизации",
+      "jobsCount": "{{count}} задач",
+      "loadingSyncs": "Загрузка синхронизаций…",
+      "noSyncStarted": "Синхронизация ещё не запускалась",
+      "noSyncDescription": "Подготовьте план для загрузки недостающих обложек."
     }
   },
   "components": {
@@ -394,6 +417,36 @@
       "deletedWithFailures": "Удалено с ошибками: {{paths}}",
       "deletedSuccess": "{{title}} удалено из библиотеки.",
       "deleteError": "Ошибка удаления: {{message}}"
+    },
+    "artSyncJobProgress": {
+      "stateQueued": "В очереди",
+      "stateRunning": "Синхронизация",
+      "statePaused": "Приостановлено",
+      "stateCompleted": "Завершено",
+      "statePartial": "Завершено частично",
+      "stateFailed": "С ошибками",
+      "stateCancelled": "Отменено",
+      "stateRecoveryPending": "Ожидает восстановления",
+      "ariaLabel": "Синхронизация обложек {{jobId}}",
+      "processed": "Обработано {{completed}} из {{total}} обложек",
+      "ariaProgress": "Прогресс синхронизации обложек",
+      "installed": "{{count}} установлено",
+      "skipped": "{{count}} сохранено",
+      "failed": "{{count}} с ошибками",
+      "pause": "Пауза",
+      "resume": "Возобновить",
+      "retryFailed": "Повторить ошибки"
+    },
+    "artSyncPlanDialog": {
+      "title": "План синхронизации",
+      "description": "Проверьте объём перед загрузкой и записью обложек в папку ART устройства.",
+      "gamesRecognized": "распознанных игр",
+      "artsToProcess": "обложек к обработке",
+      "policyLabel": "Политика:",
+      "policyMissingOnly": "загружать только недостающие обложки",
+      "cancel": "Отмена",
+      "starting": "Запуск…",
+      "startSync": "Начать синхронизацию"
     }
   }
 }

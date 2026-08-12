@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Image, Images, RefreshCw, Sparkles } from 'lucide-react'
 import { useState } from 'react'
 import type { ReactNode } from 'react'
+import { useTranslation } from 'react-i18next'
 import { ArtSyncJobProgress } from '@/components/art/ArtSyncJobProgress'
 import { ArtSyncPlanDialog } from '@/components/art/ArtSyncPlanDialog'
 import { EmptyState } from '@/components/EmptyState'
@@ -14,6 +15,7 @@ import type { ArtSyncPlanSummary, OplArtType } from '@/types/opl-finalization'
 const artTypes: OplArtType[] = ['ICO', 'COV', 'COV2', 'LAB', 'LGO', 'SCR', 'SCR2', 'BG']
 
 export function ArtManagerPage() {
+  const { t } = useTranslation()
   const device = useDeviceStore((state) => state.activeDevice)
   const client = useQueryClient()
   const [plan, setPlan] = useState<ArtSyncPlanSummary>()
@@ -61,8 +63,8 @@ export function ArtManagerPage() {
     return (
       <EmptyState
         icon={Image}
-        title="Selecione um dispositivo"
-        description="A sincronização usa o catálogo completo de ISO, ZSO e USBExtreme."
+        title={t('pages.artManager.selectDeviceTitle')}
+        description={t('pages.artManager.selectDeviceDescription')}
       />
     )
   const activeJobs =
@@ -76,10 +78,9 @@ export function ArtManagerPage() {
             <span className="mb-3 inline-flex rounded-xl bg-violet-400/10 p-2 text-violet-300">
               <Images className="size-5" />
             </span>
-            <h2 className="text-2xl font-semibold text-white">Artes OPL</h2>
+            <h2 className="text-2xl font-semibold text-white">{t('pages.artManager.title')}</h2>
             <p className="mt-1 text-sm leading-6 text-muted-foreground">
-              Reconheça os jogos do dispositivo e sincronize capas, fundos e ícones no padrão que o
-              OPL lê.
+              {t('pages.artManager.subtitle')}
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
@@ -89,32 +90,37 @@ export function ArtManagerPage() {
               disabled={refresh.isPending}
             >
               <RefreshCw className={`size-4 ${refresh.isPending ? 'animate-spin' : ''}`} />
-              Atualizar fonte
+              {t('pages.artManager.refreshSource')}
             </Button>
             <Button
               onClick={() => prepare.mutate()}
               disabled={prepare.isPending || selectedTypes.length === 0}
             >
               <Sparkles className="size-4" />
-              {prepare.isPending ? 'Lendo biblioteca…' : 'Preparar sincronização'}
+              {prepare.isPending
+                ? t('pages.artManager.readingLibrary')
+                : t('pages.artManager.prepareSync')}
             </Button>
           </div>
         </div>
         <div className="mt-6 grid gap-3 sm:grid-cols-3">
-          <Metric value={assets.data?.items.length ?? 0} label="artes no índice" />
-          <Metric value={selectedTypes.length} label="tipos selecionados" />
-          <Metric value={activeJobs} label="jobs ativos" />
+          <Metric
+            value={assets.data?.items.length ?? 0}
+            label={t('pages.artManager.artsInIndex')}
+          />
+          <Metric value={selectedTypes.length} label={t('pages.artManager.selectedTypes')} />
+          <Metric value={activeJobs} label={t('pages.artManager.activeJobs')} />
         </div>
       </Card>
       <Card>
         <div>
-          <h3 className="font-semibold text-white">Tipos de arte</h3>
+          <h3 className="font-semibold text-white">{t('pages.artManager.artTypesTitle')}</h3>
           <p className="mt-1 text-sm text-muted-foreground">
-            Escolha o que deseja baixar. COV e COV2 cobrem as capas mais usadas.
+            {t('pages.artManager.artTypesDescription')}
           </p>
         </div>
         <fieldset className="mt-4 flex flex-wrap gap-2">
-          <legend className="sr-only">Tipos de arte</legend>
+          <legend className="sr-only">{t('pages.artManager.artTypesLegend')}</legend>
           {artTypes.map((type) => {
             const checked = selectedTypes.includes(type)
             return (
@@ -140,37 +146,43 @@ export function ArtManagerPage() {
           })}
         </fieldset>
         <p className="mt-4 border-t border-white/10 pt-4 text-xs text-muted-foreground">
-          O Forge lê CD, DVD e ul.cfg, detecta os Game IDs e preserva artes válidas já existentes.
+          {t('pages.artManager.footnote')}
         </p>
         {prepare.error ? (
           <ErrorMessage>
-            Falha ao ler a biblioteca ou preparar artes: {prepare.error.message}
+            {t('pages.artManager.prepareError', { message: prepare.error.message })}
           </ErrorMessage>
         ) : null}
         {refresh.error ? (
-          <ErrorMessage>Falha ao atualizar a fonte de artes: {refresh.error.message}</ErrorMessage>
+          <ErrorMessage>
+            {t('pages.artManager.refreshError', { message: refresh.error.message })}
+          </ErrorMessage>
         ) : null}
       </Card>
       <section aria-labelledby="art-jobs-title">
         <div className="mb-3 flex items-center justify-between">
           <h3 id="art-jobs-title" className="font-semibold text-white">
-            Atividade de sincronização
+            {t('pages.artManager.activityTitle')}
           </h3>
-          <span className="text-xs text-muted-foreground">{jobs.data?.items.length ?? 0} jobs</span>
+          <span className="text-xs text-muted-foreground">
+            {t('pages.artManager.jobsCount', { count: jobs.data?.items.length ?? 0 })}
+          </span>
         </div>
         {jobs.isLoading ? (
           <Card>
             <p className="text-sm text-muted-foreground" role="status">
-              Carregando sincronizações…
+              {t('pages.artManager.loadingSyncs')}
             </p>
           </Card>
         ) : null}
         {!jobs.isLoading && jobs.data?.items.length === 0 ? (
           <Card className="py-9 text-center">
             <Image className="mx-auto size-7 text-muted-foreground" />
-            <p className="mt-3 text-sm font-medium text-white">Nenhuma sincronização iniciada</p>
+            <p className="mt-3 text-sm font-medium text-white">
+              {t('pages.artManager.noSyncStarted')}
+            </p>
             <p className="mt-1 text-xs text-muted-foreground">
-              Prepare um plano para baixar as artes ausentes.
+              {t('pages.artManager.noSyncDescription')}
             </p>
           </Card>
         ) : null}

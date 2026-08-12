@@ -243,6 +243,29 @@
       "overwriteConfirmTitle": "Overwrite existing file?",
       "overwriteConfirmDescription": "A file named \"{{name}}\" already exists at the destination. Overwriting permanently replaces the existing file.",
       "overwriteConfirmLabel": "Overwrite"
+    },
+    "artManager": {
+      "selectDeviceTitle": "Select a device",
+      "selectDeviceDescription": "Sync uses the full ISO, ZSO and USBExtreme catalog.",
+      "title": "OPL Art",
+      "subtitle": "Recognize the device's games and sync covers, backgrounds and icons in the format OPL reads.",
+      "refreshSource": "Refresh source",
+      "readingLibrary": "Reading library…",
+      "prepareSync": "Prepare sync",
+      "artsInIndex": "art assets indexed",
+      "selectedTypes": "types selected",
+      "activeJobs": "active jobs",
+      "artTypesTitle": "Art types",
+      "artTypesDescription": "Choose what to download. COV and COV2 cover the most used artwork.",
+      "artTypesLegend": "Art types",
+      "footnote": "Forge reads CD, DVD and ul.cfg, detects Game IDs, and preserves valid existing art.",
+      "prepareError": "Failed to read the library or prepare art: {{message}}",
+      "refreshError": "Failed to refresh the art source: {{message}}",
+      "activityTitle": "Sync activity",
+      "jobsCount": "{{count}} jobs",
+      "loadingSyncs": "Loading syncs…",
+      "noSyncStarted": "No sync started yet",
+      "noSyncDescription": "Prepare a plan to download the missing art."
     }
   },
   "components": {
@@ -394,6 +417,36 @@
       "deletedWithFailures": "Deleted with failures: {{paths}}",
       "deletedSuccess": "{{title}} removed from the library.",
       "deleteError": "Error deleting: {{message}}"
+    },
+    "artSyncJobProgress": {
+      "stateQueued": "Queued",
+      "stateRunning": "Syncing",
+      "statePaused": "Paused",
+      "stateCompleted": "Completed",
+      "statePartial": "Partially completed",
+      "stateFailed": "Failed",
+      "stateCancelled": "Cancelled",
+      "stateRecoveryPending": "Recovery pending",
+      "ariaLabel": "Art sync {{jobId}}",
+      "processed": "{{completed}} of {{total}} art assets processed",
+      "ariaProgress": "Art sync progress",
+      "installed": "{{count}} installed",
+      "skipped": "{{count}} preserved",
+      "failed": "{{count}} failed",
+      "pause": "Pause",
+      "resume": "Resume",
+      "retryFailed": "Retry failed"
+    },
+    "artSyncPlanDialog": {
+      "title": "Sync plan",
+      "description": "Review the volume before downloading and writing art to the device's ART folder.",
+      "gamesRecognized": "games recognized",
+      "artsToProcess": "art assets to process",
+      "policyLabel": "Policy:",
+      "policyMissingOnly": "only download missing art",
+      "cancel": "Cancel",
+      "starting": "Starting…",
+      "startSync": "Start sync"
     }
   }
 }
