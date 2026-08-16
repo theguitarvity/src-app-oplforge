@@ -675,6 +675,7 @@ export interface DeviceInfo {
   fileSystem: string
   status: DeviceStatus
   sourceKind?: 'opl-device' | 'local-folder'
+  isOutsideHome?: boolean
 }
 
 export interface DeviceSummary {
@@ -1376,6 +1377,9 @@ export interface OplApi {
 export interface OpenPathDialogOptions {
   mode?: 'file' | 'folder' | 'multiFile'
   filters?: Array<{ name: string; extensions: string[] }>
+  restrictSystemRoots?: boolean
+  defaultPath?: string
+  withinRoot?: string
 }
 
 declare global {

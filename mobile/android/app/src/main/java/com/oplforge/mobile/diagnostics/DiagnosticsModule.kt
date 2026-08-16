@@ -37,7 +37,8 @@ class DiagnosticsModule(reactContext: ReactApplicationContext) :
     private val historyStore = HistoryStore(db)
     private val scope = CoroutineScope(Dispatchers.IO)
 
-    private val requiredFolders = listOf("DVD", "CD", "PS1", "APPS", "ART", "CFG", "VMC")
+    private val requiredFolders =
+        listOf("DVD", "CD", "PS1", "APPS", "ART", "CFG", "VMC", "CHT", "LNG", "THM")
 
     // Mirrors desktop's file.service.ts README (electron/services/file.service.ts) verbatim.
     private val readmeText = "# OPL Forge\n\n" +
@@ -50,7 +51,10 @@ class DiagnosticsModule(reactContext: ReactApplicationContext) :
         "- APPS: homebrews e aplicativos\n" +
         "- ART: capas e imagens\n" +
         "- CFG: configuracoes\n" +
-        "- VMC: memory cards virtuais\n"
+        "- VMC: memory cards virtuais\n" +
+        "- CHT: cheats\n" +
+        "- LNG: arquivos de idioma\n" +
+        "- THM: temas\n"
 
     override fun runDiagnostics(promise: Promise) {
         val stored = libraryPreferences.load()
@@ -109,7 +113,7 @@ class DiagnosticsModule(reactContext: ReactApplicationContext) :
         }
     }
 
-    /** Creates any of the 7 mandatory OPL folders that don't exist yet, then re-runs diagnostics. */
+    /** Creates any of the 10 mandatory OPL folders that don't exist yet, then re-runs diagnostics. */
     override fun prepareDeviceStructure(promise: Promise) {
         val stored = libraryPreferences.load()
         if (stored == null) {

@@ -192,7 +192,9 @@
       "addLocalFolderShort": "Добавить локальную папку",
       "runFullScan": "Выполнить полную проверку",
       "defaultLocalName": "Локальная библиотека",
-      "localFolderLabel": "Локальная папка"
+      "localFolderLabel": "Локальная папка",
+      "couldNotReadSubfolder": "Не удалось прочитать выбранную подпапку.",
+      "subfolderPickFailed": "Не удалось выбрать подпапку."
     },
     "gameLibrary": {
       "title": "Библиотека игр",
@@ -658,7 +660,11 @@
       "ready": "Готово",
       "prepare": "Подготовить",
       "selected": "Выбрано",
-      "select": "Выбрать"
+      "select": "Выбрать",
+      "rootDevice": "Устройство: {{path}}",
+      "subfolderActive": "Активна подпапка",
+      "selectSubfolder": "Выбрать подпапку...",
+      "useDeviceRoot": "Использовать корень устройства"
     },
     "diagnosticSummary": {
       "title": "Диагностика",
@@ -709,7 +715,16 @@
       "successTitle": "Устройство успешно подготовлено!",
       "successDescription": "Структура OPL создана. Теперь вы можете скопировать игры в папки DVD/CD устройства.",
       "goToWorkspace": "Перейти в рабочее пространство устройства",
-      "preparationFailed": "Ошибка подготовки устройства: {{message}}"
+      "preparationFailed": "Ошибка подготовки устройства: {{message}}",
+      "readyStepLabel": "Структура уже готова",
+      "readyTitle": "Структура OPL уже готова",
+      "readyDescription": "{{path}} уже содержит все папки, которые ожидает OPL. Запись не требуется.",
+      "selectAnother": "Выбрать другое",
+      "pickLocalFolder": "Выбрать локальную папку",
+      "localFolderSelectedTitle": "Локальная папка выбрана",
+      "couldNotReadFolder": "Не удалось прочитать выбранную папку.",
+      "pickLocalFolderFailed": "Не удалось выбрать локальную папку.",
+      "outsideHomeConfirmLabel": "Эта папка находится вне моей домашней папки. Подтверждаю, что всё равно хочу создать структуру OPL здесь."
     },
     "gameStatus": {
       "ready": "Готово",

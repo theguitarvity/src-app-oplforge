@@ -192,7 +192,9 @@
       "addLocalFolderShort": "Adicionar pasta local",
       "runFullScan": "Executar Verificação Completa",
       "defaultLocalName": "Biblioteca local",
-      "localFolderLabel": "Pasta local"
+      "localFolderLabel": "Pasta local",
+      "couldNotReadSubfolder": "Não foi possível ler a subpasta selecionada.",
+      "subfolderPickFailed": "Falha ao selecionar a subpasta."
     },
     "gameLibrary": {
       "title": "Biblioteca de Jogos",
@@ -658,7 +660,11 @@
       "ready": "Pronto",
       "prepare": "Preparar",
       "selected": "Selecionado",
-      "select": "Selecionar"
+      "select": "Selecionar",
+      "rootDevice": "Dispositivo: {{path}}",
+      "subfolderActive": "Subpasta ativa",
+      "selectSubfolder": "Selecionar subpasta...",
+      "useDeviceRoot": "Usar raiz do dispositivo"
     },
     "diagnosticSummary": {
       "title": "Diagnóstico",
@@ -709,7 +715,16 @@
       "successTitle": "Dispositivo Preparado com Sucesso!",
       "successDescription": "A estrutura OPL foi criada. Você já pode copiar seus jogos para as pastas DVD/CD do dispositivo.",
       "goToWorkspace": "Ir para o Dispositivo Workspace",
-      "preparationFailed": "Falha na preparação do dispositivo: {{message}}"
+      "preparationFailed": "Falha na preparação do dispositivo: {{message}}",
+      "readyStepLabel": "Estrutura já está pronta",
+      "readyTitle": "Estrutura OPL já está pronta",
+      "readyDescription": "{{path}} já possui todas as pastas que o OPL espera. Nenhuma gravação é necessária.",
+      "selectAnother": "Selecionar outro",
+      "pickLocalFolder": "Escolher pasta local",
+      "localFolderSelectedTitle": "Pasta local selecionada",
+      "couldNotReadFolder": "Não foi possível ler a pasta selecionada.",
+      "pickLocalFolderFailed": "Falha ao selecionar a pasta local.",
+      "outsideHomeConfirmLabel": "Esta pasta está fora da minha pasta pessoal. Confirmo que quero criar a estrutura OPL neste local mesmo assim."
     },
     "gameStatus": {
       "ready": "Pronto",

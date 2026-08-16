@@ -7,7 +7,7 @@ import type { DeviceIdentity, DeviceInfo, DeviceSummary } from '../../src/types/
 import { getHistory } from './history.service'
 
 const execFileAsync = promisify(execFile)
-const OPL_DIRS = ['DVD', 'CD', 'PS1', 'APPS', 'ART', 'CFG', 'VMC'] as const
+const OPL_DIRS = ['DVD', 'CD', 'PS1', 'APPS', 'ART', 'CFG', 'VMC', 'CHT', 'LNG', 'THM'] as const
 
 interface MountCandidate {
   path: string
@@ -16,6 +16,12 @@ interface MountCandidate {
 }
 
 const safeId = (value: string) => Buffer.from(value).toString('base64url')
+
+function isOutsideHome(candidatePath: string): boolean {
+  const resolved = path.resolve(candidatePath)
+  const home = path.resolve(os.homedir())
+  return resolved !== home && !resolved.startsWith(home + path.sep)
+}
 
 async function statDevice(candidate: MountCandidate): Promise<DeviceInfo | null> {
   try {
@@ -34,7 +40,8 @@ async function statDevice(candidate: MountCandidate): Promise<DeviceInfo | null>
       used,
       fileSystem: candidate.fileSystem,
       status: missingStructure ? 'ready' : 'missing-structure',
-      sourceKind: missingStructure ? 'opl-device' : 'local-folder'
+      sourceKind: missingStructure ? 'opl-device' : 'local-folder',
+      isOutsideHome: isOutsideHome(candidate.path)
     }
   } catch {
     return null

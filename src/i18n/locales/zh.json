@@ -192,7 +192,9 @@
       "addLocalFolderShort": "添加本地文件夹",
       "runFullScan": "运行完整扫描",
       "defaultLocalName": "本地游戏库",
-      "localFolderLabel": "本地文件夹"
+      "localFolderLabel": "本地文件夹",
+      "couldNotReadSubfolder": "无法读取所选子文件夹。",
+      "subfolderPickFailed": "选择子文件夹失败。"
     },
     "gameLibrary": {
       "title": "游戏库",
@@ -658,7 +660,11 @@
       "ready": "就绪",
       "prepare": "准备",
       "selected": "已选择",
-      "select": "选择"
+      "select": "选择",
+      "rootDevice": "设备：{{path}}",
+      "subfolderActive": "子文件夹已启用",
+      "selectSubfolder": "选择子文件夹...",
+      "useDeviceRoot": "使用设备根目录"
     },
     "diagnosticSummary": {
       "title": "诊断",
@@ -709,7 +715,16 @@
       "successTitle": "设备准备成功！",
       "successDescription": "已创建 OPL 结构。您现在可以将游戏复制到设备的 DVD/CD 文件夹中。",
       "goToWorkspace": "前往设备工作区",
-      "preparationFailed": "设备准备失败：{{message}}"
+      "preparationFailed": "设备准备失败：{{message}}",
+      "readyStepLabel": "结构已就绪",
+      "readyTitle": "OPL 结构已就绪",
+      "readyDescription": "{{path}} 已经拥有 OPL 所需的全部文件夹，无需写入。",
+      "selectAnother": "选择其他",
+      "pickLocalFolder": "选择本地文件夹",
+      "localFolderSelectedTitle": "已选择本地文件夹",
+      "couldNotReadFolder": "无法读取所选文件夹。",
+      "pickLocalFolderFailed": "选择本地文件夹失败。",
+      "outsideHomeConfirmLabel": "此文件夹在我的主文件夹之外。我确认仍要在此处创建 OPL 结构。"
     },
     "gameStatus": {
       "ready": "就绪",

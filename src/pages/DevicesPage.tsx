@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { HardDrive, ScanSearch, CheckCircle2, FolderPlus, RefreshCw, Wrench } from 'lucide-react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
@@ -11,6 +12,50 @@ import { ReorganizationWizard } from '@/components/diagnostics/ReorganizationWiz
 import { PrepWizard } from '@/components/device/PrepWizard'
 import { oplApi } from '@/services/api'
 import { useDeviceStore } from '@/stores/device-store'
+import type { DeviceInfo } from '@/types/opl'
+
+interface ManagedDeviceCardProps {
+  item: DeviceInfo
+  selected: boolean
+  subfolderPath?: string
+  onSelect: () => void
+  onSelectSubfolder: () => void
+  onClearSubfolder: () => void
+  onPrepare: () => void
+}
+
+function ManagedDeviceCard({
+  item,
+  selected,
+  subfolderPath,
+  onSelect,
+  onSelectSubfolder,
+  onClearSubfolder,
+  onPrepare
+}: ManagedDeviceCardProps) {
+  const { data: subfolderSummary } = useQuery({
+    queryKey: ['subfolder-summary', item.id, subfolderPath],
+    queryFn: () => oplApi.getDeviceSummary(subfolderPath!),
+    enabled: Boolean(subfolderPath)
+  })
+
+  const effectiveDevice: DeviceInfo =
+    subfolderPath && subfolderSummary?.device
+      ? { ...subfolderSummary.device, id: item.id, name: item.name, sourceKind: item.sourceKind }
+      : item
+
+  return (
+    <DeviceCard
+      device={effectiveDevice}
+      rootPath={subfolderPath ? item.path : undefined}
+      selected={selected}
+      onSelect={onSelect}
+      onSelectSubfolder={onSelectSubfolder}
+      onClearSubfolder={onClearSubfolder}
+      onPrepare={onPrepare}
+    />
+  )
+}
 
 export function DevicesPage() {
   const { t } = useTranslation()
@@ -21,6 +66,9 @@ export function DevicesPage() {
   const activeDevice = useDeviceStore((state) => state.activeDevice)
   const setActiveDevice = useDeviceStore((state) => state.setActiveDevice)
   const setDevices = useDeviceStore((state) => state.setDevices)
+  const subfolderByDeviceId = useDeviceStore((state) => state.subfolderByDeviceId)
+  const setSubfolderForDevice = useDeviceStore((state) => state.setSubfolderForDevice)
+  const clearSubfolderForDevice = useDeviceStore((state) => state.clearSubfolderForDevice)
   const queryClient = useQueryClient()
 
   const {
@@ -55,9 +103,75 @@ export function DevicesPage() {
     enabled: Boolean(activeDevice)
   })
 
+  const [subfolderError, setSubfolderError] = useState<string | null>(null)
+  const [prepareTarget, setPrepareTarget] = useState<DeviceInfo | null>(null)
+
+  /** The root device with its remembered subfolder (if any) resolved as the effective
+   *  target — same `id` as the root so selection/preparation stay consistent when the
+   *  user switches devices and comes back. */
+  const resolveEffectiveDevice = async (item: DeviceInfo): Promise<DeviceInfo> => {
+    const subfolderPath = subfolderByDeviceId[item.id]
+    if (!subfolderPath) return item
+    const summary = await oplApi.getDeviceSummary(subfolderPath)
+    if (!summary.device) return item
+    return {
+      ...summary.device,
+      id: item.id,
+      name: `${item.name} → ${subfolderPath.split(/[\\/]/).filter(Boolean).at(-1) || summary.device.name}`,
+      sourceKind: item.sourceKind
+    }
+  }
+
+  const preparePresetDevice = async (item: DeviceInfo) => {
+    setPrepareTarget(await resolveEffectiveDevice(item))
+    setSearchParams({ tab: 'manage', action: 'prepare' })
+  }
+
   const refreshDevices = () => {
     void queryClient.invalidateQueries({ queryKey: ['devices'] })
   }
+
+  const selectDevice = async (item: DeviceInfo) => {
+    const effective = await resolveEffectiveDevice(item)
+    setActiveDevice(effective)
+    void queryClient.invalidateQueries({ queryKey: ['device-catalog'] })
+    diagnostic.mutate(effective.path)
+  }
+
+  const selectSubfolder = async (item: DeviceInfo) => {
+    setSubfolderError(null)
+    try {
+      const [picked] = await oplApi.openPathDialog({
+        mode: 'folder',
+        defaultPath: item.path,
+        withinRoot: item.path
+      })
+      if (!picked) return
+      const summary = await oplApi.getDeviceSummary(picked)
+      if (!summary.device) {
+        setSubfolderError(t('pages.devices.couldNotReadSubfolder'))
+        return
+      }
+      setSubfolderForDevice(item.id, picked)
+      const subfolder: DeviceInfo = {
+        ...summary.device,
+        id: item.id,
+        name: `${item.name} → ${picked.split(/[\\/]/).filter(Boolean).at(-1) || summary.device.name}`,
+        sourceKind: item.sourceKind
+      }
+      setActiveDevice(subfolder)
+      void queryClient.invalidateQueries({ queryKey: ['device-catalog'] })
+      diagnostic.mutate(subfolder.path)
+    } catch (err) {
+      setSubfolderError(err instanceof Error ? err.message : t('pages.devices.subfolderPickFailed'))
+    }
+  }
+
+  const clearSubfolder = (item: DeviceInfo) => {
+    clearSubfolderForDevice(item.id)
+    if (activeDevice?.id === item.id) void selectDevice(item)
+  }
+
   const addLocalLibrary = async () => {
     const [selectedPath] = await oplApi.openPathDialog({ mode: 'folder' })
     if (!selectedPath) return
@@ -82,9 +196,13 @@ export function DevicesPage() {
   if (action === 'prepare') {
     return (
       <PrepWizard
-        preselectedDevicePath={searchParams.get('device')}
-        onClose={() => setSearchParams({ tab: 'manage' })}
+        initialDevice={prepareTarget}
+        onClose={() => {
+          setPrepareTarget(null)
+          setSearchParams({ tab: 'manage' })
+        }}
         onSuccess={() => {
+          setPrepareTarget(null)
           refreshDevices()
           setSearchParams({ tab: 'overview' })
         }}
@@ -181,7 +299,10 @@ export function DevicesPage() {
               {t('pages.devices.refreshList')}
             </button>
             <button
-              onClick={() => setSearchParams({ tab: 'manage', action: 'prepare' })}
+              onClick={() => {
+                setPrepareTarget(null)
+                setSearchParams({ tab: 'manage', action: 'prepare' })
+              }}
               className="flex items-center gap-1.5 rounded-lg border border-violet-400/30 bg-violet-500/10 px-3 py-1.5 text-xs font-medium text-violet-100 hover:bg-violet-500/20"
             >
               <Wrench className="size-3.5" /> {t('pages.devices.prepareDevice')}
@@ -193,20 +314,22 @@ export function DevicesPage() {
               <FolderPlus className="size-3.5" /> {t('pages.devices.addLocalFolderShort')}
             </button>
           </div>
+          {subfolderError && (
+            <div className="rounded-xl border border-rose-500/30 bg-rose-500/20 p-3 text-xs text-rose-200">
+              {subfolderError}
+            </div>
+          )}
           <div className="grid gap-3">
             {devices.map((item) => (
-              <DeviceCard
+              <ManagedDeviceCard
                 key={item.id}
-                device={item}
-                selected={activeDevice?.path === item.path}
-                onSelect={() => {
-                  setActiveDevice(item)
-                  void queryClient.invalidateQueries({ queryKey: ['device-catalog'] })
-                  diagnostic.mutate(item.path)
-                }}
-                onPrepare={() =>
-                  setSearchParams({ tab: 'manage', action: 'prepare', device: item.path })
-                }
+                item={item}
+                selected={activeDevice?.id === item.id}
+                subfolderPath={subfolderByDeviceId[item.id]}
+                onSelect={() => void selectDevice(item)}
+                onSelectSubfolder={() => void selectSubfolder(item)}
+                onClearSubfolder={() => clearSubfolder(item)}
+                onPrepare={() => void preparePresetDevice(item)}
               />
             ))}
           </div>

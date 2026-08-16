@@ -17,9 +17,14 @@ interface DeviceState {
   devices: DeviceInfo[]
   selectionRevision: number
   metrics: StorageMetrics | null
+  /** Remembers, per root device id, the last subfolder chosen as the working target
+   *  (see "Selecionar subpasta..."), so reselecting that device resolves back to it. */
+  subfolderByDeviceId: Record<string, string>
   setActiveDevice: (device: DeviceInfo | null) => void
   setDevices: (devices: DeviceInfo[]) => void
   setMetrics: (metrics: StorageMetrics | null) => void
+  setSubfolderForDevice: (deviceId: string, subfolderPath: string) => void
+  clearSubfolderForDevice: (deviceId: string) => void
 }
 
 export const useDeviceStore = create<DeviceState>((set) => ({
@@ -27,6 +32,7 @@ export const useDeviceStore = create<DeviceState>((set) => ({
   devices: [],
   selectionRevision: 0,
   metrics: null,
+  subfolderByDeviceId: {},
   setActiveDevice: (device) =>
     set((state) => ({ activeDevice: device, selectionRevision: state.selectionRevision + 1 })),
   setDevices: (devices) =>
@@ -39,5 +45,15 @@ export const useDeviceStore = create<DeviceState>((set) => ({
         )
       ]
     })),
-  setMetrics: (metrics) => set({ metrics })
+  setMetrics: (metrics) => set({ metrics }),
+  setSubfolderForDevice: (deviceId, subfolderPath) =>
+    set((state) => ({
+      subfolderByDeviceId: { ...state.subfolderByDeviceId, [deviceId]: subfolderPath }
+    })),
+  clearSubfolderForDevice: (deviceId) =>
+    set((state) => {
+      const next = { ...state.subfolderByDeviceId }
+      delete next[deviceId]
+      return { subfolderByDeviceId: next }
+    })
 }))

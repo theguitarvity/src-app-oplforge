@@ -41,7 +41,7 @@ export async function getLatestDiagnosticsReport(): Promise<DiagnosticsReport | 
   }
 }
 
-/** Creates the 7 mandatory OPL folders that don't exist yet, then returns the re-checked report. */
+/** Creates the 10 mandatory OPL folders that don't exist yet, then returns the re-checked report. */
 export async function prepareDeviceStructure(): Promise<DiagnosticsReport> {
   try {
     return (await NativeDiagnosticsModule.prepareDeviceStructure()) as DiagnosticsReport

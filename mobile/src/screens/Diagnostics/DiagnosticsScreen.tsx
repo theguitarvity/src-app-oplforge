@@ -39,7 +39,7 @@ function formatBytes(t: (key: string, options?: Record<string, unknown>) => stri
 
 /**
  * US3 — Diagnóstico do Dispositivo (spec 008 FR-010). Reuses spec 006's
- * catalog scan, checks the 7 mandatory OPL folders, and classifies overall
+ * catalog scan, checks the 10 mandatory OPL folders, and classifies overall
  * readiness with the same four-state model as desktop (research.md R8).
  */
 export function DiagnosticsScreen() {

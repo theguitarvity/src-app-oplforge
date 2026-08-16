@@ -192,7 +192,9 @@
       "addLocalFolderShort": "Add local folder",
       "runFullScan": "Run Full Scan",
       "defaultLocalName": "Local library",
-      "localFolderLabel": "Local folder"
+      "localFolderLabel": "Local folder",
+      "couldNotReadSubfolder": "Could not read the selected subfolder.",
+      "subfolderPickFailed": "Failed to select the subfolder."
     },
     "gameLibrary": {
       "title": "Game Library",
@@ -658,7 +660,11 @@
       "ready": "Ready",
       "prepare": "Prepare",
       "selected": "Selected",
-      "select": "Select"
+      "select": "Select",
+      "rootDevice": "Device: {{path}}",
+      "subfolderActive": "Subfolder active",
+      "selectSubfolder": "Select subfolder...",
+      "useDeviceRoot": "Use device root"
     },
     "diagnosticSummary": {
       "title": "Diagnostics",
@@ -709,7 +715,16 @@
       "successTitle": "Device Prepared Successfully!",
       "successDescription": "The OPL structure was created. You can now copy your games to the device's DVD/CD folders.",
       "goToWorkspace": "Go to Device Workspace",
-      "preparationFailed": "Device preparation failed: {{message}}"
+      "preparationFailed": "Device preparation failed: {{message}}",
+      "readyStepLabel": "Structure already ready",
+      "readyTitle": "OPL structure is already ready",
+      "readyDescription": "{{path}} already has every folder the OPL expects. No write is needed.",
+      "selectAnother": "Select another",
+      "pickLocalFolder": "Choose local folder",
+      "localFolderSelectedTitle": "Local folder selected",
+      "couldNotReadFolder": "Could not read the selected folder.",
+      "pickLocalFolderFailed": "Failed to select the local folder.",
+      "outsideHomeConfirmLabel": "This folder is outside my home folder. I confirm I want to create the OPL structure here anyway."
     },
     "gameStatus": {
       "ready": "Ready",

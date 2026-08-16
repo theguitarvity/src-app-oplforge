@@ -11,7 +11,7 @@ import { addHistory, recordFailure } from './history.service'
 import { OPL_DIRS } from './device.service'
 import { sendLog, sendProgress } from './logger'
 
-const README = `# OPL Forge\n\nEstrutura preparada para uso com Open PS2 Loader, homebrews e arquivos fornecidos pelo usuario.\n\nAviso legal: Utilize apenas backups de jogos que voce possua legalmente ou arquivos distribuidos por seus respectivos autores.\n\nPastas criadas:\n- DVD: jogos PS2 em DVD\n- CD: jogos PS2 em CD\n- PS1: jogos PS1\n- APPS: homebrews e aplicativos\n- ART: capas e imagens\n- CFG: configuracoes\n- VMC: memory cards virtuais\n`
+const README = `# OPL Forge\n\nEstrutura preparada para uso com Open PS2 Loader, homebrews e arquivos fornecidos pelo usuario.\n\nAviso legal: Utilize apenas backups de jogos que voce possua legalmente ou arquivos distribuidos por seus respectivos autores.\n\nPastas criadas:\n- DVD: jogos PS2 em DVD\n- CD: jogos PS2 em CD\n- PS1: jogos PS1\n- APPS: homebrews e aplicativos\n- ART: capas e imagens\n- CFG: configuracoes\n- VMC: memory cards virtuais\n- CHT: cheats\n- LNG: arquivos de idioma\n- THM: temas\n`
 
 const sanitizeSegment = (value: string) =>
   value

@@ -192,7 +192,9 @@
       "addLocalFolderShort": "Añadir carpeta local",
       "runFullScan": "Ejecutar Verificación Completa",
       "defaultLocalName": "Biblioteca local",
-      "localFolderLabel": "Carpeta local"
+      "localFolderLabel": "Carpeta local",
+      "couldNotReadSubfolder": "No se pudo leer la subcarpeta seleccionada.",
+      "subfolderPickFailed": "Error al seleccionar la subcarpeta."
     },
     "gameLibrary": {
       "title": "Biblioteca de Juegos",
@@ -658,7 +660,11 @@
       "ready": "Listo",
       "prepare": "Preparar",
       "selected": "Seleccionado",
-      "select": "Seleccionar"
+      "select": "Seleccionar",
+      "rootDevice": "Dispositivo: {{path}}",
+      "subfolderActive": "Subcarpeta activa",
+      "selectSubfolder": "Seleccionar subcarpeta...",
+      "useDeviceRoot": "Usar raíz del dispositivo"
     },
     "diagnosticSummary": {
       "title": "Diagnóstico",
@@ -709,7 +715,16 @@
       "successTitle": "¡Dispositivo Preparado Correctamente!",
       "successDescription": "Se creó la estructura OPL. Ya puedes copiar tus juegos a las carpetas DVD/CD del dispositivo.",
       "goToWorkspace": "Ir al Espacio de Trabajo del Dispositivo",
-      "preparationFailed": "Error al preparar el dispositivo: {{message}}"
+      "preparationFailed": "Error al preparar el dispositivo: {{message}}",
+      "readyStepLabel": "La estructura ya está lista",
+      "readyTitle": "La estructura OPL ya está lista",
+      "readyDescription": "{{path}} ya tiene todas las carpetas que el OPL espera. No es necesaria ninguna escritura.",
+      "selectAnother": "Seleccionar otro",
+      "pickLocalFolder": "Elegir carpeta local",
+      "localFolderSelectedTitle": "Carpeta local seleccionada",
+      "couldNotReadFolder": "No se pudo leer la carpeta seleccionada.",
+      "pickLocalFolderFailed": "Error al seleccionar la carpeta local.",
+      "outsideHomeConfirmLabel": "Esta carpeta está fuera de mi carpeta personal. Confirmo que quiero crear la estructura OPL aquí de todos modos."
     },
     "gameStatus": {
       "ready": "Listo",

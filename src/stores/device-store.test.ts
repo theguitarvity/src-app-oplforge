@@ -35,4 +35,20 @@ describe('DeviceStore Workspace State', () => {
     expect(state.activeDevice).toEqual(mockDevice)
     expect(state.selectionRevision).toBe(1)
   })
+
+  it('remembers and clears a subfolder reference per device id', () => {
+    useDeviceStore.getState().setSubfolderForDevice('device-1', '/media/ps2/games')
+    expect(useDeviceStore.getState().subfolderByDeviceId['device-1']).toBe('/media/ps2/games')
+
+    useDeviceStore.getState().setSubfolderForDevice('device-2', '/media/other/games')
+    expect(useDeviceStore.getState().subfolderByDeviceId).toEqual({
+      'device-1': '/media/ps2/games',
+      'device-2': '/media/other/games'
+    })
+
+    useDeviceStore.getState().clearSubfolderForDevice('device-1')
+    expect(useDeviceStore.getState().subfolderByDeviceId).toEqual({
+      'device-2': '/media/other/games'
+    })
+  })
 })

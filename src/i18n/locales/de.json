@@ -192,7 +192,9 @@
       "addLocalFolderShort": "Lokalen Ordner hinzufügen",
       "runFullScan": "Vollständige Prüfung ausführen",
       "defaultLocalName": "Lokale Bibliothek",
-      "localFolderLabel": "Lokaler Ordner"
+      "localFolderLabel": "Lokaler Ordner",
+      "couldNotReadSubfolder": "Der ausgewählte Unterordner konnte nicht gelesen werden.",
+      "subfolderPickFailed": "Auswahl des Unterordners fehlgeschlagen."
     },
     "gameLibrary": {
       "title": "Spielebibliothek",
@@ -658,7 +660,11 @@
       "ready": "Bereit",
       "prepare": "Vorbereiten",
       "selected": "Ausgewählt",
-      "select": "Auswählen"
+      "select": "Auswählen",
+      "rootDevice": "Gerät: {{path}}",
+      "subfolderActive": "Unterordner aktiv",
+      "selectSubfolder": "Unterordner auswählen...",
+      "useDeviceRoot": "Gerätestamm verwenden"
     },
     "diagnosticSummary": {
       "title": "Diagnose",
@@ -709,7 +715,16 @@
       "successTitle": "Gerät erfolgreich vorbereitet!",
       "successDescription": "Die OPL-Struktur wurde erstellt. Du kannst jetzt deine Spiele in die DVD/CD-Ordner des Geräts kopieren.",
       "goToWorkspace": "Zum Geräte-Arbeitsbereich",
-      "preparationFailed": "Gerätevorbereitung fehlgeschlagen: {{message}}"
+      "preparationFailed": "Gerätevorbereitung fehlgeschlagen: {{message}}",
+      "readyStepLabel": "Struktur bereits vorhanden",
+      "readyTitle": "OPL-Struktur ist bereits vorhanden",
+      "readyDescription": "{{path}} enthält bereits alle vom OPL erwarteten Ordner. Es ist kein Schreibvorgang nötig.",
+      "selectAnother": "Anderes auswählen",
+      "pickLocalFolder": "Lokalen Ordner wählen",
+      "localFolderSelectedTitle": "Lokaler Ordner ausgewählt",
+      "couldNotReadFolder": "Der ausgewählte Ordner konnte nicht gelesen werden.",
+      "pickLocalFolderFailed": "Auswahl des lokalen Ordners fehlgeschlagen.",
+      "outsideHomeConfirmLabel": "Dieser Ordner liegt außerhalb meines persönlichen Ordners. Ich bestätige, dass ich die OPL-Struktur trotzdem hier erstellen möchte."
     },
     "gameStatus": {
       "ready": "Bereit",

@@ -192,7 +192,9 @@
       "addLocalFolderShort": "ローカルフォルダを追加",
       "runFullScan": "完全スキャンを実行",
       "defaultLocalName": "ローカルライブラリ",
-      "localFolderLabel": "ローカルフォルダ"
+      "localFolderLabel": "ローカルフォルダ",
+      "couldNotReadSubfolder": "選択したサブフォルダーを読み取れませんでした。",
+      "subfolderPickFailed": "サブフォルダーの選択に失敗しました。"
     },
     "gameLibrary": {
       "title": "ゲームライブラリ",
@@ -658,7 +660,11 @@
       "ready": "準備完了",
       "prepare": "準備",
       "selected": "選択済み",
-      "select": "選択"
+      "select": "選択",
+      "rootDevice": "デバイス: {{path}}",
+      "subfolderActive": "サブフォルダー使用中",
+      "selectSubfolder": "サブフォルダーを選択...",
+      "useDeviceRoot": "デバイスのルートを使用"
     },
     "diagnosticSummary": {
       "title": "診断",
@@ -709,7 +715,16 @@
       "successTitle": "デバイスの準備が完了しました！",
       "successDescription": "OPL構造が作成されました。デバイスのDVD/CDフォルダにゲームをコピーできます。",
       "goToWorkspace": "デバイスワークスペースへ",
-      "preparationFailed": "デバイスの準備に失敗しました: {{message}}"
+      "preparationFailed": "デバイスの準備に失敗しました: {{message}}",
+      "readyStepLabel": "すでに準備完了",
+      "readyTitle": "OPL構造はすでに準備完了です",
+      "readyDescription": "{{path}} にはOPLが期待するすべてのフォルダーがすでに存在します。書き込みは不要です。",
+      "selectAnother": "別のものを選択",
+      "pickLocalFolder": "ローカルフォルダーを選択",
+      "localFolderSelectedTitle": "ローカルフォルダーを選択しました",
+      "couldNotReadFolder": "選択したフォルダーを読み取れませんでした。",
+      "pickLocalFolderFailed": "ローカルフォルダーの選択に失敗しました。",
+      "outsideHomeConfirmLabel": "このフォルダーはホームフォルダーの外にあります。それでもここにOPL構造を作成することを確認します。"
     },
     "gameStatus": {
       "ready": "準備完了",

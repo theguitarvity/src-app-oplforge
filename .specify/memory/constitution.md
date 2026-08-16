@@ -1,15 +1,12 @@
 <!--
 Sync Impact Report
-- Version change: template (unversioned) -> 1.0.0
-- Modified principles:
-  - Template placeholder -> I. Segurança em Operações Sensíveis
-  - Template placeholder -> II. Isolamento e Menor Privilégio
-  - Template placeholder -> III. Contratos Tipados e Limites de Camada
-  - Template placeholder -> IV. Integridade, Rastreabilidade e Recuperação
-  - Template placeholder -> V. Evolução Incremental Verificada
-- Added sections:
-  - Restrições Técnicas e de Produto
-  - Fluxo de Desenvolvimento e Portões de Qualidade
+- Version change: 1.0.0 -> 1.1.0
+- Modified principles: none
+- Modified sections:
+  - Restrições Técnicas e de Produto: lista de diretórios da estrutura OPL ampliada de
+    `DVD, CD, PS1, APPS, ART, CFG, VMC` para incluir também `CHT, LNG, THM`, para cobrir preparo
+    e validação em qualquer dispositivo/pasta local selecionado.
+- Added sections: none
 - Removed sections: none
 - Follow-up TODOs: none
 -->
@@ -73,8 +70,9 @@ da integração; uma exceção MUST ser documentada com impacto, responsável e 
 
 - A aplicação MUST permanecer compatível com a arquitetura Electron + React + TypeScript e com o
   runtime Node.js 22 adotado, salvo plano de migração aprovado.
-- A estrutura OPL gerada MUST respeitar os diretórios `DVD`, `CD`, `PS1`, `APPS`, `ART`, `CFG` e
-  `VMC`; mudanças nesse contrato exigem compatibilidade retroativa ou migração documentada.
+- A estrutura OPL gerada MUST respeitar os diretórios `DVD`, `CD`, `PS1`, `APPS`, `ART`, `CFG`,
+  `VMC`, `CHT`, `LNG` e `THM`; mudanças nesse contrato exigem compatibilidade retroativa ou
+  migração documentada.
 - Caminhos fornecidos pelo usuário ou por fontes remotas MUST ser normalizados, confinados ao destino
   autorizado e protegidos contra traversal, colisões e escrita fora do dispositivo selecionado.
 - Downloads MUST ocorrer no processo principal, permitir inspeção e seleção de arquivos e usar
@@ -123,4 +121,4 @@ implementação. Cada revisão de código MUST avaliar os princípios atingidos 
 mantenedores MUST revisar esta constituição ao menos uma vez por ciclo de release relevante ou quando
 uma mudança de arquitetura, segurança, persistência ou distribuição for proposta.
 
-**Version**: 1.0.0 | **Ratified**: 2026-08-01 | **Last Amended**: 2026-08-01
+**Version**: 1.1.0 | **Ratified**: 2026-08-01 | **Last Amended**: 2026-08-15
